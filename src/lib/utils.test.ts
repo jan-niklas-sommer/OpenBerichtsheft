@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   cn,
   getWeekDates,
@@ -43,7 +43,7 @@ describe("getWeekDates", () => {
   });
 
   it("Woche 1 eines Jahres mit Jan 4 als Sonntag (getDay === 0) nutzt ||7-Pfad", () => {
-    const dates = getWeekDates(2030, 1);
+    const dates = getWeekDates(2032, 1);
     expect(dates[0].getDay()).toBe(1);
     expect(dates).toHaveLength(7);
   });
@@ -119,6 +119,10 @@ describe("formatDate", () => {
 });
 
 describe("getCurrentWeek", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("gibt ein Objekt mit year und week zurück", () => {
     const result = getCurrentWeek();
     expect(result).toHaveProperty("year");
@@ -136,6 +140,15 @@ describe("getCurrentWeek", () => {
   it("year ist die aktuelle vierstellige Jahreszahl", () => {
     const result = getCurrentWeek();
     expect(result.year).toBe(new Date().getFullYear());
+  });
+
+  it("nutzt ||7-Pfad wenn Jan 4 ein Sonntag ist (getDay === 0)", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 15));
+    const result = getCurrentWeek();
+    expect(result.year).toBe(2026);
+    expect(result.week).toBeGreaterThanOrEqual(1);
+    expect(result.week).toBeLessThanOrEqual(53);
   });
 });
 

@@ -101,9 +101,7 @@ export async function GET() {
       }
     }
 
-    const completionPercent = currentWeek > 0
-      ? Math.round((statusCounts.approved / currentWeek) * 100)
-      : 0;
+    const completionPercent = Math.min(100, Math.round((statusCounts.approved / Math.max(currentWeek, 1)) * 100));
 
     return {
       traineeId: trainee.id,
@@ -111,7 +109,7 @@ export async function GET() {
       profession: trainee.profession?.name ?? null,
       totalReports,
       ...statusCounts,
-      completionPercent: Math.min(100, completionPercent),
+      completionPercent,
       missingWeeks,
     };
   });

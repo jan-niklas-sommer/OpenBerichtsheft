@@ -244,6 +244,18 @@ describe("PUT /api/reports/[id]", () => {
     expect(json.error).toBe("Report is not editable");
   });
 
+  it("returns 400 for validation failure", async () => {
+    mockAuth.mockResolvedValue(traineeSession);
+    mockFindUnique.mockResolvedValue(baseReport);
+    const res = await PUT(
+      makeRequest("PUT", { dailyEntries: [{ date: "2025-03-03", dayType: "invalid", hours: -1, minutes: 60 }] }),
+      { params },
+    );
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toBe("Validation failed");
+  });
+
   it("updates report successfully", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockFindUnique.mockResolvedValue(baseReport);
@@ -257,6 +269,21 @@ describe("PUT /api/reports/[id]", () => {
       expect.objectContaining({
         where: { id: "report-1" },
         data: expect.objectContaining({ reportText: "Updated report" }),
+      }),
+    );
+  });
+
+  it("sets reportText to null when empty string is provided", async () => {
+    mockAuth.mockResolvedValue(traineeSession);
+    mockFindUnique.mockResolvedValue(baseReport);
+    const updatedReport = { ...baseReport, reportText: null };
+    mockUpdate.mockResolvedValue(updatedReport);
+    const res = await PUT(makeRequest("PUT", { reportText: "", dailyEntries: validBody.dailyEntries }), { params });
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "report-1" },
+        data: expect.objectContaining({ reportText: null }),
       }),
     );
   });
@@ -412,7 +439,17 @@ describe("POST /api/reports/[id]/review", () => {
     expect(json.error).toBe("Forbidden");
   });
 
-  it("returns 404 when report not found", async () => {
+  it("returns 403 for unassigned trainer on review", async () => {
+    mockAuth.mockResolvedValue(trainerSession);
+    mockFindUnique.mockResolvedValue(submittedReport);
+    mockTrainerAssignment.mockResolvedValue(null);
+    const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toBe("Forbidden");
+  });
+
+  it("returns 404 when report not found for review", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(null);
     const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });

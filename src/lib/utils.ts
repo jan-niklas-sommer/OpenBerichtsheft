@@ -29,13 +29,14 @@ export function formatDate(date: Date): string {
 
 export function getCurrentWeek(): { year: number; week: number } {
   const now = new Date();
-  const jan4 = new Date(now.getFullYear(), 0, 4);
+  const year = now.getFullYear();
+  const jan4 = new Date(year, 0, 4);
   const dayOfWeek = jan4.getDay() || 7;
   const monday = new Date(jan4);
   monday.setDate(jan4.getDate() - dayOfWeek + 1);
   const diff = now.getTime() - monday.getTime();
   const week = Math.ceil(diff / (7 * 24 * 60 * 60 * 1000));
-  return { year: now.getFullYear(), week };
+  return { year, week };
 }
 
 export const ROLE_LABELS: Record<string, string> = {

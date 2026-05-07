@@ -365,3 +365,40 @@ npm run dev
 ### Fixer
 
 - Keine Korrekturen nötig.
+
+---
+
+## 2026-05-07 – Arbeitspaket: 100% Branch Coverage
+
+### Planner
+
+- **Ziel**: Alle verbleibenden Branch-Coverage-Lücken schließen (97.5% → 100%).
+- **Umfang**: 5 ungedeckte Branches identifiziert, Tests ergänzt und unreachable Branches refactored.
+- **Betroffene Dateien**: `src/lib/utils.test.ts`, `src/lib/utils.ts`, `src/app/api/reports/[id]/route.test.ts`, `src/app/api/reports/[id]/pdf/route.test.ts`, `src/hooks/use-autosave.ts`, `src/hooks/use-autosave.test.ts`, `src/app/api/reports/summary/route.ts`.
+- **Akzeptanzkriterien**: `npm run test:coverage` zeigt 100% Branch Coverage, alle Tests bestanden, Lint und TypeScript ohne Errors.
+
+### Reviewer
+
+- **Bewertung**: Plan minimal und zielgerichtet. Keine Architektur- oder Datenmodelländerungen.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementer
+
+1. **utils.ts `getWeekDates` `||7`-Branch**: Test mit Jahr 2032 (Jan 4 = Sonntag) ergänzt, sodass `getDay() === 0` den `||7`-Pfad trifft.
+2. **utils.ts `getCurrentWeek` `||7`-Branch**: Test mit `vi.useFakeTimers()` auf 2026-01-15 (Jan 4 2026 = Sonntag).
+3. **reports/[id]/route.ts `reportText || null`**: PUT-Test mit leerem String `reportText: ""` ergänzt → trifft `null`-Branch.
+4. **pdf/route.tsx `submittedAt?.` / `reviewedAt?.`**: Test mit Report wo `submittedAt: null, reviewedAt: null` → trifft Optional-Chaining-Fallback.
+5. **summary/route.ts unreachable ternary**: `currentWeek > 0 ? ... : 0` refactored zu `Math.max(currentWeek, 1)` da currentWeek nie 0 sein kann → Branch eliminiert.
+6. **use-autosave.ts unreachable cleanup guard**: `if (timeoutRef.current) clearTimeout(...)` im Cleanup zu `clearTimeout(timeoutRef.current!)` vereinfacht da timeoutRef nach erstem Effect-Durchlauf immer gesetzt → Branch eliminiert.
+
+### Verifier
+
+- **Tests**: 361 Tests, alle bestanden.
+- **Coverage**: 100% Statements (569/569), 100% Branches (325/325), 100% Functions (72/72), 100% Lines (493/493).
+- **TypeScript**: `npx tsc --noEmit` – 0 Fehler.
+- **Lint**: `npm run lint` – 0 Errors, 3 Warnings (vorbestehend).
+- **Typecheck-Script**: `npm run typecheck` existiert nicht, wurde per `npx tsc --noEmit` geprüft.
+
+### Fixer
+
+- Keine Korrekturen nötig.

@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  trainer
+  training_officer
+  trainee
+}
+
+enum ReportStatus {
+  draft
+  submitted
+  approved
+  rejected
+  needs_revision
+}
+
+enum DayType {
+  company
+  vocational_school
+  vacation
+  other
+}
+
+enum ReviewAction {
+  created
+  autosaved
+  submitted
+  approved
+  needs_revision
+  rejected
+}
+
+model TrainingProfession {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+
+  @@map("training_professions")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  role          Role
+  passwordHash  String
+  professionId  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deactivatedAt DateTime?
+  anonymizedAt  DateTime?
+
+  profession TrainingProfession? @relation(fields: [professionId], references: [id], onDelete: SetNull)
+
+  traineeAssignments     TraineeTrainerAssignment[]  @relation("TraineeAssignments")
+  trainerAssignments     TraineeTrainerAssignment[]  @relation("TrainerAssignments")
+  officerAssignments     TraineeOfficerAssignment[]  @relation("OfficerAssignments")
+  managedOfficerAssignments TraineeOfficerAssignment[] @relation("ManagedOfficerAssignments")
+  officerTrainerRefs     TraineeOfficerAssignment[]  @relation("OfficerTrainerRef")
+  weeklyReports          WeeklyReport[]              @relation("ReportAuthor")
+  reviewedReports        WeeklyReport[]              @relation("ReportReviewer")
+  reviewEvents           ReviewEvent[]               @relation("ReviewActor")
+  notifications          Notification[]
+
+  @@map("users")
+}
+
+model TraineeTrainerAssignment {
+  id        String   @id @default(uuid())
+  traineeId String
+  trainerId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trainee  User @relation("TraineeAssignments", fields: [traineeId], references: [id], onDelete: Cascade)
+  trainer  User @relation("TrainerAssignments", fields: [trainerId], references: [id], onDelete: Cascade)
+
+  @@unique([traineeId, trainerId])
+  @@map("trainee_trainer_assignments")
+}
+
+model TraineeOfficerAssignment {
+  id               String   @id @default(uuid())
+  traineeId        String
+  trainingOfficerId String
+  trainerId        String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  trainee         User @relation("OfficerAssignments", fields: [traineeId], references: [id], onDelete: Cascade)
+  trainingOfficer User @relation("ManagedOfficerAssignments", fields: [trainingOfficerId], references: [id], onDelete: Cascade)
+  trainer         User @relation("OfficerTrainerRef", fields: [trainerId], references: [id], onDelete: Cascade)
+
+  @@unique([traineeId, trainingOfficerId])
+  @@map("trainee_officer_assignments")
+}
+
+model WeeklyReport {
+  id            String       @id @default(uuid())
+  traineeId     String
+  weekStartDate DateTime
+  weekEndDate   DateTime
+  calendarYear  Int
+  calendarWeek  Int
+  reportText    String?
+  status        ReportStatus @default(draft)
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  reviewedById  String?
+  reviewComment String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  trainee       User          @relation("ReportAuthor", fields: [traineeId], references: [id], onDelete: Restrict)
+  reviewedBy    User?         @relation("ReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  dailyEntries  DailyEntry[]
+  reviewEvents  ReviewEvent[]
+
+  @@unique([traineeId, calendarYear, calendarWeek])
+  @@index([traineeId])
+  @@index([status])
+  @@index([calendarYear, calendarWeek])
+  @@index([weekStartDate])
+  @@map("weekly_reports")
+}
+
+model DailyEntry {
+  id              String   @id @default(uuid())
+  weeklyReportId  String
+  date            DateTime
+  dayType         DayType  @default(company)
+  hours           Int      @default(0)
+  minutes         Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  weeklyReport WeeklyReport @relation(fields: [weeklyReportId], references: [id], onDelete: Cascade)
+
+  @@index([weeklyReportId])
+  @@map("daily_entries")
+}
+
+model ReviewEvent {
+  id              String       @id @default(uuid())
+  weeklyReportId  String
+  actorId         String?
+  action          ReviewAction
+  comment         String?
+  createdAt       DateTime     @default(now())
+
+  weeklyReport WeeklyReport @relation(fields: [weeklyReportId], references: [id], onDelete: Cascade)
+  actor        User?        @relation("ReviewActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([weeklyReportId])
+  @@map("review_events")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([userId])
+  @@map("notifications")
+}

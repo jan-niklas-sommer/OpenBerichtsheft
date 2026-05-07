@@ -1,0 +1,225 @@
+import { describe, it, expect } from "vitest";
+import {
+  cn,
+  getWeekDates,
+  formatDayName,
+  formatDate,
+  getCurrentWeek,
+  ROLE_LABELS,
+  STATUS_LABELS,
+  DAY_TYPE_LABELS,
+  DAY_TYPES,
+  statusVariant,
+} from "./utils";
+
+describe("cn", () => {
+  it("verkettet Klassen", () => {
+    expect(cn("foo", "bar")).toBe("foo bar");
+  });
+
+  it("filtert falsy Werte heraus", () => {
+    expect(cn("foo", false && "bar", undefined, null, "")).toBe("foo");
+  });
+
+  it("gibt leeren String bei keinem Argument", () => {
+    expect(cn()).toBe("");
+  });
+});
+
+describe("getWeekDates", () => {
+  it("liefert genau 7 Daten", () => {
+    const dates = getWeekDates(2025, 10);
+    expect(dates).toHaveLength(7);
+  });
+
+  it("erster Tag ist Montag", () => {
+    const dates = getWeekDates(2025, 10);
+    expect(dates[0].getDay()).toBe(1);
+  });
+
+  it("letzter Tag ist Sonntag", () => {
+    const dates = getWeekDates(2025, 10);
+    expect(dates[6].getDay()).toBe(0);
+  });
+
+  it("Woche 1 eines Jahres mit Jan 4 als Sonntag (getDay === 0) nutzt ||7-Pfad", () => {
+    const dates = getWeekDates(2030, 1);
+    expect(dates[0].getDay()).toBe(1);
+    expect(dates).toHaveLength(7);
+  });
+
+  it("Woche 52 liefert gültige Daten im Dezember", () => {
+    const dates = getWeekDates(2025, 52);
+    expect(dates).toHaveLength(7);
+    expect(dates[0].getMonth()).toBe(11);
+  });
+
+  it("Woche 53 für ein Jahr mit 53 Wochen", () => {
+    const dates = getWeekDates(2020, 53);
+    expect(dates).toHaveLength(7);
+    expect(dates[0].getFullYear()).toBe(2020);
+  });
+
+  it("alle 7 Tage sind aufeinanderfolgend", () => {
+    const dates = getWeekDates(2025, 15);
+    for (let i = 1; i < 7; i++) {
+      const diff = dates[i].getTime() - dates[i - 1].getTime();
+      expect(diff).toBe(24 * 60 * 60 * 1000);
+    }
+  });
+
+  it("Woche 1 2025 beginnt am 30. Dezember 2024", () => {
+    const dates = getWeekDates(2025, 1);
+    expect(dates[0].getDate()).toBe(30);
+    expect(dates[0].getMonth()).toBe(11);
+    expect(dates[0].getFullYear()).toBe(2024);
+  });
+
+  it("Woche 2 2025 beginnt am 6. Januar 2025", () => {
+    const dates = getWeekDates(2025, 2);
+    expect(dates[0].getDate()).toBe(6);
+    expect(dates[0].getMonth()).toBe(0);
+    expect(dates[0].getFullYear()).toBe(2025);
+  });
+
+  it("funktioniert für Schaltjahre", () => {
+    const dates = getWeekDates(2024, 9);
+    expect(dates).toHaveLength(7);
+    expect(dates[0].getDay()).toBe(1);
+  });
+});
+
+describe("formatDayName", () => {
+  it("gibt deutschen Kurznamen für Wochentag zurück", () => {
+    const montag = new Date(2025, 0, 6);
+    expect(formatDayName(montag)).toBe("Mo");
+  });
+
+  it("gibt 'So' für Sonntag", () => {
+    const sonntag = new Date(2025, 0, 12);
+    expect(formatDayName(sonntag)).toBe("So");
+  });
+});
+
+describe("formatDate", () => {
+  it("formatiert Datum im deutschen Format dd.MM.yyyy", () => {
+    const date = new Date(2025, 0, 6);
+    expect(formatDate(date)).toBe("06.01.2025");
+  });
+
+  it("formatiert Datum am Monatsende korrekt", () => {
+    const date = new Date(2025, 2, 31);
+    expect(formatDate(date)).toBe("31.03.2025");
+  });
+
+  it("formatiert Datum mit einstelligem Tag und Monat", () => {
+    const date = new Date(2025, 3, 1);
+    expect(formatDate(date)).toBe("01.04.2025");
+  });
+});
+
+describe("getCurrentWeek", () => {
+  it("gibt ein Objekt mit year und week zurück", () => {
+    const result = getCurrentWeek();
+    expect(result).toHaveProperty("year");
+    expect(result).toHaveProperty("week");
+    expect(typeof result.year).toBe("number");
+    expect(typeof result.week).toBe("number");
+  });
+
+  it("week ist zwischen 1 und 53", () => {
+    const result = getCurrentWeek();
+    expect(result.week).toBeGreaterThanOrEqual(1);
+    expect(result.week).toBeLessThanOrEqual(53);
+  });
+
+  it("year ist die aktuelle vierstellige Jahreszahl", () => {
+    const result = getCurrentWeek();
+    expect(result.year).toBe(new Date().getFullYear());
+  });
+});
+
+describe("ROLE_LABELS", () => {
+  it("enthält alle erwarteten Rollen", () => {
+    expect(ROLE_LABELS.admin).toBe("Administrator");
+    expect(ROLE_LABELS.trainer).toBe("Ausbilder");
+    expect(ROLE_LABELS.training_officer).toBe("Ausbildungsbeauftragter");
+    expect(ROLE_LABELS.trainee).toBe("Auszubildende(r)");
+  });
+
+  it("hat genau 4 Einträge", () => {
+    expect(Object.keys(ROLE_LABELS)).toHaveLength(4);
+  });
+});
+
+describe("STATUS_LABELS", () => {
+  it("enthält alle erwarteten Status", () => {
+    expect(STATUS_LABELS.draft).toBe("Entwurf");
+    expect(STATUS_LABELS.submitted).toBe("Eingereicht");
+    expect(STATUS_LABELS.approved).toBe("Genehmigt");
+    expect(STATUS_LABELS.rejected).toBe("Abgelehnt");
+    expect(STATUS_LABELS.needs_revision).toBe("Überarbeitung erforderlich");
+  });
+
+  it("hat genau 5 Einträge", () => {
+    expect(Object.keys(STATUS_LABELS)).toHaveLength(5);
+  });
+});
+
+describe("DAY_TYPE_LABELS", () => {
+  it("enthält alle erwarteten Tagestypen", () => {
+    expect(DAY_TYPE_LABELS.company).toBe("Betrieb");
+    expect(DAY_TYPE_LABELS.vocational_school).toBe("Berufsschule");
+    expect(DAY_TYPE_LABELS.vacation).toBe("Urlaub");
+    expect(DAY_TYPE_LABELS.other).toBe("Sonstiges");
+  });
+
+  it("hat genau 4 Einträge", () => {
+    expect(Object.keys(DAY_TYPE_LABELS)).toHaveLength(4);
+  });
+});
+
+describe("DAY_TYPES", () => {
+  it("enthält alle 4 Tagestypen in der richtigen Reihenfolge", () => {
+    expect(DAY_TYPES).toEqual([
+      "company",
+      "vocational_school",
+      "vacation",
+      "other",
+    ]);
+  });
+
+  it("hat genau 4 Einträge", () => {
+    expect(DAY_TYPES).toHaveLength(4);
+  });
+});
+
+describe("statusVariant", () => {
+  it("gibt 'default' für 'draft' zurück", () => {
+    expect(statusVariant("draft")).toBe("default");
+  });
+
+  it("gibt 'warning' für 'submitted' zurück", () => {
+    expect(statusVariant("submitted")).toBe("warning");
+  });
+
+  it("gibt 'success' für 'approved' zurück", () => {
+    expect(statusVariant("approved")).toBe("success");
+  });
+
+  it("gibt 'danger' für 'rejected' zurück", () => {
+    expect(statusVariant("rejected")).toBe("danger");
+  });
+
+  it("gibt 'info' für 'needs_revision' zurück", () => {
+    expect(statusVariant("needs_revision")).toBe("info");
+  });
+
+  it("gibt 'default' für unbekannten Status zurück", () => {
+    expect(statusVariant("unknown_status")).toBe("default");
+  });
+
+  it("gibt 'default' für leeren String zurück", () => {
+    expect(statusVariant("")).toBe("default");
+  });
+});

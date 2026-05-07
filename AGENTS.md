@@ -126,6 +126,97 @@ Keine Änderung gilt als abgeschlossen, wenn bekannte Fehler verschwiegen oder n
 <!-- END:quality-rules -->
 
 
+<!-- BEGIN:test-rules -->
+# Test-Regeln
+
+## Grundprinzip
+
+Alle Codepfade MÜSSEN durch Tests abgedeckt sein. 100% Branch Coverage ist das Ziel für:
+- `src/lib/**` (Utils, Validierungen, Auth-Konfiguration)
+- `src/hooks/**` (Custom React Hooks)
+- `src/app/api/**` (Alle API-Routen)
+
+## Test-Stack
+
+| Schicht | Werkzeug | Zweck |
+|---------|----------|-------|
+| Unit Tests | Vitest | Funktionen, Validierungen, Hooks |
+| Component Tests | Vitest + React Testing Library | UI-Komponenten, User-Interaktionen |
+| API Tests | Vitest + Mock-Prisma | API-Routen mit gemockter Datenbank |
+| E2E Tests | Playwright | Komplette User-Flows im Browser |
+
+## Verfügbare Befehle
+
+```bash
+npm test              # Unit + API + Component Tests
+npm run test:watch    # Tests im Watch-Modus
+npm run test:coverage # Tests mit Coverage-Report
+npm run test:e2e      # Playwright E2E Tests
+```
+
+## Pflichten bei jedem Arbeitspaket
+
+1. **Neuer Code MUSS neue Tests enthalten.**
+   - Jede neue Funktion, Route, Komponente oder Hook braucht mindestens einen Test.
+   - Edge Cases und Fehlerpfade müssen getestet werden.
+
+2. **Bestehende Tests MÜSSEN weiterhin durchlaufen.**
+   - Wenn ein Test durch eine Änderung bricht, MUSS der Test angepasst ODER die Änderung korrigiert werden.
+   - Ein broken Test ist ein Blocker.
+
+3. **Coverage darf nicht sinken.**
+   - Vor dem Commit muss `npm run test:coverage` ausgeführt werden.
+   - Wenn Coverage sinkt, MUSS erklärt werden warum (in `HANDOVER.md`).
+
+4. **API-Route Tests müssen abgedeckt werden:**
+   - Erfolgsfall (200/201)
+   - Auth-Fehler (401)
+   - Berechtigungsfehler (403)
+   - Validierungsfehler (400)
+   - Nicht gefunden (404)
+   - Statusübergänge (nur erlaubte Übergänge)
+
+5. **E2E Tests für kritische User-Flows:**
+   - Login / Logout
+   - Bericht erstellen, bearbeiten, einreichen
+   - Bericht prüfen (genehmigen, zurückgeben, ablehnen)
+   - PDF-Export
+   - Admin: User erstellen, Anonymisieren
+
+## Test-Datei-Konvention
+
+```
+src/
+  lib/
+    utils.ts          → src/lib/utils.test.ts
+    validations.ts    → src/lib/validations.test.ts
+  hooks/
+    use-autosave.ts   → src/hooks/use-autosave.test.ts
+  app/api/
+    reports/route.ts  → src/app/api/reports/route.test.ts
+  components/
+    ui/badge.tsx      → src/components/ui/badge.test.tsx
+```
+
+## Mock-Strategie
+
+- **Prisma**: Gesamter Client wird per `vi.mock("@/lib/prisma")` gemockt.
+- **Auth**: `vi.mock("@/lib/auth")` für Session-Simulation.
+- **Next.js**: `next/navigation` für `useRouter`, `useParams`.
+- **Externe APIs**: Nicht in Tests aufrufen, immer mocken.
+
+## Was bei CI/CD geprüft wird
+
+Jeder Push/PR MUSS bestehen in:
+1. `npm run typecheck` (falls vorhanden)
+2. `npm run lint`
+3. `npm test`
+4. `npm run build`
+
+Fehlgeschlagene Checks = kein Merge.
+<!-- END:test-rules -->
+
+
 <!-- BEGIN:domain-rules -->
 # Fachliche Domänenregeln OpenBerichtsheft
 

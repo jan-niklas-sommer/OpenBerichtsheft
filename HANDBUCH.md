@@ -22,7 +22,7 @@ Letzte Aktualisierung: 2026-05-07
 
 ## 1. Einführung
 
-OpenBerichtsheft dient der Erfassung, Einreichung und Prüfung von Wochenberichten während der Ausbildung. Es ersetzt den papierbasierten Ausbildungsnachweis und bietet einen strukturierten Workflow zwischen Auszubildenden, Ausbildern, Ausbildungsbeauftragten und Administratoren.
+OpenBerichtsheft dient der Erfassung, Einreichung und Prüfung von Wochen- und Tagesberichten während der Ausbildung. Es ersetzt den papierbasierten Ausbildungsnachweis und bietet einen strukturierten Workflow zwischen Auszubildenden, Ausbildern, Ausbildungsbeauftragten und Administratoren.
 
 **Vorteile:**
 
@@ -75,7 +75,7 @@ Klicken Sie auf das Logout-Symbol (Pfeil aus dem Kasten) oben rechts in der Navi
 
 ## 4. Rolle: Auszubildende(r)
 
-Als Auszubildende(r) schreiben und verwalten Sie Ihre eigenen Wochenberichte.
+Als Auszubildende(r) schreiben und verwalten Sie Ihre eigenen Wochen- und Tagesberichte.
 
 ### 4.1 Übersicht
 
@@ -108,11 +108,18 @@ Darunter sehen Sie die detaillierte Monatsansicht mit Wochen und Status-Labels.
 2. Die aktuelle Kalenderwoche wird automatisch geöffnet.
 3. Wenn für diese Woche bereits ein Entwurf existiert, wird dieser geladen.
 
-### 4.3 Wochenbericht schreiben
+### 4.3 Wochen- oder Tagesbericht schreiben
 
-Der Editor besteht aus zwei Bereichen:
+Sie können im Editor zwischen zwei Berichtstypen wechseln:
 
-#### Wochenbericht-Text
+- **Wochenbericht**: Ein großer Freitextbereich für die Wochenbeschreibung + Tageseinträge.
+- **Tagesbericht**: Kein globaler Freitext, stattdessen ein Freitextfeld **pro Arbeitstag** unter den Tageseinträgen.
+
+Die Umschaltung erfolgt über die beiden Buttons **Wochenbericht** / **Tagesbericht** oberhalb des Editors.
+
+**Nicht-Arbeitstage** (z.B. Samstag, Sonntag) werden automatisch ausgegraut und mit "–" und 0 Stunden vorbelegt. Die Standard-Arbeitstage werden vom Administrator konfiguriert (Standard: Montag–Freitag).
+
+#### Wochenbericht-Text (nur Wochenbericht-Modus)
 
 - Großes Textfeld oben im Editor.
 - Hier beschreiben Sie Ihre Tätigkeiten der Woche.
@@ -361,7 +368,19 @@ Unter **Berufe** (Navigation) verwalten Sie die verfügbaren Ausbildungsberufe.
 
 **Hinweis:** Die Anzahl der zugeordneten Auszubildenden wird neben jedem Beruf angezeigt.
 
-### 7.6 Ausbildungsfortschritt
+### 7.6 Einstellungen
+
+Unter **Einstellungen** (Navigation) konfigurieren Sie die Standard-Arbeitstage.
+
+#### Arbeitstage konfigurieren
+
+1. Wählen Sie die Tage aus, die als **Arbeitstage** gelten (Standard: Montag–Freitag).
+2. Klicken Sie auf einen Tag, um ihn ein- oder auszuschalten.
+3. Klicken Sie auf **Speichern**.
+
+**Auswirkung:** Wenn ein Auszubildender einen neuen Wochenbericht anlegt, werden die Nicht-Arbeitstage (z.B. Samstag, Sonntag) automatisch mit 0 Stunden und als freier Tag ("–") vorbelegt. Arbeitstage erhalten standardmäßig 8 Stunden.
+
+### 7.7 Ausbildungsfortschritt
 
 Unter **Fortschritt** (Navigation) sehen Sie eine Übersicht des Ausbildungsfortschritts aller Auszubildenden.
 

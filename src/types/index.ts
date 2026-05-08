@@ -9,6 +9,8 @@ export type ReportStatus =
 
 export type DayType = "company" | "vocational_school" | "vacation" | "other";
 
+export type ReportType = "weekly" | "daily";
+
 export interface SessionUser {
   id: string;
   email: string;
@@ -23,6 +25,7 @@ export interface DailyEntryData {
   dayType: DayType;
   hours: number;
   minutes: number;
+  reportText?: string;
 }
 
 export interface WeeklyReportData {
@@ -33,6 +36,7 @@ export interface WeeklyReportData {
   calendarYear: number;
   calendarWeek: number;
   reportText: string | null;
+  reportType: ReportType;
   status: ReportStatus;
   submittedAt: string | null;
   reviewedAt: string | null;
@@ -76,4 +80,8 @@ export interface AssignmentData {
   trainerId: string;
   trainee?: { id: string; name: string; email: string };
   trainer?: { id: string; name: string; email: string };
+}
+
+export interface AppSettingsData {
+  workingDays: number[];
 }

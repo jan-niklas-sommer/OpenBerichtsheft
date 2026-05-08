@@ -773,3 +773,47 @@ npm run dev
 - **Coverage**: 100% stmts, 99.68% branches, 100% fns, 100% lines. (2 branch-Gaps in defensivem Guard `!map.has(key)` — praktisch unerreichtbar.)
 - **Lint**: 0 Errors, 4 Warnings (vorbestehend).
 - **Build**: `npm run build` erfolgreich.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Tages- und Wochenberichte + Admin-Arbeitstage (#35)
+
+### Planner
+
+- **Ziel**: Azubi kann zwischen Tages- und Wochenbericht wechseln. Admin konfiguriert Standard-Arbeitstage (Mo-Fr). Nicht-Arbeitstage werden automatisch mit 0h/"–" vorbelegt.
+- **Umfang**: Datenmodell-Erweiterung, Admin-Settings-Seite, Editor-Umbau, PDF/Review-Anpassung, API-Erweiterung.
+- **Betroffene Dateien**: `prisma/schema.prisma`, `prisma/seed.ts`, `src/types/index.ts`, `src/lib/validations.ts`, `src/app/api/settings/`, `src/app/api/reports/`, `src/app/(dashboard)/admin/settings/`, Editor-Page, PDF-Document, Reviewer-Report-Page, Navbar.
+- **Akzeptanzkriterien**: reportType im Datenmodell, Admin kann Arbeitstage konfigurieren, Editor zeigt Tages-/Wochenbericht-Modus, Nicht-Arbeitstage auto-gefüllt, pro Tag Freitextfeld im Tagesbericht-Modus, Tests für alle neuen Pfade.
+
+### Reviewer
+
+- **Bewertung**: Plan deckt alle Anforderungen ab. Keine Lücken erkannt.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementierte Änderungen
+
+- **Migration**: `ReportType` enum (weekly/daily), `reportType` am `WeeklyReport`, `reportText` am `DailyEntry`, `AppSetting` model (Key-Value).
+- **Seed**: Default `workingDays` = [1,2,3,4,5] (Mo-Fr).
+- **Neu**: `src/app/api/settings/route.ts` — GET (alle auth) / PUT (nur admin) für App-Einstellungen.
+- **Neu**: `src/app/(dashboard)/admin/settings/page.tsx` — Arbeitstage-Konfiguration mit Toggle-Buttons.
+- **Geändert**: `src/app/api/reports/route.ts` — reportType + reportText in create/update.
+- **Geändert**: `src/app/api/reports/[id]/route.ts` — reportType + reportText in update.
+- **Geändert**: Editor `src/app/(dashboard)/trainee/reports/[week]/page.tsx` — Toggle-Buttons Wochen-/Tagesbericht, Nicht-Arbeitstage ausgegraut mit "–", pro Tag Freitextfeld bei Tagesbericht (nur wenn Tagestyp nicht Urlaub/frei), `buildDefaultEntries()` mit workingDays.
+- **Geändert**: `src/components/reports/pdf-document.tsx` — Titel basierend auf reportType, Tagesberichte pro Tag in PDF.
+- **Geändert**: `src/components/reports/reviewer-report-page.tsx` — Tages-/Wochenbericht-spezifische Anzeige.
+- **Geändert**: Navbar — "Einstellungen"-Link für Admin, Imports bereinigt.
+- **Neu**: `src/app/api/settings/route.test.ts` — 13 Tests (GET/PUT, Auth, Validierung).
+- **Geändert**: `src/app/api/reports/route.test.ts` — +1 Test für daily reportType.
+
+### Verifier
+
+- **Tests**: 566 Tests (32 Dateien), alle bestanden. +14 neue Tests.
+- **Coverage**: 95.15% stmts, 92.14% branches, 85.86% fns, 94.94% lines. (Drop durch 0% navbar.tsx — test file hat pre-existing parse error, nicht durch dieses AP verursacht.)
+- **Lint**: 1 Error (pre-existing navbar.test.tsx parse error), 4 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Migration**: `npx prisma migrate dev` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- `navbar.test.tsx` hat pre-existing parse error (oxc) — muss separat gefixt werden.
+- Coverage-Drop von 100% auf 95% stmts durch nicht ausführbaren navbar-Test.

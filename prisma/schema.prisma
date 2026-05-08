@@ -39,6 +39,11 @@ enum ReviewAction {
   rejected
 }
 
+enum ReportType {
+  weekly
+  daily
+}
+
 model TrainingProfession {
   id        String   @id @default(uuid())
   name      String   @unique
@@ -116,6 +121,7 @@ model WeeklyReport {
   calendarYear  Int
   calendarWeek  Int
   reportText    String?
+  reportType    ReportType   @default(weekly)
   status        ReportStatus @default(draft)
   submittedAt   DateTime?
   reviewedAt    DateTime?
@@ -144,6 +150,7 @@ model DailyEntry {
   dayType         DayType  @default(company)
   hours           Int      @default(0)
   minutes         Int      @default(0)
+  reportText      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -181,4 +188,12 @@ model Notification {
   @@index([userId, read])
   @@index([userId])
   @@map("notifications")
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
 }

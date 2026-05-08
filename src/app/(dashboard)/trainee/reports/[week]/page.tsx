@@ -18,8 +18,8 @@ import {
   DAY_TYPE_LABELS,
   DAY_TYPES,
 } from "@/lib/utils";
-import type { DailyEntryData, DayType, WeeklyReportData, ReportStatus } from "@/types";
-import { Save, Send, Check, Download, CalendarDays, Undo2 } from "lucide-react";
+import type { DailyEntryData, DayType, WeeklyReportData, ReportStatus, ReportType } from "@/types";
+import { Save, Send, Check, Download, CalendarDays, Undo2, FileText, FileSpreadsheet } from "lucide-react";
 
 export default function ReportEditorPage() {
   const params = useParams();
@@ -29,6 +29,8 @@ export default function ReportEditorPage() {
   const [submitting, setSubmitting] = useState(false);
   const [trainingStartWeek, setTrainingStartWeek] = useState<{ year: number; week: number } | null>(null);
   const [allReports, setAllReports] = useState<WeeklyReportData[]>([]);
+  const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [reportType, setReportType] = useState<ReportType>("weekly");
 
   const slug = params.week as string;
   const isNewFromSlug = slug === "new";
@@ -49,20 +51,15 @@ export default function ReportEditorPage() {
 
   const [reportText, setReportText] = useState("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntryData[]>(() =>
-    weekDates.map((date) => ({
-      date: date.toISOString().split("T")[0],
-      dayType: "company" as DayType,
-      hours: 8,
-      minutes: 0,
-    }))
+    buildDefaultEntries(weekDates, [1, 2, 3, 4, 5])
   );
 
   const isEditable = report?.status === "draft" || report?.status === "needs_revision" || !report || isNewFromSlug;
 
   const autosaveData = useMemo(() => {
     if (!isEditable) return null;
-    return { reportText, dailyEntries };
-  }, [isEditable, reportText, dailyEntries]);
+    return { reportText, reportType, dailyEntries };
+  }, [isEditable, reportText, reportType, dailyEntries]);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -71,6 +68,11 @@ export default function ReportEditorPage() {
         if (session?.user?.trainingStartDate) {
           setTrainingStartWeek(getIsoWeek(new Date(session.user.trainingStartDate)));
         }
+      });
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.workingDays) setWorkingDays(data.workingDays);
       });
   }, []);
 
@@ -89,6 +91,7 @@ export default function ReportEditorPage() {
         if (found) {
           setReport(found);
           setReportText(found.reportText || "");
+          setReportType(found.reportType || "weekly");
           if (found.dailyEntries.length > 0) {
             setDailyEntries(found.dailyEntries);
           }
@@ -126,11 +129,13 @@ export default function ReportEditorPage() {
       calendarYear: currentYear,
       calendarWeek: currentWeek,
       reportText,
+      reportType,
       dailyEntries: dailyEntries.map((e) => ({
         date: e.date,
         dayType: e.dayType,
         hours: e.hours,
         minutes: e.minutes,
+        reportText: e.reportText || undefined,
       })),
     };
 
@@ -222,14 +227,7 @@ export default function ReportEditorPage() {
     setReport(null);
     setDataFetched(false);
     const dates = getWeekDates(newYear, newWeek);
-    setDailyEntries(
-      dates.map((date) => ({
-        date: date.toISOString().split("T")[0],
-        dayType: "company" as DayType,
-        hours: 8,
-        minutes: 0,
-      }))
-    );
+    setDailyEntries(buildDefaultEntries(dates, workingDays));
     setReportText("");
     router.push(`/trainee/reports/${newYear}-${newWeek}`);
   };
@@ -239,6 +237,10 @@ export default function ReportEditorPage() {
     if (pw < 1) { pw = 52; py--; }
     return isBeforeTrainingStart(py, pw);
   })();
+
+  const isNonWorkingDay = (date: Date) => {
+    return !workingDays.includes(date.getDay());
+  };
 
   if (loading) {
     return <div className="text-neutral-500">Laden...</div>;
@@ -285,7 +287,7 @@ export default function ReportEditorPage() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => save({ reportText, dailyEntries })}
+                onClick={() => save({ reportText, reportType, dailyEntries })}
               >
                 <Save className="mr-1 h-4 w-4" />
                 Speichern
@@ -337,81 +339,165 @@ export default function ReportEditorPage() {
         </Card>
       )}
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Wochenbericht</CardTitle>
-        </CardHeader>
-        <TextArea
-          value={reportText}
-          onChange={(e) => setReportText(e.target.value)}
-          disabled={!isEditable}
-          placeholder="Beschreiben Sie Ihre Tätigkeiten dieser Woche..."
-          className="min-h-[250px]"
-        />
-      </Card>
+      {isEditable && (
+        <div className="mb-6 flex gap-2">
+          <button
+            onClick={() => setReportType("weekly")}
+            className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+              reportType === "weekly"
+                ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
+                : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            Wochenbericht
+          </button>
+          <button
+            onClick={() => setReportType("daily")}
+            className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+              reportType === "daily"
+                ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
+                : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
+            }`}
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Tagesbericht
+          </button>
+        </div>
+      )}
+
+      {!isEditable && (
+        <div className="mb-6 flex gap-2">
+          <div className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium ${
+            reportType === "weekly"
+              ? "border-neutral-300 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+              : "border-neutral-200 bg-white text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500"
+          }`}>
+            {reportType === "weekly" ? <FileText className="h-4 w-4" /> : <FileSpreadsheet className="h-4 w-4" />}
+            {reportType === "weekly" ? "Wochenbericht" : "Tagesbericht"}
+          </div>
+        </div>
+      )}
+
+      {reportType === "weekly" && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Wochenbericht</CardTitle>
+          </CardHeader>
+          <TextArea
+            value={reportText}
+            onChange={(e) => setReportText(e.target.value)}
+            disabled={!isEditable}
+            placeholder="Beschreiben Sie Ihre Tätigkeiten dieser Woche..."
+            className="min-h-[250px]"
+          />
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle>Tageseinträge</CardTitle>
         </CardHeader>
         <div className="space-y-4">
-          {dailyEntries.map((entry, index) => (
-            <div
-              key={entry.date}
-              className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-[140px]">
-                <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {formatDayName(weekDates[index])}
-                </p>
-                <p className="text-sm text-neutral-500">
-                  {formatDate(weekDates[index])}
-                </p>
-              </div>
+          {dailyEntries.map((entry, index) => {
+            const nonWorking = isNonWorkingDay(weekDates[index]);
+            const showDayReport = reportType === "daily" && entry.dayType !== "vacation" && !nonWorking;
 
-              <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex-1">
-                  <Select
-                    value={entry.dayType}
-                    onChange={(e) => updateEntry(index, "dayType", e.target.value)}
-                    disabled={!isEditable}
-                    options={DAY_TYPES.map((t) => ({
-                      value: t,
-                      label: DAY_TYPE_LABELS[t],
-                    }))}
-                  />
+            return (
+              <div
+                key={entry.date}
+                className={`rounded-lg border p-4 dark:border-neutral-800 ${
+                  nonWorking
+                    ? "border-neutral-100 bg-neutral-50/50 dark:border-neutral-800/50 dark:bg-neutral-900/30"
+                    : "border-neutral-200"
+                }`}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-[140px]">
+                    <p className={`font-medium ${nonWorking ? "text-neutral-400 dark:text-neutral-600" : "text-neutral-900 dark:text-neutral-100"}`}>
+                      {formatDayName(weekDates[index])}
+                    </p>
+                    <p className="text-sm text-neutral-500">
+                      {formatDate(weekDates[index])}
+                    </p>
+                  </div>
+
+                  {nonWorking ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-neutral-400 dark:text-neutral-600">&ndash;</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="flex-1">
+                        <Select
+                          value={entry.dayType}
+                          onChange={(e) => updateEntry(index, "dayType", e.target.value)}
+                          disabled={!isEditable}
+                          options={DAY_TYPES.map((t) => ({
+                            value: t,
+                            label: DAY_TYPE_LABELS[t],
+                          }))}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={0}
+                          max={24}
+                          value={entry.hours}
+                          onChange={(e) =>
+                            updateEntry(index, "hours", Math.min(24, Math.max(0, parseInt(e.target.value) || 0)))
+                          }
+                          disabled={!isEditable}
+                          className="h-10 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-center text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 disabled:opacity-50"
+                        />
+                        <span className="text-sm text-neutral-500">h</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={59}
+                          value={entry.minutes}
+                          onChange={(e) =>
+                            updateEntry(index, "minutes", Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
+                          }
+                          disabled={!isEditable}
+                          className="h-10 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-center text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 disabled:opacity-50"
+                        />
+                        <span className="text-sm text-neutral-500">min</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    max={24}
-                    value={entry.hours}
-                    onChange={(e) =>
-                      updateEntry(index, "hours", Math.min(24, Math.max(0, parseInt(e.target.value) || 0)))
-                    }
-                    disabled={!isEditable}
-                    className="h-10 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-center text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 disabled:opacity-50"
-                  />
-                  <span className="text-sm text-neutral-500">h</span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={59}
-                    value={entry.minutes}
-                    onChange={(e) =>
-                      updateEntry(index, "minutes", Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
-                    }
-                    disabled={!isEditable}
-                    className="h-10 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-center text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 disabled:opacity-50"
-                  />
-                  <span className="text-sm text-neutral-500">min</span>
-                </div>
+
+                {showDayReport && (
+                  <div className="mt-3">
+                    <TextArea
+                      value={entry.reportText || ""}
+                      onChange={(e) => updateEntry(index, "reportText", e.target.value)}
+                      disabled={!isEditable}
+                      placeholder="Tagesbericht für diesen Tag..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>
   );
+}
+
+function buildDefaultEntries(weekDates: Date[], workingDays: number[]): DailyEntryData[] {
+  return weekDates.map((date) => {
+    const dayOfWeek = date.getDay();
+    const isWorking = workingDays.includes(dayOfWeek);
+    return {
+      date: date.toISOString().split("T")[0],
+      dayType: "company" as DayType,
+      hours: isWorking ? 8 : 0,
+      minutes: 0,
+    };
+  });
 }

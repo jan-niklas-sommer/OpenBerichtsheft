@@ -74,12 +74,13 @@ export async function PUT(
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { reportText, dailyEntries } = parsed.data;
+  const { reportText, reportType, dailyEntries } = parsed.data;
 
   const updated = await prisma.weeklyReport.update({
     where: { id },
     data: {
       ...(reportText !== undefined && { reportText: reportText || null }),
+      ...(reportType && { reportType }),
       ...(dailyEntries && {
         dailyEntries: {
           deleteMany: {},
@@ -88,6 +89,7 @@ export async function PUT(
             dayType: entry.dayType,
             hours: entry.hours,
             minutes: entry.minutes,
+            reportText: entry.reportText || null,
           })),
         },
       }),

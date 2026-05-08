@@ -37,12 +37,14 @@ export const dailyEntrySchema = z.object({
   dayType: z.enum(["company", "vocational_school", "vacation", "other"]),
   hours: z.number().int().min(0).max(24),
   minutes: z.number().int().min(0).max(59),
+  reportText: z.string().optional(),
 });
 
 export const weeklyReportSchema = z.object({
   calendarYear: z.number().int().min(2020).max(2100),
   calendarWeek: z.number().int().min(1).max(53),
   reportText: z.string().optional(),
+  reportType: z.enum(["weekly", "daily"]).optional(),
   dailyEntries: z.array(dailyEntrySchema),
 });
 
@@ -58,15 +60,21 @@ export const assignmentSchema = z.object({
 
 export const updateReportSchema = z.object({
   reportText: z.string().optional(),
+  reportType: z.enum(["weekly", "daily"]).optional(),
   dailyEntries: z.array(z.object({
     date: z.string(),
     dayType: z.enum(["company", "vocational_school", "vacation", "other"]),
     hours: z.number().int().min(0).max(24),
     minutes: z.number().int().min(0).max(59),
+    reportText: z.string().optional(),
   })).optional(),
 });
 
 export const officerAssignmentSchema = z.object({
   traineeId: z.string().uuid(),
   trainingOfficerId: z.string().uuid(),
+});
+
+export const updateSettingsSchema = z.object({
+  workingDays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
 });

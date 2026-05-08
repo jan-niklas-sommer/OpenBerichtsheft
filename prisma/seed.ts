@@ -111,6 +111,15 @@ async function main() {
     },
   });
 
+  await prisma.appSetting.upsert({
+    where: { key: "workingDays" },
+    update: {},
+    create: {
+      key: "workingDays",
+      value: JSON.stringify([1, 2, 3, 4, 5]),
+    },
+  });
+
   console.log("Seed data created:");
   console.log("  Admin:    admin@example.com / password123");
   console.log("  Ausbilder: trainer@example.com / password123");

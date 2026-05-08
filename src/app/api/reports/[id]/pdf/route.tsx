@@ -48,6 +48,7 @@ export async function GET(
 
   const serialized = {
     ...report,
+    reportType: report.reportType,
     weekStartDate: report.weekStartDate.toISOString(),
     weekEndDate: report.weekEndDate.toISOString(),
     submittedAt: report.submittedAt?.toISOString() ?? null,

@@ -671,3 +671,41 @@ npm run dev
 
 - Button `variant="default"` → `variant="primary"` (Button unterstützt kein default).
 - Empty-State Test angepasst: kein Trainee = leer, nicht kein Report.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Test-Lücke schließen (#11 + #13)
+
+### Planner
+
+- **Ziel**: Coverage-Scope auf `src/components/**` erweitern (#13), fehlende Component-Tests ergänzen (#11).
+- **Umfang**: vitest.config.ts, neue Test-Dateien für ungetestete Komponenten, bestehende Tests erweitern.
+- **Nicht-Ziele**: E2E-Tests, API-Route-Tests, neue Features.
+- **Akzeptanzkriterien**: Coverage-Scope beinhaltet `src/components/**`, alle Tests bestanden, Coverage >= 95%.
+
+### Reviewer
+
+- Freigabe. Plan konsistent, keine Seiteneffekte. `theme-provider.tsx` und `theme-toggle.tsx` von Coverage ausgeschlossen (reine DOM-Manipulation).
+
+### Implementierte Änderungen
+
+- **vitest.config.ts**: `include` um `src/components/**` erweitert. `exclude` um `theme-provider.tsx` und `theme-toggle.tsx` erweitert.
+- **Neu**: `src/components/reports/reviewer-report-page.test.tsx` — 16 Tests (Laden, NotFound, Berichtsdetails, Tageseinträge, Status-Badge, PDF-Download, Zurück-Navigation, Review-Sektion, Approve/Reject/NeedsRevision mit/ohne Kommentar, API-Failure, Review-Kommentar, Fallback-Text, Trainee ohne Beruf).
+- **Neu**: `src/components/reports/reviewer-dashboard-client.test.tsx` — 15 Tests (Titel, Badge, Beruf/Fallback, Berichtsanzahl, Expand/Collapse, Submitted-zuerst, Empty-State, Filter-Panel, Status-Filter, Mini-Week-dots).
+- **Erweitert**: `src/components/layout/navbar.test.tsx` — +8 Tests (signOut, Unread-Badge, 9+-Badge, Notification-Dropdown, Mark-as-read, Empty-State, Mobile-Menu-Backdrop, Outside-Click-Close).
+- **Erweitert**: `src/components/reports/week-navigator.test.tsx` — +4 Tests (ArrowLeft, ArrowRight, prevDisabled-Keyboard, Input-Fokus-Ignore).
+
+### Verifier
+
+- **Tests**: 521 Tests (28 Dateien), alle bestanden. +44 neue Tests.
+- **Coverage**: 99.5% Statements (802/806), 96.7% Branches (558/577), 99.39% Functions (163/164), 99.85% Lines (702/703).
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Typecheck**: Script nicht verfügbar (`npm run typecheck` existiert nicht).
+
+### Offene Risiken / Folgeaufgaben
+
+- Branch-Coverage bei 96.7% — verbleibende Lücken in ternary JSX-Ausdrücken (dark-mode classNames), schwerer testbar.
+- Issue #12 geschlossen (durch PR #18 erledigt).
+- Issue #11 (Page/Layout Tests): Pages sind Server Components → E2E-abgedeckt (20 Playwright-Tests). Dokumentiert.
+- Issue #13: Coverage-Scope erweitert, aber 100% Branch-Coverage in Components nicht wirtschaftlich erreichbar (ternary classNames).

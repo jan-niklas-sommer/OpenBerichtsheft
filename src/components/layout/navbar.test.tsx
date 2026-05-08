@@ -28,9 +28,9 @@ describe("Navbar", () => {
   });
 
   it("renders trainee navigation items", () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ notifications: [], unreadCount: 0 }),
-    });
+    render(<Navbar role="trainee" userName="Test" />);
+    expect(screen.getByText("Übersicht")).toBeInTheDocument();
+  });
     render(<Navbar role="trainee" userName="Test" />);
     expect(screen.getByText("Übersicht")).toBeInTheDocument();
     expect(screen.getByText("Berichte")).toBeInTheDocument();

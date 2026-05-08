@@ -607,3 +607,35 @@ npm run dev
 
 - `let d` → `const d` in `getWeeksInMonth` (ESLint prefer-const).
 - Testdaten auf März 2026 angepasst (KW 9-13 statt Feb 5-8).
+
+---
+
+## 2026-05-08 – Arbeitspaket: Schnellnavigation im Editor (#22)
+
+### Planner
+
+- **Ziel**: Verbesserte Wochen-Navigation im Bericht-Editor mit Status-Vorschau, Keyboard-Steuerung und Zurück-Link.
+- **Umfang**: Neue `WeekNavigator` Komponente, Editor umgestaltet, alle Reports geladen für Status-Map.
+- **Akzeptanzkriterien**: Status der Nachbarwochen sichtbar, Keyboard-Pfeile funktionieren, Zurück-Link zum Kalender, Tests.
+
+### Reviewer
+
+- **Bewertung**: Plan minimal. Keine API-Änderungen. Keyboard-Events respektieren Input-Felder.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementer
+
+- **WeekNavigator**: Eigenständige Komponente mit Prev/Next-Buttons, Status-Badges der Nachbarwochen, Keyboard-Handler (ArrowLeft/ArrowRight).
+- **Editor**: Lädt alle Reports statt nur jahresweise, baut `reportStatusMap` für Status-Vorschau.
+- **Zurück-Link**: Link "Zurück zur Übersicht" mit Kalender-Icon am Anfang der Seite.
+
+### Verifier
+
+- **Tests**: 474 Tests (26 Dateien), alle bestanden. 9 neue WeekNavigator Tests.
+- **Lint**: 0 Errors, 3 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+
+### Fixer
+
+- Unused `Calendar` import entfernt.
+- `getAdjacentWeek` in useMemo inline verschoben (exhaustive-deps Warning).

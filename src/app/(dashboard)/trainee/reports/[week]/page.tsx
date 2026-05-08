@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextArea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { useAutosave } from "@/hooks/use-autosave";
+import { WeekNavigator } from "@/components/reports/week-navigator";
 import {
   getWeekDates,
   formatDayName,
@@ -16,10 +17,9 @@ import {
   getIsoWeek,
   DAY_TYPE_LABELS,
   DAY_TYPES,
-  STATUS_LABELS,
 } from "@/lib/utils";
-import type { DailyEntryData, DayType, WeeklyReportData } from "@/types";
-import { Save, Send, ArrowLeft, ArrowRight, Check, Download } from "lucide-react";
+import type { DailyEntryData, DayType, WeeklyReportData, ReportStatus } from "@/types";
+import { Save, Send, Check, Download, CalendarDays } from "lucide-react";
 
 export default function ReportEditorPage() {
   const params = useParams();
@@ -28,6 +28,7 @@ export default function ReportEditorPage() {
   const [dataFetched, setDataFetched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [trainingStartWeek, setTrainingStartWeek] = useState<{ year: number; week: number } | null>(null);
+  const [allReports, setAllReports] = useState<WeeklyReportData[]>([]);
 
   const slug = params.week as string;
   const isNewFromSlug = slug === "new";
@@ -73,9 +74,10 @@ export default function ReportEditorPage() {
   useEffect(() => {
     if (isNewFromSlug) return;
 
-    fetch(`/api/reports?year=${currentYear}`)
+    fetch(`/api/reports`)
       .then((r) => r.json())
       .then((reports: WeeklyReportData[]) => {
+        setAllReports(reports);
         const found = reports.find(
           (r: WeeklyReportData) => r.calendarWeek === currentWeek && r.calendarYear === currentYear
         );
@@ -89,6 +91,30 @@ export default function ReportEditorPage() {
         setDataFetched(true);
       });
   }, [currentYear, currentWeek, isNewFromSlug]);
+
+  const reportStatusMap = useMemo(() => {
+    const map = new Map<string, ReportStatus>();
+    for (const r of allReports) {
+      map.set(`${r.calendarYear}-${r.calendarWeek}`, r.status);
+    }
+    return map;
+  }, [allReports]);
+
+  const adjacentStatuses = useMemo(() => {
+    const calcWeek = (direction: -1 | 1) => {
+      let w = currentWeek + direction;
+      let y = currentYear;
+      if (w < 1) { w = 52; y--; }
+      else if (w > 52) { w = 1; y++; }
+      return { year: y, week: w };
+    };
+    const prev = calcWeek(-1);
+    const next = calcWeek(1);
+    return {
+      prev: reportStatusMap.get(`${prev.year}-${prev.week}`) ?? null,
+      next: reportStatusMap.get(`${next.year}-${next.week}`) ?? null,
+    };
+  }, [currentYear, currentWeek, reportStatusMap]);
 
   const handleSave = async () => {
     const body = {
@@ -190,53 +216,40 @@ export default function ReportEditorPage() {
     router.push(`/trainee/reports/${newYear}-${newWeek}`);
   };
 
+  const prevDisabled = (() => {
+    let pw = currentWeek - 1, py = currentYear;
+    if (pw < 1) { pw = 52; py--; }
+    return isBeforeTrainingStart(py, pw);
+  })();
+
   if (loading) {
     return <div className="text-neutral-500">Laden...</div>;
   }
 
   return (
     <div>
+      <div className="mb-2">
+        <Link
+          href="/trainee"
+          className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+        >
+          <CalendarDays className="h-3.5 w-3.5" />
+          Zurück zur Übersicht
+        </Link>
+      </div>
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigateWeek(-1)} disabled={
-            (() => {
-              let pw = currentWeek - 1, py = currentYear;
-              if (pw < 1) { pw = 52; py--; }
-              return isBeforeTrainingStart(py, pw);
-            })()
-          }>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-              KW {currentWeek}/{currentYear}
-            </h1>
-            {report?.trainee?.profession?.name && (
-              <p className="text-sm text-neutral-500">{report.trainee.profession.name}</p>
-            )}
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => navigateWeek(1)}>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <WeekNavigator
+          currentYear={currentYear}
+          currentWeek={currentWeek}
+          currentStatus={report?.status ?? null}
+          adjacentStatuses={adjacentStatuses}
+          prevDisabled={prevDisabled}
+          onNavigate={navigateWeek}
+          professionName={report?.trainee?.profession?.name}
+        />
 
         <div className="flex items-center gap-3">
-          {report?.status && (
-            <Badge
-              variant={
-                report.status === "approved"
-                  ? "success"
-                  : report.status === "submitted"
-                  ? "warning"
-                  : report.status === "needs_revision"
-                  ? "info"
-                  : "default"
-              }
-            >
-              {STATUS_LABELS[report.status]}
-            </Badge>
-          )}
-
           <div className="text-sm text-neutral-500">
             {saveStatus === "saving" && "Speichert…"}
             {saveStatus === "saved" && (

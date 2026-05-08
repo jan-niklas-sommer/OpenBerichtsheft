@@ -132,7 +132,7 @@ interface DailyEntryData {
   minutes: number;
 }
 
-interface ReportData {
+export interface ReportData {
   calendarWeek: number;
   calendarYear: number;
   weekStartDate: string;

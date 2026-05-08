@@ -20,7 +20,7 @@ export function useTheme() {
 
 function getThemeSnapshot(): Theme {
   if (typeof window === "undefined") return "light";
-  return (localStorage.getItem("theme") as Theme) ||
+  return (window.localStorage.getItem("theme") as Theme) ||
     (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 }
 
@@ -43,7 +43,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = useCallback(() => {
     const next = theme === "light" ? "dark" : "light";
-    localStorage.setItem("theme", next);
+    window.localStorage.setItem("theme", next);
     document.documentElement.classList.toggle("dark", next === "dark");
     window.dispatchEvent(new Event("storage"));
   }, [theme]);

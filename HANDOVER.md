@@ -402,3 +402,52 @@ npm run dev
 ### Fixer
 
 - Keine Korrekturen nötig.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Component Tests (#11)
+
+### Planner
+
+- **Ziel**: Component Tests für UI-Komponenten erstellen (Button, Input, TextArea, Select, Badge, Card, Navbar, ThemeProvider/ThemeToggle, ReviewerDashboard, PdfDocument).
+- **Umfang**: Neue Test-Dateien in `src/components/**`, Vitest + React Testing Library.
+- **Nicht-Ziele**: Page/Layout Tests (#12), Coverage-Scope-Erweiterung in vitest.config.ts.
+- **Akzeptanzkriterien**: Alle Component Tests bestehen, kein Test-Fehler, Lint ohne Errors, Build erfolgreich.
+
+### Reviewer
+
+- **Bewertung**: Plan angemessen. ThemeProvider nutzt `useSyncExternalStore` + `window.matchMedia` + `localStorage` – jsdom hat Einschränkungen, muss ggf. gemockt werden. Server Components (ReviewerReportPage) lassen sich nicht sinnvoll mit RTL testen.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementer
+
+- **Button** (14 Tests): Rendering, Varianten, Größen, Disabled, Icon, als Child.
+- **Input/TextArea** (13 Tests): Rendering, Label, Placeholder, onChange, Disabled.
+- **Select** (9 Tests): Rendering, Optionen, onChange, Placeholder, Disabled.
+- **Badge** (8 Tests): Rendering, Varianten.
+- **Card** (9 Tests): Rendering, Header, Content, Subcomponents.
+- **Navbar** (8 Tests): Logo, Nav-Links je Rolle, Notification-Bell, Logout-Button, Mobile-Menu.
+- **ThemeProvider/ThemeToggle** (6 Tests): Default/Light/Dark, localStorage, Toggle, HTML-Class.
+- **ReviewerDashboard** (3 Tests): Title, Reports, Empty-State.
+- **PdfDocument** (2 Tests): Rendering mit/ohne Reviewer.
+
+### Verifier
+
+- **Tests**: 433 Tests (24 Dateien), alle bestanden.
+- **Lint**: 0 Errors, 3 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Typecheck**: Script nicht vorhanden, per `npx tsc --noEmit` geprüft – 0 Fehler.
+
+### Fixer
+
+- `window.matchMedia` nicht in jsdom verfügbar → in `vitest.setup.ts` global gemockt.
+- jsdom 29 `localStorage` ohne URL broken → localStorage-Polyfill in `vitest.setup.ts` ergänzt.
+- `theme-provider.tsx`: `localStorage` → `window.localStorage` für jsdom-Kompatibilität.
+- `pdf-document.tsx`: `ReportData` Interface exportiert für Test-Typisierung.
+- `reviewer-report-page.test.tsx` entfernt: Server Component mit internen Hooks nicht mit RTL testbar → durch E2E abgedeckt.
+- Lint-Fehler in Tests behoben: `any`-Typen ersetzt, unused `screen`-Import entfernt.
+
+### Offene Risiken
+
+- jsdom `localStorage`-Polyfill könnte bei zukünftigen Vitest/jsdom-Updates obsolete werden.
+- `useSyncExternalStore`-basierte Komponenten bleiben fragil in jsdom-Umgebungen.

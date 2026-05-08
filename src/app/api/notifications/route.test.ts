@@ -8,6 +8,10 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("@/lib/utils", () => ({
+  getIsoWeek: vi.fn(),
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     notification: {
@@ -28,8 +32,10 @@ vi.mock("@/lib/prisma", () => ({
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getIsoWeek } from "@/lib/utils";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
+const mockGetIsoWeek = getIsoWeek as unknown as ReturnType<typeof vi.fn>;
 const mockNotifFindMany = prisma.notification.findMany as ReturnType<typeof vi.fn>;
 const mockNotifCount = prisma.notification.count as ReturnType<typeof vi.fn>;
 const mockNotifUpdate = prisma.notification.update as ReturnType<typeof vi.fn>;
@@ -148,6 +154,7 @@ describe("POST /api/notifications/check", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.CRON_SECRET;
+    mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
   });
 
   it("returns 401 without session", async () => {
@@ -184,7 +191,7 @@ describe("POST /api/notifications/check", () => {
 
   it("creates notifications for missing weeks", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockUserFindMany.mockResolvedValue([{ id: "trainee-1" }]);
+    mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: null }]);
     mockReportFindMany.mockResolvedValue([]);
     mockNotifFindMany.mockResolvedValue([]);
     mockNotifCreate.mockResolvedValue({});
@@ -199,24 +206,17 @@ describe("POST /api/notifications/check", () => {
 
   it("respects deduplication of recent notifications", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const jan4 = new Date(currentYear, 0, 4);
-    const dayOfWeek = jan4.getDay() || 7;
-    const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayOfWeek + 1);
-    const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const dedupWeek = Math.max(1, currentWeek - 2);
-    mockUserFindMany.mockResolvedValue([{ id: "trainee-1" }]);
+    mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
+    mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: null }]);
     mockReportFindMany.mockResolvedValue([]);
     mockNotifFindMany.mockResolvedValue([
-      { userId: "trainee-1", message: `KW ${dedupWeek}/${currentYear}` },
+      { userId: "trainee-1", message: "KW 16/2026" },
     ]);
     mockNotifCreate.mockResolvedValue({});
     const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
-    const existingWeekMsg = `Fehlender Wochenbericht für KW ${dedupWeek}/${currentYear}`;
+    const existingWeekMsg = "Fehlender Wochenbericht für KW 16/2026";
     const hasDup = mockNotifCreate.mock.calls.some(
       (call: unknown[]) => (call[0] as { data?: { message?: string } })?.data?.message === existingWeekMsg,
     );
@@ -225,19 +225,11 @@ describe("POST /api/notifications/check", () => {
 
   it("skips weeks that already have reports", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const jan4 = new Date(currentYear, 0, 4);
-    const dayOfWeek = jan4.getDay() || 7;
-    const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayOfWeek + 1);
-    const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const week1 = Math.max(1, currentWeek - 2);
-    const week2 = currentWeek > currentWeek - 1 ? currentWeek - 1 : week1;
-    mockUserFindMany.mockResolvedValue([{ id: "trainee-1" }]);
+    mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
+    mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: null }]);
     mockReportFindMany.mockResolvedValue([
-      { traineeId: "trainee-1", calendarWeek: week1 },
-      { traineeId: "trainee-1", calendarWeek: week2 },
+      { traineeId: "trainee-1", calendarWeek: 16 },
+      { traineeId: "trainee-1", calendarWeek: 17 },
     ]);
     mockNotifFindMany.mockResolvedValue([]);
     mockNotifCreate.mockResolvedValue({});
@@ -272,5 +264,19 @@ describe("POST /api/notifications/check", () => {
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
     delete process.env.CRON_SECRET;
+  });
+
+  it("skips weeks before training start date", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
+    mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: new Date("2026-05-01") }]);
+    mockReportFindMany.mockResolvedValue([]);
+    mockNotifFindMany.mockResolvedValue([]);
+    mockNotifCreate.mockResolvedValue({});
+    const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
+    const res = await PostCheck(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.traineesChecked).toBe(1);
   });
 });

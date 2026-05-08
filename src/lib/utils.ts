@@ -28,15 +28,22 @@ export function formatDate(date: Date): string {
 }
 
 export function getCurrentWeek(): { year: number; week: number } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const jan4 = new Date(year, 0, 4);
-  const dayOfWeek = jan4.getDay() || 7;
-  const monday = new Date(jan4);
-  monday.setDate(jan4.getDate() - dayOfWeek + 1);
-  const diff = now.getTime() - monday.getTime();
-  const week = Math.ceil(diff / (7 * 24 * 60 * 60 * 1000));
-  return { year, week };
+  return getIsoWeek(new Date());
+}
+
+export function getIsoWeek(date: Date): { year: number; week: number } {
+  const d = new Date(date.getTime());
+  d.setHours(12, 0, 0, 0);
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return { year: d.getUTCFullYear(), week };
+}
+
+export function getTrainingStartWeek(trainingStartDate: Date | null | undefined): { year: number; week: number } | null {
+  if (!trainingStartDate) return null;
+  return getIsoWeek(trainingStartDate);
 }
 
 export const ROLE_LABELS: Record<string, string> = {

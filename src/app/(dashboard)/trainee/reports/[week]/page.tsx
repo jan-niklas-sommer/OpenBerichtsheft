@@ -13,6 +13,7 @@ import {
   formatDayName,
   formatDate,
   getCurrentWeek,
+  getIsoWeek,
   DAY_TYPE_LABELS,
   DAY_TYPES,
   STATUS_LABELS,
@@ -26,6 +27,7 @@ export default function ReportEditorPage() {
   const [report, setReport] = useState<WeeklyReportData | null>(null);
   const [dataFetched, setDataFetched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [trainingStartWeek, setTrainingStartWeek] = useState<{ year: number; week: number } | null>(null);
 
   const slug = params.week as string;
   const isNewFromSlug = slug === "new";
@@ -55,6 +57,16 @@ export default function ReportEditorPage() {
   );
 
   const isEditable = report?.status === "draft" || report?.status === "needs_revision" || !report || isNewFromSlug;
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((session) => {
+        if (session?.user?.trainingStartDate) {
+          setTrainingStartWeek(getIsoWeek(new Date(session.user.trainingStartDate)));
+        }
+      });
+  }, []);
 
   const loading = !isNewFromSlug && !dataFetched;
 
@@ -145,6 +157,11 @@ export default function ReportEditorPage() {
     });
   };
 
+  const isBeforeTrainingStart = (y: number, w: number) => {
+    if (!trainingStartWeek) return false;
+    return y < trainingStartWeek.year || (y === trainingStartWeek.year && w < trainingStartWeek.week);
+  };
+
   const navigateWeek = (direction: -1 | 1) => {
     let newWeek = currentWeek + direction;
     let newYear = currentYear;
@@ -155,6 +172,7 @@ export default function ReportEditorPage() {
       newWeek = 1;
       newYear++;
     }
+    if (isBeforeTrainingStart(newYear, newWeek)) return;
     setCurrentWeek(newWeek);
     setCurrentYear(newYear);
     setReport(null);
@@ -180,7 +198,13 @@ export default function ReportEditorPage() {
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigateWeek(-1)}>
+          <Button variant="ghost" size="sm" onClick={() => navigateWeek(-1)} disabled={
+            (() => {
+              let pw = currentWeek - 1, py = currentYear;
+              if (pw < 1) { pw = 52; py--; }
+              return isBeforeTrainingStart(py, pw);
+            })()
+          }>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

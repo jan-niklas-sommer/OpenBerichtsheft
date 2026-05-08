@@ -5,6 +5,10 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("@/lib/utils", () => ({
+  getIsoWeek: vi.fn(),
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     traineeTrainerAssignment: {
@@ -23,9 +27,11 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { auth } from "@/lib/auth";
+import { getIsoWeek } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
+const mockGetIsoWeek = getIsoWeek as unknown as ReturnType<typeof vi.fn>;
 const mockTrainerAssignments = prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>;
 const mockOfficerAssignments = prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
@@ -48,13 +54,14 @@ const traineeSession = {
 };
 
 const sampleTrainees = [
-  { id: "trainee-1", name: "Alice", profession: { name: "Fachinformatiker" } },
-  { id: "trainee-2", name: "Bob", profession: { name: "Elektroniker" } },
+  { id: "trainee-1", name: "Alice", profession: { name: "Fachinformatiker" }, trainingStartDate: null },
+  { id: "trainee-2", name: "Bob", profession: { name: "Elektroniker" }, trainingStartDate: null },
 ];
 
 describe("GET /api/reports/summary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetIsoWeek.mockReturnValue({ year: 2026, week: 10 });
   });
 
   it("returns 401 without session", async () => {
@@ -91,6 +98,7 @@ describe("GET /api/reports/summary", () => {
       select: {
         id: true,
         name: true,
+        trainingStartDate: true,
         profession: { select: { name: true } },
       },
       orderBy: { name: "asc" },
@@ -121,6 +129,7 @@ describe("GET /api/reports/summary", () => {
       select: {
         id: true,
         name: true,
+        trainingStartDate: true,
         profession: { select: { name: true } },
       },
       orderBy: { name: "asc" },
@@ -151,6 +160,7 @@ describe("GET /api/reports/summary", () => {
       select: {
         id: true,
         name: true,
+        trainingStartDate: true,
         profession: { select: { name: true } },
       },
       orderBy: { name: "asc" },
@@ -194,13 +204,10 @@ describe("GET /api/reports/summary", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([sampleTrainees[0]]);
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const jan4 = new Date(currentYear, 0, 4);
-    const dayOfWeek = jan4.getDay() || 7;
-    const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayOfWeek + 1);
-    const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const currentYear = 2026;
+    const currentWeek = 10;
+    const startWeek = 1;
+    const totalRelevant = currentWeek - startWeek + 1;
 
     const approvedReports = Array.from({ length: Math.max(1, Math.floor(currentWeek / 2)) }, (_, i) => ({
       traineeId: "trainee-1",
@@ -214,7 +221,7 @@ describe("GET /api/reports/summary", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json[0]).toBeDefined();
-    const expectedPercent = Math.min(100, Math.round((approvedReports.length / currentWeek) * 100));
+    const expectedPercent = Math.min(100, Math.round((approvedReports.length / totalRelevant) * 100));
     expect(json[0].completionPercent).toBe(expectedPercent);
   });
 
@@ -222,8 +229,7 @@ describe("GET /api/reports/summary", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([sampleTrainees[0]]);
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
+    const currentYear = 2026;
 
     const manyApproved = Array.from({ length: 60 }, (_, i) => ({
       traineeId: "trainee-1",
@@ -243,14 +249,8 @@ describe("GET /api/reports/summary", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([sampleTrainees[0]]);
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const jan4 = new Date(currentYear, 0, 4);
-    const dayOfWeek = jan4.getDay() || 7;
-    const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayOfWeek + 1);
-    const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
-
+    const currentYear = 2026;
+    const currentWeek = 10;
     const startWeek = Math.max(1, currentWeek - 12);
 
     mockReportFindMany.mockResolvedValue([
@@ -268,14 +268,8 @@ describe("GET /api/reports/summary", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([sampleTrainees[0]]);
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const jan4 = new Date(currentYear, 0, 4);
-    const dayOfWeek = jan4.getDay() || 7;
-    const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayOfWeek + 1);
-    const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
-
+    const currentYear = 2026;
+    const currentWeek = 10;
     const startWeek = Math.max(1, currentWeek - 12);
     const allWeeks = [];
     for (let w = startWeek; w <= currentWeek; w++) {
@@ -301,7 +295,7 @@ describe("GET /api/reports/summary", () => {
 
   it("sets profession to null when trainee has no profession", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockUserFindMany.mockResolvedValue([{ id: "trainee-3", name: "NoProf", profession: null }]);
+    mockUserFindMany.mockResolvedValue([{ id: "trainee-3", name: "NoProf", profession: null, trainingStartDate: null }]);
     mockReportFindMany.mockResolvedValue([]);
     const res = await GET();
     expect(res.status).toBe(200);

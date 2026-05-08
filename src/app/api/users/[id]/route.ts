@@ -26,11 +26,14 @@ export async function PUT(
     data.passwordHash = await bcrypt.hash(parsed.data.password, 12);
     delete data.password;
   }
+  if (parsed.data.trainingStartDate !== undefined) {
+    data.trainingStartDate = parsed.data.trainingStartDate ? new Date(parsed.data.trainingStartDate) : null;
+  }
 
   const user = await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, email: true, name: true, role: true, professionId: true, createdAt: true, deactivatedAt: true },
+    select: { id: true, email: true, name: true, role: true, professionId: true, trainingStartDate: true, createdAt: true, deactivatedAt: true },
   });
 
   return NextResponse.json(user);

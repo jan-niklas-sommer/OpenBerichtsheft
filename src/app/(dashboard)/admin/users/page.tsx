@@ -19,7 +19,7 @@ export default function UsersPage() {
   const [professions, setProfessions] = useState<ProfessionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ email: "", name: "", role: "trainee" as string, password: "", professionId: "" });
+  const [form, setForm] = useState({ email: "", name: "", role: "trainee" as string, password: "", professionId: "", trainingStartDate: "" });
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function UsersPage() {
       const user = await res.json();
       setUsers((prev) => [user, ...prev]);
       setShowForm(false);
-      setForm({ email: "", name: "", role: "trainee", password: "", professionId: "" });
+      setForm({ email: "", name: "", role: "trainee", password: "", professionId: "", trainingStartDate: "" });
     } else {
       const data = await res.json();
       setFormError(data.error || "Fehler beim Erstellen");
@@ -129,15 +129,23 @@ export default function UsersPage() {
                 minLength={8}
               />
               {form.role === "trainee" && (
-                <Select
-                  label="Ausbildungsberuf"
-                  value={form.professionId}
-                  onChange={(e) => setForm({ ...form, professionId: e.target.value })}
-                  options={[
-                    { value: "", label: "— Kein Beruf —" },
-                    ...professions.map((p) => ({ value: p.id, label: p.name })),
-                  ]}
-                />
+                <>
+                  <Select
+                    label="Ausbildungsberuf"
+                    value={form.professionId}
+                    onChange={(e) => setForm({ ...form, professionId: e.target.value })}
+                    options={[
+                      { value: "", label: "— Kein Beruf —" },
+                      ...professions.map((p) => ({ value: p.id, label: p.name })),
+                    ]}
+                  />
+                  <Input
+                    label="Eintrittsdatum"
+                    type="date"
+                    value={form.trainingStartDate}
+                    onChange={(e) => setForm({ ...form, trainingStartDate: e.target.value })}
+                  />
+                </>
               )}
             </div>
             {formError && <p className="text-sm text-red-500">{formError}</p>}

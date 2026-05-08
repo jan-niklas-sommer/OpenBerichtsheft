@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getIsoWeek } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -15,16 +16,10 @@ export async function POST(req: NextRequest) {
 
   const trainees = await prisma.user.findMany({
     where: { role: "trainee", deactivatedAt: null },
-    select: { id: true },
+    select: { id: true, trainingStartDate: true },
   });
 
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const jan4 = new Date(currentYear, 0, 4);
-  const dayOfWeek = jan4.getDay() || 7;
-  const monday = new Date(jan4);
-  monday.setDate(jan4.getDate() - dayOfWeek + 1);
-  const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+  const { year: currentYear, week: currentWeek } = getIsoWeek(new Date());
 
   const existingReports = await prisma.weeklyReport.findMany({
     where: {
@@ -39,7 +34,7 @@ export async function POST(req: NextRequest) {
   const recentNotifications = await prisma.notification.findMany({
     where: {
       type: "missing_report",
-      createdAt: { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
+      createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     },
     select: { userId: true, message: true },
   });
@@ -48,7 +43,16 @@ export async function POST(req: NextRequest) {
 
   let created = 0;
   for (const trainee of trainees) {
-    for (let w = Math.max(1, currentWeek - 2); w < currentWeek; w++) {
+    const startWeek = trainee.trainingStartDate
+      ? getIsoWeek(trainee.trainingStartDate)
+      : { year: currentYear, week: Math.max(1, currentWeek - 2) };
+
+    const lowerBound = Math.max(1, currentWeek - 2);
+
+    for (let w = lowerBound; w < currentWeek; w++) {
+      if (startWeek.year === currentYear && w < startWeek.week) continue;
+      if (startWeek.year > currentYear) continue;
+
       if (!existingSet.has(`${trainee.id}-${w}`)) {
         const msg = `KW ${w}/${currentYear}`;
         if (!notifiedSet.has(`${trainee.id}-${msg}`)) {

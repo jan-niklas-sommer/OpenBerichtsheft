@@ -525,3 +525,51 @@ npm run dev
 
 - Selector-Anpassungen für strict mode (`.first()`, headings statt text).
 - Admin-Zugriffsschutz leitet auf `/` weiter statt 403 → Test angepasst.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Eintrittsdatum für Auszubildende (#20)
+
+### Planner
+
+- **Ziel**: `trainingStartDate` am User-Modell. Wochenberichte erst ab Eintrittsdatum relevant.
+- **Umfang**: Prisma Schema, Migration, Validierung, API, Editor-Navigation, Progress-Dashboard, Notifications, Admin-UI, Tests.
+- **Nicht-Ziele**: Edit-Form für bestehende User (separates Issue), Kalenderansicht (#21).
+- **Betroffene Dateien**: `prisma/schema.prisma`, `prisma/seed.ts`, `src/lib/utils.ts`, `src/lib/validations.ts`, `src/types/index.ts`, `src/types/next-auth.d.ts`, `src/lib/auth.ts`, `src/app/api/users/route.ts`, `src/app/api/users/[id]/route.ts`, `src/app/api/reports/route.ts`, `src/app/api/reports/summary/route.ts`, `src/app/api/notifications/check/route.ts`, `src/app/(dashboard)/trainee/reports/[week]/page.tsx`, `src/app/(dashboard)/admin/users/page.tsx`.
+- **Akzeptanzkriterien**: Admin kann Eintrittsdatum setzen, Editor blockiert Wochen davor, Progress/Notifications berechnen ab Eintrittsdatum, alle Tests bestanden.
+
+### Reviewer
+
+- **Bewertung**: Plan minimal und zielgerichtet. Keine Breaking Changes für bestehende Daten (Feld ist optional).
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementer
+
+- **Prisma**: `trainingStartDate DateTime?` am User. Migration `add_training_start_date`.
+- **Seed**: Anna → 05.01.2026, Ben → 01.03.2026.
+- **Utils**: `getIsoWeek(date)` und `getTrainingStartWeek(trainingStartDate)` hinzugefügt. `getCurrentWeek()` refactored auf `getIsoWeek`.
+- **Auth**: JWT enthält `trainingStartDate`, Session gibt es an Client weiter.
+- **API Validierung**: `createUserSchema`/`updateUserSchema` um `trainingStartDate` erweitert.
+- **Reports POST**: Validiert dass `calendarWeek >= trainingStartWeek`.
+- **Summary**: Nutzt `trainingStartDate` als untere Grenze für fehlende Wochen. `completionPercent` relativ zu Wochen seit Eintritt.
+- **Notifications Check**: Berücksichtigt `trainingStartDate` — keine Notifications für Wochen vor Eintritt.
+- **Editor**: Holt `trainingStartDate` aus Session, blockiert Rückwärts-Navigation vor Eintrittsdatum, deaktiviert Zurück-Button.
+- **Admin-UI**: Datumsausfeld "Eintrittsdatum" bei Azubi-Erstellung.
+
+### Verifier
+
+- **Tests**: 448 Tests (24 Dateien), alle bestanden. 15 neue Tests für `getIsoWeek`, `getTrainingStartWeek`, Report-Validierung, User-CRUD mit `trainingStartDate`, Notification-Check mit `trainingStartDate`.
+- **Lint**: 0 Errors, 3 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Typecheck**: Script nicht vorhanden, per `npx tsc --noEmit` geprüft – 0 Fehler.
+
+### Fixer
+
+- Bestehende Test-Mocks um `trainingStartDate: null` ergänzt.
+- Notifications Check Tests: lokale ISO-Week-Berechnung durch `mockGetIsoWeek` ersetzt.
+- Summary Route Tests: `getIsoWeek` gemockt für deterministische Werte.
+
+### Offene Risiken
+
+- `getIsoWeek` nutzt UTC-basierte Berechnung — kann bei Zeitzonen-Grenzen minimal abweichen.
+- Keine UI zum Bearbeiten des Eintrittsdatums nach Erstellung (Folge-Issue).

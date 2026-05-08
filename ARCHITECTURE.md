@@ -83,6 +83,7 @@ open-berichtsheft/
 | role | Enum | `admin`, `trainer`, `training_officer`, `trainee` |
 | passwordHash | String | Gehashtes Passwort |
 | professionId | String? (FK → TrainingProfession) | Ausbildungsberuf (nur für Trainees relevant) |
+| trainingStartDate | DateTime? | Eintrittsdatum der Ausbildung (ab wann Berichte relevant sind) |
 | createdAt | DateTime | Erstellungszeitpunkt |
 | updatedAt | DateTime | Letzte Änderung |
 | deactivatedAt | DateTime? | Deaktivierungszeitpunkt (optional) |

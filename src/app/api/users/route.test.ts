@@ -76,7 +76,7 @@ describe("GET /api/users", () => {
   it("returns all users as admin", async () => {
     mockAuth.mockResolvedValue(adminSession);
     const users = [
-      { id: "user-1", email: "a@b.com", name: "User 1", role: "trainee", professionId: null, profession: null, createdAt: "2025-01-01", deactivatedAt: null },
+      { id: "user-1", email: "a@b.com", name: "User 1", role: "trainee", professionId: null, profession: null, trainingStartDate: null, createdAt: "2025-01-01", deactivatedAt: null },
     ];
     mockFindMany.mockResolvedValue(users);
     const res = await GET();
@@ -91,6 +91,7 @@ describe("GET /api/users", () => {
         role: true,
         professionId: true,
         profession: { select: { id: true, name: true } },
+        trainingStartDate: true,
         createdAt: true,
         deactivatedAt: true,
       },
@@ -168,6 +169,7 @@ describe("POST /api/users", () => {
       name: "New User",
       role: "trainer",
       professionId: null,
+      trainingStartDate: null,
       createdAt: "2025-01-01",
       deactivatedAt: null,
     };
@@ -195,6 +197,7 @@ describe("POST /api/users", () => {
         name: true,
         role: true,
         professionId: true,
+        trainingStartDate: true,
         createdAt: true,
         deactivatedAt: true,
       },
@@ -210,6 +213,7 @@ describe("POST /api/users", () => {
       name: "Trainee User",
       role: "trainee",
       professionId,
+      trainingStartDate: null,
       createdAt: "2025-01-01",
       deactivatedAt: null,
     };
@@ -227,6 +231,36 @@ describe("POST /api/users", () => {
     expect(mockCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         professionId,
+      }),
+      select: expect.any(Object),
+    });
+  });
+
+  it("creates trainee with trainingStartDate", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockHash.mockResolvedValue("hashed-password");
+    const createdUser = {
+      id: "user-3",
+      email: "trainee@test.de",
+      name: "New Trainee",
+      role: "trainee",
+      professionId: null,
+      trainingStartDate: "2026-01-05T00:00:00.000Z",
+      createdAt: "2025-01-01",
+      deactivatedAt: null,
+    };
+    mockCreate.mockResolvedValue(createdUser);
+    const res = await POST(makePostRequest({
+      email: "trainee@test.de",
+      name: "New Trainee",
+      role: "trainee",
+      password: "12345678",
+      trainingStartDate: "2026-01-05",
+    }));
+    expect(res.status).toBe(201);
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        trainingStartDate: expect.any(Date),
       }),
       select: expect.any(Object),
     });
@@ -273,6 +307,7 @@ describe("PUT /api/users/[id]", () => {
       name: "Updated Name",
       role: "trainee",
       professionId: null,
+      trainingStartDate: null,
       createdAt: "2025-01-01",
       deactivatedAt: null,
     };
@@ -291,6 +326,7 @@ describe("PUT /api/users/[id]", () => {
         name: true,
         role: true,
         professionId: true,
+        trainingStartDate: true,
         createdAt: true,
         deactivatedAt: true,
       },
@@ -306,6 +342,7 @@ describe("PUT /api/users/[id]", () => {
       name: "User",
       role: "trainee",
       professionId: null,
+      trainingStartDate: null,
       createdAt: "2025-01-01",
       deactivatedAt: null,
     };
@@ -370,6 +407,7 @@ describe("PUT /api/users/[id]", () => {
       name: "User",
       role: "trainee",
       professionId,
+      trainingStartDate: null,
       createdAt: "2025-01-01",
       deactivatedAt: null,
     };
@@ -380,6 +418,56 @@ describe("PUT /api/users/[id]", () => {
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "user-1" },
       data: { professionId },
+      select: expect.any(Object),
+    });
+  });
+
+  it("updates trainingStartDate", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const updatedUser = {
+      id: "user-1",
+      email: "user@test.de",
+      name: "User",
+      role: "trainee",
+      professionId: null,
+      trainingStartDate: "2026-01-05T00:00:00.000Z",
+      createdAt: "2025-01-01",
+      deactivatedAt: null,
+    };
+    mockUpdate.mockResolvedValue(updatedUser);
+    const { req, params } = makePutRequest("user-1", { trainingStartDate: "2026-01-05" });
+    const res = await PUT(req, { params });
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: expect.objectContaining({
+        trainingStartDate: expect.any(Date),
+      }),
+      select: expect.any(Object),
+    });
+  });
+
+  it("clears trainingStartDate with null", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const updatedUser = {
+      id: "user-1",
+      email: "user@test.de",
+      name: "User",
+      role: "trainee",
+      professionId: null,
+      trainingStartDate: null,
+      createdAt: "2025-01-01",
+      deactivatedAt: null,
+    };
+    mockUpdate.mockResolvedValue(updatedUser);
+    const { req, params } = makePutRequest("user-1", { trainingStartDate: null });
+    const res = await PUT(req, { params });
+    expect(res.status).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: expect.objectContaining({
+        trainingStartDate: null,
+      }),
       select: expect.any(Object),
     });
   });

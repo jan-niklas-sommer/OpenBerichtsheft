@@ -11,6 +11,7 @@ export const createUserSchema = z.object({
   role: z.enum(["admin", "trainer", "training_officer", "trainee"]),
   password: z.string().min(8, "Mindestens 8 Zeichen"),
   professionId: z.string().uuid().optional(),
+  trainingStartDate: z.string().optional(),
 });
 
 export const updateUserSchema = z.object({
@@ -20,6 +21,7 @@ export const updateUserSchema = z.object({
   password: z.string().min(8, "Mindestens 8 Zeichen").optional(),
   deactivatedAt: z.date().nullable().optional(),
   professionId: z.string().uuid().nullable().optional(),
+  trainingStartDate: z.string().nullable().optional(),
 });
 
 export const createProfessionSchema = z.object({

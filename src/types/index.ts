@@ -14,6 +14,7 @@ export interface SessionUser {
   email: string;
   name: string;
   role: Role;
+  trainingStartDate: string | null;
 }
 
 export interface DailyEntryData {
@@ -49,6 +50,7 @@ export interface UserData {
   name: string;
   role: Role;
   professionId: string | null;
+  trainingStartDate: string | null;
   createdAt: string;
   deactivatedAt: string | null;
 }

@@ -5,6 +5,8 @@ import {
   formatDayName,
   formatDate,
   getCurrentWeek,
+  getIsoWeek,
+  getTrainingStartWeek,
   ROLE_LABELS,
   STATUS_LABELS,
   DAY_TYPE_LABELS,
@@ -234,5 +236,51 @@ describe("statusVariant", () => {
 
   it("gibt 'default' für leeren String zurück", () => {
     expect(statusVariant("")).toBe("default");
+  });
+});
+
+describe("getIsoWeek", () => {
+  it("returns correct week for a known date", () => {
+    const result = getIsoWeek(new Date("2026-01-05"));
+    expect(result.year).toBe(2026);
+    expect(result.week).toBe(2);
+  });
+
+  it("returns correct week for mid-year", () => {
+    const result = getIsoWeek(new Date("2026-03-09"));
+    expect(result.year).toBe(2026);
+    expect(result.week).toBe(11);
+  });
+
+  it("handles year boundary - late December", () => {
+    const result = getIsoWeek(new Date("2026-12-28"));
+    expect(result.year).toBe(2026);
+    expect(result.week).toBe(53);
+  });
+
+  it("handles early January", () => {
+    const result = getIsoWeek(new Date("2026-01-01"));
+    expect(result.year).toBe(2026);
+    expect(result.week).toBe(1);
+  });
+});
+
+describe("getTrainingStartWeek", () => {
+  it("returns null for null input", () => {
+    expect(getTrainingStartWeek(null)).toBeNull();
+  });
+
+  it("returns null for undefined input", () => {
+    expect(getTrainingStartWeek(undefined)).toBeNull();
+  });
+
+  it("returns ISO week for a valid date", () => {
+    const result = getTrainingStartWeek(new Date("2026-01-05"));
+    expect(result).toEqual({ year: 2026, week: 2 });
+  });
+
+  it("returns correct week for mid-year date", () => {
+    const result = getTrainingStartWeek(new Date("2026-03-01"));
+    expect(result).toEqual({ year: 2026, week: 9 });
   });
 });

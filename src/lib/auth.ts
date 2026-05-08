@@ -45,10 +45,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, deactivatedAt: true },
+          select: { role: true, deactivatedAt: true, trainingStartDate: true },
         });
         if (!dbUser || dbUser.deactivatedAt) return {};
         token.role = dbUser.role;
+        token.trainingStartDate = dbUser.trainingStartDate?.toISOString() ?? null;
       }
       return token;
     },
@@ -56,6 +57,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as { role: string }).role = token.role as string;
+        (session.user as { trainingStartDate: string | null }).trainingStartDate = (token.trainingStartDate as string | null) ?? null;
       }
       return session;
     },

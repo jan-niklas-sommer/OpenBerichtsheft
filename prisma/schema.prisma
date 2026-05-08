@@ -55,11 +55,12 @@ model User {
   name          String
   role          Role
   passwordHash  String
-  professionId  String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deactivatedAt DateTime?
-  anonymizedAt  DateTime?
+  professionId       String?
+  trainingStartDate  DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deactivatedAt      DateTime?
+  anonymizedAt       DateTime?
 
   profession TrainingProfession? @relation(fields: [professionId], references: [id], onDelete: SetNull)
 

@@ -60,6 +60,7 @@ async function main() {
       role: Role.trainee,
       passwordHash,
       professionId: fiAe.id,
+      trainingStartDate: new Date("2026-01-05"),
     },
   });
 
@@ -72,6 +73,7 @@ async function main() {
       role: Role.trainee,
       passwordHash,
       professionId: fiSi.id,
+      trainingStartDate: new Date("2026-03-01"),
     },
   });
 

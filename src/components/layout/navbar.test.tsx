@@ -174,7 +174,7 @@ describe("Navbar", () => {
     expect(screen.getByText("Keine Benachrichtigungen")).toBeInTheDocument();
   });
 
-  it("toggles mobile menu", async () => {
+  it("toggles mobile menu and clicks nav item", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       json: () => Promise.resolve({ notifications: [], unreadCount: 0 }),
     });
@@ -183,6 +183,19 @@ describe("Navbar", () => {
     const menuBtn = screen.getByRole("button", { name: "Menü" });
     await user.click(menuBtn);
     expect(container.querySelectorAll("nav").length).toBeGreaterThanOrEqual(2);
+    const mobileNav = container.querySelectorAll("nav")[1];
+    const mobileLink = mobileNav!.querySelector("a")!;
+    await user.click(mobileLink);
+  });
+
+  it("closes mobile menu on backdrop click", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ notifications: [], unreadCount: 0 }),
+    });
+    const user = userEvent.setup();
+    const { container } = render(<Navbar role="trainee" userName="Test" />);
+    const menuBtn = screen.getByRole("button", { name: "Menü" });
+    await user.click(menuBtn);
     const backdrop = container.querySelector(".bg-black\\/20")!;
     await user.click(backdrop as HTMLElement);
   });

@@ -322,4 +322,23 @@ describe("GET /api/reports/summary", () => {
     expect(bob.totalReports).toBe(1);
     expect(bob.draft).toBe(1);
   });
+
+  it("handles year boundary in missing weeks calculation", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockGetIsoWeek
+      .mockReturnValueOnce({ year: 2027, week: 2 })
+      .mockReturnValueOnce({ year: 2026, week: 49 });
+    mockUserFindMany.mockResolvedValue([
+      { id: "trainee-1", name: "Alice", profession: { name: "FiAE" }, trainingStartDate: "2026-12-01" },
+    ]);
+    mockReportFindMany.mockResolvedValue([]);
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    const missing = json[0].missingWeeks;
+    const has2026Week = missing.some((w: { year: number }) => w.year === 2026);
+    const has2027Week = missing.some((w: { year: number }) => w.year === 2027);
+    expect(has2026Week).toBe(true);
+    expect(has2027Week).toBe(true);
+  });
 });

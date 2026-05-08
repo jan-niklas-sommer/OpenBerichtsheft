@@ -697,15 +697,15 @@ npm run dev
 
 ### Verifier
 
-- **Tests**: 521 Tests (28 Dateien), alle bestanden. +44 neue Tests.
-- **Coverage**: 99.5% Statements (802/806), 96.7% Branches (558/577), 99.39% Functions (163/164), 99.85% Lines (702/703).
-- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Tests**: 531 Tests (29 Dateien), alle bestanden. +54 neue Tests.
+- **Coverage**: **100% Statements** (806/806), 97.2% Branches (561/577), **100% Functions** (164/164), **100% Lines** (703/703).
+- **Lint**: 0 Errors, 5 Warnings (1 neu: `useRouter` unused in navbar.tsx — vorbestehend, nicht durch Tests verursacht).
 - **Build**: `npm run build` erfolgreich.
 - **Typecheck**: Script nicht verfügbar (`npm run typecheck` existiert nicht).
 
 ### Offene Risiken / Folgeaufgaben
 
-- Branch-Coverage bei 96.7% — verbleibende Lücken in ternary JSX-Ausdrücken (dark-mode classNames), schwerer testbar.
+- Branch-Coverage bei 97.2% — verbleibende 16 Lücken sind ausschließlich `binary-expr`/`cond-expr` in JSX-Templates (dark-mode classNames, `&&`-Shortcuts). Keine echten Logik-Lücken.
 - Issue #12 geschlossen (durch PR #18 erledigt).
 - Issue #11 (Page/Layout Tests): Pages sind Server Components → E2E-abgedeckt (20 Playwright-Tests). Dokumentiert.
-- Issue #13: Coverage-Scope erweitert, aber 100% Branch-Coverage in Components nicht wirtschaftlich erreichbar (ternary classNames).
+- Issue #13: Coverage-Scope erweitert auf `src/components/**`. 100% stmts/fns/lines erreicht.

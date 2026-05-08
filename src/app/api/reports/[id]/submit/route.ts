@@ -58,3 +58,57 @@ export async function POST(
     throw e;
   }
 }
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+  const role = session.user.role;
+  const userId = session.user.id;
+
+  if (role !== "trainee") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const report = await prisma.weeklyReport.findUnique({ where: { id } });
+  if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (report.traineeId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (report.status !== "submitted") {
+    return NextResponse.json({ error: "Can only withdraw submitted reports" }, { status: 400 });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const locked = await tx.weeklyReport.findUnique({ where: { id } });
+      if (!locked || locked.status !== "submitted") {
+        throw new Error("Cannot withdraw");
+      }
+      const updated = await tx.weeklyReport.update({
+        where: { id },
+        data: {
+          status: "draft",
+          submittedAt: null,
+        },
+      });
+      await tx.reviewEvent.create({
+        data: {
+          weeklyReportId: id,
+          actorId: userId,
+          action: "withdrawn",
+        },
+      });
+      return updated;
+    });
+
+    return NextResponse.json(result);
+  } catch (e) {
+    if (e instanceof Error && e.message === "Cannot withdraw") {
+      return NextResponse.json({ error: "Cannot withdraw" }, { status: 400 });
+    }
+    throw e;
+  }
+}

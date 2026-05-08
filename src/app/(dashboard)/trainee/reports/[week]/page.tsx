@@ -19,7 +19,7 @@ import {
   DAY_TYPES,
 } from "@/lib/utils";
 import type { DailyEntryData, DayType, WeeklyReportData, ReportStatus } from "@/types";
-import { Save, Send, Check, Download, CalendarDays } from "lucide-react";
+import { Save, Send, Check, Download, CalendarDays, Undo2 } from "lucide-react";
 
 export default function ReportEditorPage() {
   const params = useParams();
@@ -175,6 +175,19 @@ export default function ReportEditorPage() {
     setSubmitting(false);
   };
 
+  const handleWithdraw = async () => {
+    if (!report?.id) return;
+    setSubmitting(true);
+    const res = await fetch(`/api/reports/${report.id}/submit`, {
+      method: "PUT",
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setReport(updated);
+    }
+    setSubmitting(false);
+  };
+
   const updateEntry = (index: number, field: keyof DailyEntryData, value: string | number) => {
     setDailyEntries((prev) => {
       const updated = [...prev];
@@ -281,6 +294,18 @@ export default function ReportEditorPage() {
                 Einreichen
               </Button>
             </div>
+          )}
+
+          {report?.status === "submitted" && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleWithdraw}
+              loading={submitting}
+            >
+              <Undo2 className="mr-1 h-4 w-4" />
+              Zurückziehen
+            </Button>
           )}
 
           {report?.id && (

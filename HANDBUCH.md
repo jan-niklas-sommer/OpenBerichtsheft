@@ -150,8 +150,18 @@ Wenn der Bericht fertig ist:
 
 1. Klicken Sie auf **Einreichen** (Pfeil-Symbol).
 2. Der Status wechselt zu **Eingereicht**.
-3. Der Bericht ist nun für Sie **gesperrt** – Sie können ihn nicht mehr bearbeiten.
+3. Der Bericht ist nun **gesperrt** – Sie können ihn nicht mehr bearbeiten.
 4. Der zuständige Prüfer erhält den Bericht in seinem Dashboard.
+
+**Eingereichten Bericht zurückziehen:**
+
+Wenn Sie den Bericht nochmal überarbeiten möchten, bevor der Prüfer ihn sieht:
+
+1. Öffnen Sie den eingereichten Bericht.
+2. Klicken Sie auf **Zurückziehen** (Rückgängig-Symbol).
+3. Der Status wechselt zurück zu **Entwurf** und der Bericht ist wieder editierbar.
+
+**Hinweis:** Ein bereits genehmigter oder abgelehnter Bericht kann nicht zurückgezogen werden.
 
 **Wichtig:** Nur Berichte im Status **Entwurf** oder **Überarbeitung erforderlich** können eingereicht werden.
 

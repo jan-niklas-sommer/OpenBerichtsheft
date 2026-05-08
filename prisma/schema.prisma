@@ -33,6 +33,7 @@ enum ReviewAction {
   created
   autosaved
   submitted
+  withdrawn
   approved
   needs_revision
   rejected

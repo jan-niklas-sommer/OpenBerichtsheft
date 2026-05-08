@@ -72,6 +72,8 @@ const adminSession = {
 const baseReport = {
   id: "report-1",
   traineeId: "trainee-1",
+  weekStartDate: "2025-03-02T23:00:00.000Z",
+  weekEndDate: "2025-03-08T23:00:00.000Z",
   calendarYear: 2025,
   calendarWeek: 10,
   status: "draft",
@@ -80,11 +82,30 @@ const baseReport = {
   reviewedAt: null,
   reviewedById: null,
   reviewComment: null,
+  createdAt: "2025-03-02T00:00:00.000Z",
+  updatedAt: "2025-03-02T00:00:00.000Z",
   dailyEntries: [
-    { date: "2025-03-03T00:00:00.000Z", dayType: "company", hours: 8, minutes: 0 },
+    { id: "entry-1", weeklyReportId: "report-1", date: "2025-03-03T00:00:00.000Z", dayType: "company", hours: 8, minutes: 0, createdAt: "2025-03-02T00:00:00.000Z", updatedAt: "2025-03-02T00:00:00.000Z" },
   ],
   trainee: { id: "trainee-1", name: "Trainee", email: "trainee@test.de", profession: { id: "prof-1", name: "FISI" } },
   reviewedBy: null,
+};
+
+const flatReport = {
+  id: "report-1",
+  traineeId: "trainee-1",
+  weekStartDate: "2025-03-02T23:00:00.000Z",
+  weekEndDate: "2025-03-08T23:00:00.000Z",
+  calendarYear: 2025,
+  calendarWeek: 10,
+  status: "draft",
+  reportText: "Test report",
+  submittedAt: null,
+  reviewedAt: null,
+  reviewedById: null,
+  reviewComment: null,
+  createdAt: "2025-03-02T00:00:00.000Z",
+  updatedAt: "2025-03-02T00:00:00.000Z",
 };
 
 function makeRequest(method: string = "GET", body?: unknown): NextRequest {
@@ -340,8 +361,8 @@ describe("POST /api/reports/[id]/submit", () => {
   it("submits draft report successfully (draft → submitted)", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockFindUnique.mockResolvedValue(baseReport);
-    const submittedReport = { ...baseReport, status: "submitted" };
-    mockTx.weeklyReport.findUnique.mockResolvedValue(baseReport);
+    const submittedReport = { ...flatReport, status: "submitted", submittedAt: "2025-03-10T00:00:00.000Z", updatedAt: "2025-03-10T00:00:00.000Z" };
+    mockTx.weeklyReport.findUnique.mockResolvedValue(flatReport);
     mockTx.weeklyReport.update.mockResolvedValue(submittedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
     const res = await SUBMIT(makeRequest("POST"), { params });
@@ -395,9 +416,9 @@ describe("POST /api/reports/[id]/submit", () => {
 
   it("submits needs_revision report successfully (needs_revision → submitted)", async () => {
     mockAuth.mockResolvedValue(traineeSession);
-    const revisionReport = { ...baseReport, status: "needs_revision" };
+    const revisionReport = { ...flatReport, status: "needs_revision" };
     mockFindUnique.mockResolvedValue(revisionReport);
-    const submittedReport = { ...baseReport, status: "submitted" };
+    const submittedReport = { ...flatReport, status: "submitted", submittedAt: "2025-03-10T00:00:00.000Z", updatedAt: "2025-03-10T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(revisionReport);
     mockTx.weeklyReport.update.mockResolvedValue(submittedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
@@ -417,7 +438,7 @@ describe("POST /api/reports/[id]/submit", () => {
 });
 
 describe("POST /api/reports/[id]/review", () => {
-  const submittedReport = { ...baseReport, status: "submitted" };
+  const submittedReport = { ...flatReport, status: "submitted", submittedAt: "2025-03-10T00:00:00.000Z" };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -481,7 +502,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
     mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
-    const approvedReport = { ...baseReport, status: "approved" };
+    const approvedReport = { ...flatReport, status: "approved", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(approvedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
@@ -509,7 +530,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
     mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
-    const revisionReport = { ...baseReport, status: "needs_revision" };
+    const revisionReport = { ...flatReport, status: "needs_revision", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(revisionReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
@@ -533,7 +554,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
     mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
-    const rejectedReport = { ...baseReport, status: "rejected" };
+    const rejectedReport = { ...flatReport, status: "rejected", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(rejectedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
@@ -567,7 +588,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockAuth.mockResolvedValue(officerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
     mockOfficerAssignment.mockResolvedValue({ id: "assignment-1" });
-    const approvedReport = { ...baseReport, status: "approved" };
+    const approvedReport = { ...flatReport, status: "approved", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "officer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(approvedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
@@ -583,7 +604,7 @@ describe("POST /api/reports/[id]/review", () => {
   it("allows admin to review any report without assignment check", async () => {
     mockAuth.mockResolvedValue(adminSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    const approvedReport = { ...baseReport, status: "approved" };
+    const approvedReport = { ...flatReport, status: "approved", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "admin-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(approvedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
@@ -608,7 +629,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
     mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
-    mockTx.weeklyReport.findUnique.mockResolvedValue({ ...baseReport, status: "approved" });
+    mockTx.weeklyReport.findUnique.mockResolvedValue({ ...flatReport, status: "approved" });
     const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -627,7 +648,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
     mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
-    const approvedReport = { ...baseReport, status: "approved", reviewComment: "Well done" };
+    const approvedReport = { ...flatReport, status: "approved", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", reviewComment: "Well done", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(approvedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});

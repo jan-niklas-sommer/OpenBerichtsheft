@@ -45,6 +45,8 @@ const sampleAssignments = [
     id: "assign-1",
     traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainerId: "660e8400-e29b-41d4-a716-446655440001",
+    createdAt: "2025-01-01T00:00:00.000Z",
+    updatedAt: "2025-01-01T00:00:00.000Z",
     trainee: { id: "550e8400-e29b-41d4-a716-446655440000", name: "Trainee", email: "trainee@test.de", role: "trainee" },
     trainer: { id: "660e8400-e29b-41d4-a716-446655440001", name: "Trainer", email: "trainer@test.de", role: "trainer" },
   },
@@ -210,6 +212,8 @@ describe("POST /api/assignments", () => {
       id: "assign-1",
       traineeId: validBody.traineeId,
       trainerId: validBody.trainerId,
+      createdAt: "2025-01-01T00:00:00.000Z",
+      updatedAt: "2025-01-01T00:00:00.000Z",
       trainee: { id: validBody.traineeId, name: "Trainee", email: "t@test.de" },
       trainer: { id: validBody.trainerId, name: "Trainer", email: "tr@test.de" },
     };

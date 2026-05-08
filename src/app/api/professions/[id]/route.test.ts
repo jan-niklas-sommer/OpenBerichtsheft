@@ -110,7 +110,7 @@ describe("PUT /api/professions/[id]", () => {
 
   it("updates profession successfully as admin", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockUpdate.mockResolvedValue({ id: "prof-1", name: "Fachinformatiker Systemintegration" });
+    mockUpdate.mockResolvedValue({ id: "prof-1", name: "Fachinformatiker Systemintegration", createdAt: "2025-01-01T00:00:00.000Z", updatedAt: "2025-06-01T00:00:00.000Z" });
     const req = makePutRequest("prof-1", { name: "Fachinformatiker Systemintegration" });
     const res = await PUT(req, { params: Promise.resolve({ id: "prof-1" }) });
     expect(res.status).toBe(200);
@@ -126,7 +126,7 @@ describe("PUT /api/professions/[id]", () => {
   it("updates profession with max length name", async () => {
     mockAuth.mockResolvedValue(adminSession);
     const longName = "a".repeat(200);
-    mockUpdate.mockResolvedValue({ id: "prof-1", name: longName });
+    mockUpdate.mockResolvedValue({ id: "prof-1", name: longName, createdAt: "2025-01-01T00:00:00.000Z", updatedAt: "2025-06-01T00:00:00.000Z" });
     const req = makePutRequest("prof-1", { name: longName });
     const res = await PUT(req, { params: Promise.resolve({ id: "prof-1" }) });
     expect(res.status).toBe(200);

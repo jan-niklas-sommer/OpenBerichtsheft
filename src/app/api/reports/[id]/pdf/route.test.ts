@@ -70,10 +70,14 @@ const baseReport = {
   weekEndDate: new Date("2025-03-09"),
   submittedAt: new Date("2025-03-10"),
   reviewedAt: new Date("2025-03-11"),
+  reviewedById: "trainer-1",
+  reviewComment: null,
   createdAt: new Date("2025-03-02"),
   updatedAt: new Date("2025-03-11"),
   dailyEntries: [
     {
+      id: "entry-1",
+      weeklyReportId: "report-1",
       date: new Date("2025-03-03"),
       dayType: "company",
       hours: 8,

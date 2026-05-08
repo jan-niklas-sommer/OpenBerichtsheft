@@ -60,6 +60,7 @@ const sampleAssignments = [
     trainingOfficer: { id: "770e8400-e29b-41d4-a716-446655440002", name: "Officer", email: "officer@test.de" },
     trainer: { id: "trainer-1", name: "Trainer" },
     createdAt: "2026-05-07T00:00:00.000Z",
+    updatedAt: "2026-05-07T00:00:00.000Z",
   },
 ];
 
@@ -265,6 +266,8 @@ describe("POST /api/officer-assignments", () => {
       traineeId: validBody.traineeId,
       trainingOfficerId: validBody.trainingOfficerId,
       trainerId: "admin-1",
+      createdAt: "2026-05-07T00:00:00.000Z",
+      updatedAt: "2026-05-07T00:00:00.000Z",
       trainee: { id: validBody.traineeId, name: "Trainee", email: "t@test.de" },
       trainingOfficer: { id: validBody.trainingOfficerId, name: "Officer", email: "o@test.de" },
     };
@@ -298,6 +301,8 @@ describe("POST /api/officer-assignments", () => {
       traineeId: validBody.traineeId,
       trainingOfficerId: validBody.trainingOfficerId,
       trainerId: "trainer-1",
+      createdAt: "2026-05-07T00:00:00.000Z",
+      updatedAt: "2026-05-07T00:00:00.000Z",
       trainee: { id: validBody.traineeId, name: "Trainee", email: "t@test.de" },
       trainingOfficer: { id: validBody.trainingOfficerId, name: "Officer", email: "o@test.de" },
     };

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { weeklyReportSchema } from "@/lib/validations";
-import { getWeekDates } from "@/lib/utils";
+import { getWeekDates, getIsoWeek } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -83,6 +83,22 @@ export async function POST(req: NextRequest) {
 
   const { calendarYear, calendarWeek, reportText, dailyEntries } = parsed.data;
   const traineeId = session.user.id;
+
+  const trainee = await prisma.user.findUnique({
+    where: { id: traineeId },
+    select: { trainingStartDate: true },
+  });
+
+  if (trainee?.trainingStartDate) {
+    const startWeek = getIsoWeek(trainee.trainingStartDate);
+    if (
+      calendarYear < startWeek.year ||
+      (calendarYear === startWeek.year && calendarWeek < startWeek.week)
+    ) {
+      return NextResponse.json({ error: "Berichte vor dem Eintrittsdatum sind nicht erlaubt" }, { status: 400 });
+    }
+  }
+
   const weekDates = getWeekDates(calendarYear, calendarWeek);
 
   const report = await prisma.weeklyReport.upsert({

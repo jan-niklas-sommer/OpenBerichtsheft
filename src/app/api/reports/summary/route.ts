@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getIsoWeek } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 interface TraineeProgress {
@@ -14,6 +15,21 @@ interface TraineeProgress {
   needsRevision: number;
   completionPercent: number;
   missingWeeks: { year: number; week: number }[];
+}
+
+function weekKey(y: number, w: number) {
+  return `${y}-${w}`;
+}
+
+function weeksBetween(start: { year: number; week: number }, end: { year: number; week: number }) {
+  const weeks: { year: number; week: number }[] = [];
+  let y = start.year, w = start.week;
+  while (y < end.year || (y === end.year && w <= end.week)) {
+    weeks.push({ year: y, week: w });
+    w++;
+    if (w > 52) { w = 1; y++; }
+  }
+  return weeks;
 }
 
 export async function GET() {
@@ -50,6 +66,7 @@ export async function GET() {
     select: {
       id: true,
       name: true,
+      trainingStartDate: true,
       profession: { select: { name: true } },
     },
     orderBy: { name: "asc" },
@@ -67,13 +84,7 @@ export async function GET() {
     },
   });
 
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const jan4 = new Date(currentYear, 0, 4);
-  const dayOfWeek = jan4.getDay() || 7;
-  const monday = new Date(jan4);
-  monday.setDate(jan4.getDate() - dayOfWeek + 1);
-  const currentWeek = Math.ceil((now.getTime() - monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+  const { year: currentYear, week: currentWeek } = getIsoWeek(new Date());
 
   const result: TraineeProgress[] = trainees.map((trainee) => {
     const traineeReports = reports.filter((r) => r.traineeId === trainee.id);
@@ -89,19 +100,20 @@ export async function GET() {
     const totalReports = traineeReports.length;
 
     const existingWeeks = new Set(
-      traineeReports.map((r) => `${r.calendarYear}-${r.calendarWeek}`)
+      traineeReports.map((r) => weekKey(r.calendarYear, r.calendarWeek))
     );
 
-    const missingWeeks: { year: number; week: number }[] = [];
-    const startYear = currentYear;
-    const startWeek = Math.max(1, currentWeek - 12);
-    for (let w = startWeek; w <= currentWeek; w++) {
-      if (!existingWeeks.has(`${startYear}-${w}`)) {
-        missingWeeks.push({ year: startYear, week: w });
-      }
-    }
+    const startWeek = trainee.trainingStartDate
+      ? getIsoWeek(trainee.trainingStartDate)
+      : { year: currentYear, week: Math.max(1, currentWeek - 12) };
 
-    const completionPercent = Math.min(100, Math.round((statusCounts.approved / Math.max(currentWeek, 1)) * 100));
+    const allRelevantWeeks = weeksBetween(startWeek, { year: currentYear, week: currentWeek });
+    const missingWeeks = allRelevantWeeks.filter((w) => !existingWeeks.has(weekKey(w.year, w.week)));
+
+    const totalRelevant = allRelevantWeeks.length;
+    const completionPercent = totalRelevant > 0
+      ? Math.min(100, Math.round((statusCounts.approved / totalRelevant) * 100))
+      : 0;
 
     return {
       traineeId: trainee.id,

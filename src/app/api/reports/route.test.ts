@@ -8,6 +8,9 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn(),
+    },
     weeklyReport: {
       findMany: vi.fn(),
       upsert: vi.fn(),
@@ -25,6 +28,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
+const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockFindMany = prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>;
 const mockUpsert = prisma.weeklyReport.upsert as ReturnType<typeof vi.fn>;
 const mockTrainerAssignments = prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>;
@@ -339,6 +343,7 @@ describe("POST /api/reports", () => {
 
   it("creates report successfully as trainee", async () => {
     mockAuth.mockResolvedValue(traineeSession);
+    mockUserFindUnique.mockResolvedValue({ trainingStartDate: null });
     mockUpsert.mockResolvedValue(upsertResult);
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(200);
@@ -369,6 +374,7 @@ describe("POST /api/reports", () => {
 
   it("creates report without reportText", async () => {
     mockAuth.mockResolvedValue(traineeSession);
+    mockUserFindUnique.mockResolvedValue({ trainingStartDate: null });
     const bodyWithoutText = {
       calendarYear: 2025,
       calendarWeek: 10,
@@ -384,5 +390,36 @@ describe("POST /api/reports", () => {
         }),
       }),
     );
+  });
+
+  it("rejects report before training start date", async () => {
+    mockAuth.mockResolvedValue(traineeSession);
+    mockUserFindUnique.mockResolvedValue({ trainingStartDate: new Date("2025-03-03") });
+    const body = {
+      calendarYear: 2025,
+      calendarWeek: 9,
+      reportText: "Bericht",
+      dailyEntries: validBody.dailyEntries,
+    };
+    const res = await POST(makePostRequest(body));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toContain("Eintrittsdatum");
+  });
+
+  it("allows report on training start week", async () => {
+    mockAuth.mockResolvedValue(traineeSession);
+    mockUserFindUnique.mockResolvedValue({ trainingStartDate: new Date("2025-03-03") });
+    mockUpsert.mockResolvedValue(upsertResult);
+    const res = await POST(makePostRequest(validBody));
+    expect(res.status).toBe(200);
+  });
+
+  it("allows report after training start date", async () => {
+    mockAuth.mockResolvedValue(traineeSession);
+    mockUserFindUnique.mockResolvedValue({ trainingStartDate: new Date("2025-01-06") });
+    mockUpsert.mockResolvedValue(upsertResult);
+    const res = await POST(makePostRequest(validBody));
+    expect(res.status).toBe(200);
   });
 });

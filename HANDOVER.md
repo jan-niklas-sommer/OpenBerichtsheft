@@ -671,3 +671,38 @@ npm run dev
 
 - Button `variant="default"` → `variant="primary"` (Button unterstützt kein default).
 - Empty-State Test angepasst: kein Trainee = leer, nicht kein Report.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Eingereichten Bericht zurückziehen (#29)
+
+### Planner
+
+- **Ziel**: Azubi kann eingereichten Bericht (`submitted`) zurückziehen → `draft` → wieder bearbeiten.
+- **Umfang**: Neue PUT-Route `/api/reports/[id]/submit`, "Zurückziehen"-Button im Editor, Migration für `withdrawn` ReviewAction.
+- **Nicht-Ziele**: Review-Workflow ändern, neue UI-Komponenten.
+- **Akzeptanzkriterien**: Trainee kann submitted-Bericht zurückziehen, Status wechselt zu draft, Bericht danach editierbar.
+
+### Reviewer
+
+- Freigabe. Minimaler Eingriff: ein neuer Statusübergang, kein Einfluss auf bestehende Review-Logik.
+
+### Implementierte Änderungen
+
+- **`prisma/schema.prisma`**: `withdrawn` zum `ReviewAction`-Enum hinzugefügt.
+- **`prisma/migrations/20260508182843_add_withdrawn_action/`**: Neue Migration.
+- **`src/app/api/reports/[id]/submit/route.ts`**: Neuer `PUT`-Handler für `withdraw`-Aktion. Validiert: trainee-Role, eigener Bericht, Status=`submitted`. Transaktion sichert Statuswechsel (`submitted`→`draft`, `submittedAt=null`) + ReviewEvent.
+- **`src/app/(dashboard)/trainee/reports/[week]/page.tsx`**: "Zurückziehen"-Button angezeigt wenn `report.status === "submitted"`. `handleWithdraw`-Funktion mit PUT-Aufruf.
+- **Neu**: `src/app/api/reports/[id]/submit/route.test.ts` — 16 Tests (POST: auth, role, not found, forbidden, status-guards, success für draft/needs_revision; PUT: auth, role, not found, forbidden, status-guards, success, race condition, unexpected error).
+
+### Verifier
+
+- **Tests**: 494 Tests (27 Dateien), alle bestanden. +16 neue Tests.
+- **Coverage**: 99.52% stmts, 98.15% branches, 100% functions, 100% lines. (3 stmt-Gaps sind in PR #28 behoben, noch nicht gemergt.)
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Migration**: `npx prisma migrate dev` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- PR #28 muss gemergt werden, dann sind auch die letzten 3 Statement-Gaps geschlossen.

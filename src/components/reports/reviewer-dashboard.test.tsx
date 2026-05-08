@@ -86,6 +86,24 @@ describe("ReviewerDashboard", () => {
     expect(container.textContent).toContain("Keine offenen Berichte");
   });
 
+  it("renders trainee without profession", async () => {
+    const { prisma } = await import("@/lib/prisma");
+    (prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { traineeId: "t-2", trainee: { id: "t-2", name: "Ben", profession: null, trainingStartDate: null } },
+    ]);
+    (prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { id: "r-2", calendarWeek: 10, calendarYear: 2026, traineeId: "t-2", status: "draft", submittedAt: null },
+    ]);
+    const result = await ReviewerDashboard({
+      userId: "trainer-1",
+      role: "trainer",
+      title: "Dashboard",
+      basePath: "/trainer/report",
+    });
+    const { container } = render(result);
+    expect(container.textContent).toContain("Ben");
+  });
+
   it("shows open count badge when submitted reports exist", async () => {
     const result = await ReviewerDashboard({
       userId: "trainer-1",

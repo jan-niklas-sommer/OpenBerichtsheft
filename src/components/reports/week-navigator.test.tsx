@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { WeekNavigator } from "./week-navigator";
 
@@ -141,5 +141,69 @@ describe("WeekNavigator", () => {
     expect(screen.queryByText("Genehmigt")).not.toBeInTheDocument();
     expect(screen.queryByText("Entwurf")).not.toBeInTheDocument();
     expect(screen.queryByText("Eingereicht")).not.toBeInTheDocument();
+  });
+
+  it("navigates on ArrowLeft key press", () => {
+    render(
+      <WeekNavigator
+        currentYear={2026}
+        currentWeek={10}
+        currentStatus={null}
+        adjacentStatuses={{ prev: null, next: null }}
+        prevDisabled={false}
+        onNavigate={onNavigate}
+      />
+    );
+    fireEvent.keyDown(window, { key: "ArrowLeft" });
+    expect(onNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it("navigates on ArrowRight key press", () => {
+    render(
+      <WeekNavigator
+        currentYear={2026}
+        currentWeek={10}
+        currentStatus={null}
+        adjacentStatuses={{ prev: null, next: null }}
+        prevDisabled={false}
+        onNavigate={onNavigate}
+      />
+    );
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    expect(onNavigate).toHaveBeenCalledWith(1);
+  });
+
+  it("does not navigate on ArrowLeft when prevDisabled", () => {
+    render(
+      <WeekNavigator
+        currentYear={2026}
+        currentWeek={1}
+        currentStatus={null}
+        adjacentStatuses={{ prev: null, next: null }}
+        prevDisabled={true}
+        onNavigate={onNavigate}
+      />
+    );
+    fireEvent.keyDown(window, { key: "ArrowLeft" });
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  it("ignores arrow keys when focus is on input element", () => {
+    render(
+      <>
+        <input data-testid="test-input" />
+        <WeekNavigator
+          currentYear={2026}
+          currentWeek={10}
+          currentStatus={null}
+          adjacentStatuses={{ prev: null, next: null }}
+          prevDisabled={false}
+          onNavigate={onNavigate}
+        />
+      </>
+    );
+    const input = screen.getByTestId("test-input");
+    fireEvent.keyDown(input, { key: "ArrowLeft" });
+    expect(onNavigate).not.toHaveBeenCalled();
   });
 });

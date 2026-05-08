@@ -44,4 +44,67 @@ describe("PdfDocument", () => {
     const { container } = render(<PdfDocument report={noReviewer as ReportData} />);
     expect(container.textContent).toContain("Anna Azubi");
   });
+
+  it("renders minutes when > 0", () => {
+    const withMinutes = {
+      ...report,
+      dailyEntries: [{ date: "2025-03-03T00:00:00.000Z", dayType: "company", hours: 7, minutes: 30 }],
+    };
+    const { container } = render(<PdfDocument report={withMinutes as ReportData} />);
+    expect(container.textContent).toContain("30min");
+  });
+
+  it("renders no minutes when 0", () => {
+    const { container } = render(<PdfDocument report={report as ReportData} />);
+    expect(container.textContent).toContain("8h");
+    expect(container.textContent).not.toContain("0min");
+  });
+
+  it("renders fallback when reportText is null", () => {
+    const noText = { ...report, reportText: null };
+    const { container } = render(<PdfDocument report={noText as ReportData} />);
+    expect(container.textContent).toContain("Kein Berichtstext vorhanden.");
+  });
+
+  it("renders review comment when present", () => {
+    const withComment = { ...report, reviewComment: "Bitte überarbeiten" };
+    const { container } = render(<PdfDocument report={withComment as ReportData} />);
+    expect(container.textContent).toContain("Kommentar des Prüfers");
+    expect(container.textContent).toContain("Bitte überarbeiten");
+  });
+
+  it("renders Unbekannt when no trainee", () => {
+    const noTrainee = { ...report, trainee: null };
+    const { container } = render(<PdfDocument report={noTrainee as ReportData} />);
+    expect(container.textContent).toContain("Unbekannt");
+  });
+
+  it("renders without profession", () => {
+    const noProf = { ...report, trainee: { name: "Anna", profession: null } };
+    const { container } = render(<PdfDocument report={noProf as ReportData} />);
+    expect(container.textContent).toContain("Anna");
+    expect(container.textContent).not.toContain("|");
+  });
+
+  it("renders raw dayType for unknown type", () => {
+    const unknownType = {
+      ...report,
+      dailyEntries: [{ date: "2025-03-03T00:00:00.000Z", dayType: "unknown_type", hours: 8, minutes: 0 }],
+    };
+    const { container } = render(<PdfDocument report={unknownType as ReportData} />);
+    expect(container.textContent).toContain("unknown_type");
+  });
+
+  it("renders raw status for unknown status", () => {
+    const unknownStatus = { ...report, status: "weird_status" };
+    const { container } = render(<PdfDocument report={unknownStatus as ReportData} />);
+    expect(container.textContent).toContain("weird_status");
+  });
+
+  it("renders without submittedAt and reviewedAt", () => {
+    const noDates = { ...report, submittedAt: null, reviewedAt: null };
+    const { container } = render(<PdfDocument report={noDates as ReportData} />);
+    expect(container.textContent).not.toContain("Eingereicht am");
+    expect(container.textContent).not.toContain("Geprüft am");
+  });
 });

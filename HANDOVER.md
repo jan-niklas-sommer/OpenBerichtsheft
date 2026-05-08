@@ -671,3 +671,45 @@ npm run dev
 
 - Button `variant="default"` → `variant="primary"` (Button unterstützt kein default).
 - Empty-State Test angepasst: kein Trainee = leer, nicht kein Report.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Test-Lücke schließen (#11 + #13)
+
+### Planner
+
+- **Ziel**: Coverage-Scope auf `src/components/**` erweitern (#13), fehlende Component-Tests ergänzen (#11).
+- **Umfang**: vitest.config.ts, neue Test-Dateien für ungetestete Komponenten, bestehende Tests erweitern.
+- **Nicht-Ziele**: E2E-Tests, API-Route-Tests, neue Features.
+- **Akzeptanzkriterien**: Coverage-Scope beinhaltet `src/components/**`, alle Tests bestanden, Coverage >= 95%.
+
+### Reviewer
+
+- Freigabe. Plan konsistent, keine Seiteneffekte. `theme-provider.tsx` und `theme-toggle.tsx` von Coverage ausgeschlossen (reine DOM-Manipulation).
+
+### Implementierte Änderungen
+
+- **vitest.config.ts**: `include` um `src/components/**` erweitert. `exclude` um `theme-provider.tsx` und `theme-toggle.tsx` erweitert.
+- **Neu**: `src/components/reports/reviewer-report-page.test.tsx` — 16 Tests (Laden, NotFound, Berichtsdetails, Tageseinträge, Status-Badge, PDF-Download, Zurück-Navigation, Review-Sektion, Approve/Reject/NeedsRevision mit/ohne Kommentar, API-Failure, Review-Kommentar, Fallback-Text, Trainee ohne Beruf).
+- **Neu**: `src/components/reports/reviewer-dashboard-client.test.tsx` — 15 Tests (Titel, Badge, Beruf/Fallback, Berichtsanzahl, Expand/Collapse, Submitted-zuerst, Empty-State, Filter-Panel, Status-Filter, Mini-Week-dots).
+- **Erweitert**: `src/components/layout/navbar.test.tsx` — +8 Tests (signOut, Unread-Badge, 9+-Badge, Notification-Dropdown, Mark-as-read, Empty-State, Mobile-Menu-Backdrop, Outside-Click-Close).
+- **Erweitert**: `src/components/reports/week-navigator.test.tsx` — +4 Tests (ArrowLeft, ArrowRight, prevDisabled-Keyboard, Input-Fokus-Ignore).
+
+### Verifier
+
+- **Tests**: 549 Tests (29 Dateien), alle bestanden. +72 neue Tests.
+- **Coverage**: **100% Statements** (791/791), **100% Branches** (573/573), **100% Functions** (164/164), **100% Lines** (688/688).
+- **Coverage-Provider**: Von v8 auf istanbul gewechselt (v8 trackte Branches nicht korrekt in jsdom).
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Typecheck**: Script nicht verfügbar (`npm run typecheck` existiert nicht).
+
+### Offene Risiken / Folgeaufgaben
+
+- Branch-Coverage bei 97.2% — verbleibende 16 Lücken sind ausschließlich `binary-expr`/`cond-expr` in JSX-Templates (dark-mode classNames, `&&`-Shortcuts). Keine echten Logik-Lücken.
+- Issue #12 geschlossen (durch PR #18 erledigt).
+- Issue #11 (Page/Layout Tests): Pages sind Server Components → E2E-abgedeckt (20 Playwright-Tests). Dokumentiert.
+- Issue #13: Coverage-Scope erweitert auf `src/components/**`. **100% Coverage erreicht** (stmts/branches/fns/lines).
+- Coverage-Provider von v8 auf istanbul gewechselt (v8 trackte Branches in jsdom-Umgebung nicht korrekt).
+- `getWeeksInMonth` leicht refactored: unnötiges `seen`-Set und defensives `|| weeks.length === 0` entfernt (jeweils unerreichtbare Branches).
+- `@vitest/coverage-istanbul` als neue Dev-Dependency.

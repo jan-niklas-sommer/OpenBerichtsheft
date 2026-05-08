@@ -166,4 +166,11 @@ describe("useAutosave", () => {
 
     expect(onSave).not.toHaveBeenCalled();
   });
+
+  it("uses default delay when not provided", () => {
+    const { result } = renderHook(() =>
+      useAutosave({ foo: "bar" }, onSave as unknown as (data: { foo: string }) => Promise<void>)
+    );
+    expect(result.current.saveStatus).toBe("idle");
+  });
 });

@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ReportCalendar } from "@/components/reports/report-calendar";
+import { YearCalendar } from "@/components/reports/year-calendar";
 import { Plus } from "lucide-react";
 import type { WeeklyReportData, ReportStatus } from "@/types";
 
@@ -13,8 +14,8 @@ export default function TraineeDashboard() {
   const [trainingStartDate, setTrainingStartDate] = useState<string | null>(null);
 
   const now = new Date();
-  const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
+  const [viewYear, setViewYear] = useState(now.getFullYear());
 
   useEffect(() => {
     fetch("/api/reports")
@@ -77,6 +78,14 @@ export default function TraineeDashboard() {
           </Button>
         </Link>
       </div>
+
+      <YearCalendar
+        year={viewYear}
+        reports={reportSummaries}
+        trainingStartDate={trainingStartDate}
+        onPrevYear={() => setViewYear((y) => y - 1)}
+        onNextYear={() => setViewYear((y) => y + 1)}
+      />
 
       <ReportCalendar
         year={viewYear}

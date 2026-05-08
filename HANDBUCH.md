@@ -79,7 +79,20 @@ Als Auszubildende(r) schreiben und verwalten Sie Ihre eigenen Wochenberichte.
 
 ### 4.1 Übersicht
 
-Nach der Anmeldung sehen Sie Ihre **Berichtsübersicht**. Hier werden alle Ihre Wochenberichte mit aktuellem Status angezeigt:
+Nach der Anmeldung sehen Sie Ihre **Berichtsübersicht** mit einer **Jahreskalender-Ansicht** und einer Monatsansicht darunter.
+
+**Jahreskalender:**
+
+- Tägliches Raster (Mo–So × KW 1–53) im GitHub-Contributions-Stil
+- Farbcodierung: Grau = Entwurf, Gelb = Eingereicht, Grün = Genehmigt, Rot = Abgelehnt, Blau = Überarbeitung, Hellrot = Fehlt
+- Aktuelle Woche ist hervorgehoben
+- Wochen vor Ausbildungsbeginn sind ausgegraut
+- Klicken Sie auf eine Woche, um den Bericht zu öffnen
+- Navigieren Sie zwischen Jahren mit den Pfeiltasten
+
+**Monatsansicht:**
+
+Darunter sehen Sie die detaillierte Monatsansicht mit Wochen und Status-Labels.
 
 | Status | Bedeutung |
 |--------|-----------|
@@ -134,7 +147,7 @@ Für jeden der sieben Tage (Montag bis Sonntag) erfassen Sie:
 
 **Automatisches Speichern (Autosave):**
 
-- Jede Änderung wird nach 1,5 Sekunden automatisch gespeichert.
+- Jede Änderung wird nach 20 Sekunden automatisch gespeichert.
 - Der Speicherstatus wird oben rechts angezeigt:
   - **Speichert...** = Daten werden übertragen
   - **Gespeichert** = Erfolgreich gespeichert

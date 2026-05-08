@@ -82,11 +82,32 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Wochenbericht</CardTitle>
+          <CardTitle>{report.reportType === "daily" ? "Tagesbericht" : "Wochenbericht"}</CardTitle>
         </CardHeader>
-        <p className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
-          {report.reportText || "Kein Berichtstext vorhanden."}
-        </p>
+        {report.reportType === "daily" ? (
+          report.dailyEntries.some((e) => (e as { reportText?: string }).reportText) ? (
+            <div className="space-y-4">
+              {report.dailyEntries
+                .filter((e) => (e as { reportText?: string }).reportText)
+                .map((entry) => (
+                  <div key={entry.id || entry.date}>
+                    <p className="mb-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      {formatDate(new Date(entry.date))} &middot; {DAY_TYPE_LABELS[entry.dayType]}
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+                      {(entry as { reportText?: string }).reportText}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-500">Keine Tagesberichte vorhanden.</p>
+          )
+        ) : (
+          <p className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+            {report.reportText || "Kein Berichtstext vorhanden."}
+          </p>
+        )}
       </Card>
 
       <Card className="mb-6">

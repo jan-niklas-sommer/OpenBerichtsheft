@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
-  FileText,
   Users,
   UserCheck,
   Shield,
@@ -17,6 +16,7 @@ import {
   Briefcase,
   BarChart3,
   Bell,
+  Settings,
   Check,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
@@ -43,6 +43,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
     { href: "/admin/users", label: "Benutzer", icon: <Users className="h-4 w-4" /> },
     { href: "/admin/assignments", label: "Zuordnungen", icon: <UserCheck className="h-4 w-4" /> },
     { href: "/admin/professions", label: "Berufe", icon: <Briefcase className="h-4 w-4" /> },
+    { href: "/admin/settings", label: "Einstellungen", icon: <Settings className="h-4 w-4" /> },
     { href: "/admin/progress", label: "Fortschritt", icon: <BarChart3 className="h-4 w-4" /> },
   ],
 };

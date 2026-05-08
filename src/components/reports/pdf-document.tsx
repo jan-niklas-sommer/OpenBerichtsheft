@@ -130,6 +130,7 @@ interface DailyEntryData {
   dayType: string;
   hours: number;
   minutes: number;
+  reportText?: string | null;
 }
 
 export interface ReportData {
@@ -138,6 +139,7 @@ export interface ReportData {
   weekStartDate: string;
   weekEndDate: string;
   reportText: string | null;
+  reportType?: string;
   status: string;
   submittedAt: string | null;
   reviewedAt: string | null;
@@ -163,11 +165,14 @@ export function PdfDocument({ report }: { report: ReportData }) {
   const traineeName = report.trainee?.name || "Unbekannt";
   const profession = report.trainee?.profession?.name;
 
+  const isDaily = report.reportType === "daily";
+  const title = isDaily ? "Tagesbericht" : "Wochenbericht";
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>Wochenbericht</Text>
+          <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>
             KW {report.calendarWeek}/{report.calendarYear}
           </Text>
@@ -202,10 +207,30 @@ export function PdfDocument({ report }: { report: ReportData }) {
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Berichtstext</Text>
-        <Text style={styles.reportText}>
-          {report.reportText || "Kein Berichtstext vorhanden."}
-        </Text>
+        {isDaily ? (
+          report.dailyEntries.some((e) => e.reportText) ? (
+            <>
+              <Text style={styles.sectionTitle}>Tagesberichte</Text>
+              {report.dailyEntries
+                .filter((e) => e.reportText)
+                .map((entry, i) => (
+                  <View key={entry.id || i} style={{ marginBottom: 12 }}>
+                    <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold", marginBottom: 4 }}>
+                      {formatDayName(entry.date)}, {formatDate(entry.date)}
+                    </Text>
+                    <Text style={styles.reportText}>{entry.reportText}</Text>
+                  </View>
+                ))}
+            </>
+          ) : null
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>Berichtstext</Text>
+            <Text style={styles.reportText}>
+              {report.reportText || "Kein Berichtstext vorhanden."}
+            </Text>
+          </>
+        )}
 
         {report.reviewComment && (
           <View style={styles.commentBox}>

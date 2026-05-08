@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { calendarYear, calendarWeek, reportText, dailyEntries } = parsed.data;
+  const { calendarYear, calendarWeek, reportText, reportType, dailyEntries } = parsed.data;
   const traineeId = session.user.id;
 
   const trainee = await prisma.user.findUnique({
@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
       calendarYear,
       calendarWeek,
       reportText: reportText || null,
+      reportType: reportType || "weekly",
       status: "draft",
       dailyEntries: {
         create: dailyEntries.map((entry) => ({
@@ -123,11 +124,13 @@ export async function POST(req: NextRequest) {
           dayType: entry.dayType,
           hours: entry.hours,
           minutes: entry.minutes,
+          reportText: entry.reportText || null,
         })),
       },
     },
     update: {
       reportText: reportText || null,
+      ...(reportType && { reportType }),
       dailyEntries: {
         deleteMany: {},
         create: dailyEntries.map((entry) => ({
@@ -135,6 +138,7 @@ export async function POST(req: NextRequest) {
           dayType: entry.dayType,
           hours: entry.hours,
           minutes: entry.minutes,
+          reportText: entry.reportText || null,
         })),
       },
     },

@@ -422,4 +422,27 @@ describe("POST /api/reports", () => {
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(200);
   });
+
+  it("creates daily report with reportType", async () => {
+    mockAuth.mockResolvedValue(traineeSession);
+    mockUserFindUnique.mockResolvedValue({ trainingStartDate: null });
+    mockUpsert.mockResolvedValue({ ...upsertResult, reportType: "daily" });
+    const dailyBody = {
+      ...validBody,
+      reportType: "daily",
+      dailyEntries: validBody.dailyEntries.map((e) => ({
+        ...e,
+        reportText: e.dayType === "company" ? "Tagesbericht Text" : undefined,
+      })),
+    };
+    const res = await POST(makePostRequest(dailyBody));
+    expect(res.status).toBe(200);
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          reportType: "daily",
+        }),
+      }),
+    );
+  });
 });

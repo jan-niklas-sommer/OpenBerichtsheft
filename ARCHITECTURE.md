@@ -134,6 +134,7 @@ Unique Constraint: `(traineeId, trainingOfficerId)`
 | calendarYear | Int | Kalenderjahr |
 | calendarWeek | Int | Kalenderwoche (ISO) |
 | reportText | String? | Wochenbericht-Text |
+| reportType | Enum | `weekly`, `daily` |
 | status | Enum | `draft`, `submitted`, `approved`, `rejected`, `needs_revision` |
 | submittedAt | DateTime? | Einreichungszeitpunkt |
 | reviewedAt | DateTime? | Prüfungszeitpunkt |
@@ -154,6 +155,7 @@ Unique Constraint: `(traineeId, calendarYear, calendarWeek)`
 | dayType | Enum | `company`, `vocational_school`, `vacation`, `other` |
 | hours | Int | Stunden |
 | minutes | Int | Minuten (0–59) |
+| reportText | String? | Tagesbericht-Text (nur bei reportType=daily) |
 | createdAt | DateTime | Erstellungszeitpunkt |
 | updatedAt | DateTime | Letzte Änderung |
 
@@ -167,6 +169,17 @@ Unique Constraint: `(traineeId, calendarYear, calendarWeek)`
 | action | Enum | `created`, `autosaved`, `submitted`, `approved`, `needs_revision`, `rejected` |
 | comment | String? | Kommentar |
 | createdAt | DateTime | Zeitstempel |
+
+### AppSetting
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| key | String (PK) | Einstellungs-Key (z.B. `workingDays`) |
+| value | String | JSON-serialisierter Wert |
+| updatedAt | DateTime | Letzte Änderung |
+
+**Default-Settings:**
+- `workingDays` = `[1,2,3,4,5]` (Montag–Freitag, JS `Date.getDay()` Werte)
 
 ---
 
@@ -302,6 +315,8 @@ draft → submitted → approved
 | DELETE | `/api/professions/[id]` | Ausbildungsberuf löschen | admin |
 | GET | `/api/assignments` | Zuordnungen abrufen | admin, trainer |
 | POST | `/api/assignments` | Zuordnung erstellen | admin, trainer |
+| GET | `/api/settings` | App-Einstellungen abrufen | Alle (auth) |
+| PUT | `/api/settings` | App-Einstellungen aktualisieren | admin |
 
 ---
 

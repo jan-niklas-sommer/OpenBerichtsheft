@@ -173,4 +173,15 @@ describe("useAutosave", () => {
     );
     expect(result.current.saveStatus).toBe("idle");
   });
+
+  it("does not save when data is null", () => {
+    const { result } = renderHook(() =>
+      useAutosave<{ foo: string } | null>(null, onSave as unknown as (data: { foo: string }) => Promise<void>, 500)
+    );
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onSave).not.toHaveBeenCalled();
+    expect(result.current.saveStatus).toBe("idle");
+  });
 });

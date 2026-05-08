@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 
 export function useAutosave<T>(
-  data: T,
+  data: T | null | undefined,
   onSave: (data: T) => Promise<void>,
   delay: number = 1000
 ) {
@@ -12,11 +12,11 @@ export function useAutosave<T>(
   const inFlightRef = useRef(false);
   const pendingDataRef = useRef<T | null>(null);
   const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dataRef = useRef(data);
+  const dataRef = useRef<T | null>(null);
   const onSaveRef = useRef(onSave);
 
   useEffect(() => {
-    dataRef.current = data;
+    dataRef.current = data ?? null;
     onSaveRef.current = onSave;
   });
 
@@ -45,12 +45,18 @@ export function useAutosave<T>(
   };
 
   const save = (dataToSave?: T) => {
-    executeSave(dataToSave ?? dataRef.current);
+    if (dataToSave) {
+      executeSave(dataToSave);
+    } else if (dataRef.current) {
+      executeSave(dataRef.current);
+    }
   };
 
   useEffect(() => {
+    if (data == null) return;
+    const d = data;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => executeSave(data), delay);
+    timeoutRef.current = setTimeout(() => executeSave(d), delay);
     return () => {
       clearTimeout(timeoutRef.current!);
     };

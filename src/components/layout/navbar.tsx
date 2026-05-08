@@ -31,7 +31,6 @@ interface NavItem {
 const NAV_ITEMS: Record<string, NavItem[]> = {
   trainee: [
     { href: "/trainee", label: "Übersicht", icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: "/trainee/reports", label: "Berichte", icon: <FileText className="h-4 w-4" /> },
   ],
   trainer: [
     { href: "/trainer", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },

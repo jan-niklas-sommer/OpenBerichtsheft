@@ -749,3 +749,27 @@ npm run dev
 ### Offene Risiken / Folgeaufgaben
 
 - Keine.
+
+---
+
+## 2026-05-08 – Arbeitspaket: Jahres-Kalenderansicht auf Tagesebene (#32)
+
+### Planner
+
+- **Ziel**: GitHub-Contributions-Graph-Stil Kalender auf `/trainee` — 7×53 Tagesraster, Status-farbcodiert, klickbar.
+- **Umfang**: Neue `YearCalendar`-Komponente, Integration in Trainee-Dashboard, Tests.
+- **Akzeptanzkriterien**: Raster 7×53, alle Status farbcodiert, Klick → Editor, Wochen vor Eintritt deaktiviert, Tooltip, mobil scrollbar.
+
+### Implementierte Änderungen
+
+- **Neu**: `src/components/reports/year-calendar.tsx` — Jahreskalender mit Tagesraster (Mo-So × KW 1-53), Monats-Labels, Status-Legende, Tooltips, Jahresnavigation.
+- **Neu**: `src/components/reports/year-calendar.test.tsx` — 11 Tests (Jahresanzeige, Tages-Labels, Legende, Navigation, Links, Training-Start, Tooltips, Monats-Labels, leer, Schaltjahr).
+- **Geändert**: `src/app/(dashboard)/trainee/page.tsx` — `YearCalendar` über bestehendem `ReportCalendar` eingefügt.
+- **Geändert**: `HANDBUCH.md` — Übersicht-Sektion aktualisiert mit Jahreskalender-Beschreibung, Autosave-Delay auf 20s korrigiert.
+
+### Verifier
+
+- **Tests**: 578 Tests (31 Dateien), alle bestanden. +11 neue Tests.
+- **Coverage**: 100% stmts, 99.68% branches, 100% fns, 100% lines. (2 branch-Gaps in defensivem Guard `!map.has(key)` — praktisch unerreichtbar.)
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.

@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { STATUS_LABELS, statusVariant } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import Link from "next/link";
-import { FileText } from "lucide-react";
+import { getIsoWeek } from "@/lib/utils";
+import { ReviewerDashboardClient } from "./reviewer-dashboard-client";
 
 interface ReviewerDashboardProps {
   userId: string;
@@ -12,66 +9,75 @@ interface ReviewerDashboardProps {
   basePath: string;
 }
 
+interface TraineeWithReports {
+  id: string;
+  name: string;
+  profession: string | null;
+  trainingStartDate: string | null;
+  reports: {
+    id: string;
+    calendarYear: number;
+    calendarWeek: number;
+    status: string;
+    submittedAt: string | null;
+  }[];
+}
+
 export async function ReviewerDashboard({ userId, role, title, basePath }: ReviewerDashboardProps) {
-  let traineeIds: string[] = [];
+  let assignments: { traineeId: string; trainee: { id: string; name: string; profession: { name: string } | null; trainingStartDate: Date | null } }[] = [];
 
   if (role === "trainer") {
-    const assignments = await prisma.traineeTrainerAssignment.findMany({
+    assignments = await prisma.traineeTrainerAssignment.findMany({
       where: { trainerId: userId },
-      include: { trainee: { select: { id: true, name: true } } },
+      include: { trainee: { select: { id: true, name: true, profession: { select: { name: true } }, trainingStartDate: true } } },
     });
-    traineeIds = assignments.map((a) => a.traineeId);
   } else {
-    const assignments = await prisma.traineeOfficerAssignment.findMany({
+    assignments = await prisma.traineeOfficerAssignment.findMany({
       where: { trainingOfficerId: userId },
-      include: { trainee: { select: { id: true, name: true } } },
+      include: { trainee: { select: { id: true, name: true, profession: { select: { name: true } }, trainingStartDate: true } } },
     });
-    traineeIds = assignments.map((a) => a.traineeId);
   }
 
-  const reports = await prisma.weeklyReport.findMany({
-    where: { traineeId: { in: traineeIds }, status: "submitted" },
-    include: {
-      trainee: { select: { id: true, name: true } },
+  const traineeIds = assignments.map((a) => a.traineeId);
+
+  const allReports = await prisma.weeklyReport.findMany({
+    where: { traineeId: { in: traineeIds } },
+    select: {
+      id: true,
+      traineeId: true,
+      calendarYear: true,
+      calendarWeek: true,
+      status: true,
+      submittedAt: true,
     },
     orderBy: { submittedAt: "desc" },
   });
 
+  const { year: currentYear, week: currentWeek } = getIsoWeek(new Date());
+
+  const traineeData: TraineeWithReports[] = assignments.map((a) => ({
+    id: a.trainee.id,
+    name: a.trainee.name,
+    profession: a.trainee.profession?.name ?? null,
+    trainingStartDate: a.trainee.trainingStartDate?.toISOString() ?? null,
+    reports: allReports
+      .filter((r) => r.traineeId === a.trainee.id)
+      .map((r) => ({
+        id: r.id,
+        calendarYear: r.calendarYear,
+        calendarWeek: r.calendarWeek,
+        status: r.status,
+        submittedAt: r.submittedAt?.toISOString() ?? null,
+      })),
+  }));
+
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-        {title}
-      </h1>
-      {reports.length === 0 ? (
-        <Card>
-          <div className="flex flex-col items-center py-8 text-center">
-            <FileText className="mb-3 h-10 w-10 text-neutral-400" />
-            <p className="text-neutral-500">Keine offenen Berichte zu prüfen.</p>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {reports.map((report) => (
-            <Link key={report.id} href={`${basePath}/report/${report.id}`}>
-              <Card className="mb-3 cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                      KW {report.calendarWeek}/{report.calendarYear}
-                    </p>
-                    <p className="text-sm text-neutral-500">
-                      von {report.trainee.name}
-                    </p>
-                  </div>
-                  <Badge variant={statusVariant(report.status)}>
-                    {STATUS_LABELS[report.status]}
-                  </Badge>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+    <ReviewerDashboardClient
+      title={title}
+      basePath={basePath}
+      trainees={traineeData}
+      currentYear={currentYear}
+      currentWeek={currentWeek}
+    />
   );
 }

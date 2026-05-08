@@ -7,6 +7,8 @@ import {
   getCurrentWeek,
   getIsoWeek,
   getTrainingStartWeek,
+  getWeeksInMonth,
+  statusColor,
   ROLE_LABELS,
   STATUS_LABELS,
   DAY_TYPE_LABELS,
@@ -282,5 +284,62 @@ describe("getTrainingStartWeek", () => {
   it("returns correct week for mid-year date", () => {
     const result = getTrainingStartWeek(new Date("2026-03-01"));
     expect(result).toEqual({ year: 2026, week: 9 });
+  });
+});
+
+describe("statusColor", () => {
+  it("returns emerald for approved", () => {
+    expect(statusColor("approved")).toContain("emerald");
+  });
+
+  it("returns amber for submitted", () => {
+    expect(statusColor("submitted")).toContain("amber");
+  });
+
+  it("returns red for rejected", () => {
+    expect(statusColor("rejected")).toContain("red");
+  });
+
+  it("returns blue for needs_revision", () => {
+    expect(statusColor("needs_revision")).toContain("blue");
+  });
+
+  it("returns neutral for draft", () => {
+    expect(statusColor("draft")).toContain("neutral");
+  });
+
+  it("returns red for missing", () => {
+    expect(statusColor("missing")).toContain("red");
+  });
+});
+
+describe("getWeeksInMonth", () => {
+  it("returns weeks for January 2026", () => {
+    const weeks = getWeeksInMonth(2026, 0);
+    expect(weeks.length).toBeGreaterThanOrEqual(4);
+    expect(weeks[0].year).toBeDefined();
+    expect(weeks[0].week).toBeDefined();
+    expect(weeks[0].startDate).toBeInstanceOf(Date);
+    expect(weeks[0].label).toBeTruthy();
+  });
+
+  it("all weeks have valid week numbers", () => {
+    const weeks = getWeeksInMonth(2026, 5);
+    for (const w of weeks) {
+      expect(w.week).toBeGreaterThanOrEqual(1);
+      expect(w.week).toBeLessThanOrEqual(53);
+    }
+  });
+
+  it("returns no duplicate weeks", () => {
+    const weeks = getWeeksInMonth(2026, 11);
+    const keys = weeks.map((w) => `${w.year}-${w.week}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("covers December with week 52/53", () => {
+    const weeks = getWeeksInMonth(2026, 11);
+    const weekNums = weeks.map((w) => w.week);
+    expect(weekNums.some((w) => w >= 48)).toBe(true);
   });
 });

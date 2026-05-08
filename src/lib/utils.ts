@@ -80,3 +80,49 @@ export function statusVariant(status: string): "success" | "warning" | "danger" 
   };
   return map[status] || "default";
 }
+
+export function statusColor(status: string): string {
+  const map: Record<string, string> = {
+    draft: "bg-neutral-200 dark:bg-neutral-700",
+    submitted: "bg-amber-300 dark:bg-amber-700",
+    approved: "bg-emerald-400 dark:bg-emerald-600",
+    rejected: "bg-red-400 dark:bg-red-600",
+    needs_revision: "bg-blue-300 dark:bg-blue-600",
+    missing: "bg-red-100 dark:bg-red-900/30",
+  };
+  return map[status] || "bg-neutral-100 dark:bg-neutral-800";
+}
+
+export interface WeekInfo {
+  year: number;
+  week: number;
+  startDate: Date;
+  label: string;
+}
+
+export function getWeeksInMonth(year: number, month: number): WeekInfo[] {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  const weeks: WeekInfo[] = [];
+  const seen = new Set<string>();
+
+  const d = new Date(firstDay);
+  d.setHours(12, 0, 0, 0);
+
+  while (d <= lastDay || weeks.length === 0) {
+    const { year: wy, week } = getIsoWeek(d);
+    const key = `${wy}-${week}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      const dates = getWeekDates(wy, week);
+      const startStr = dates[0].toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+      const endStr = dates[6].toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+      weeks.push({ year: wy, week, startDate: dates[0], label: `${startStr} – ${endStr}` });
+    }
+    d.setDate(d.getDate() + 7);
+    if (d.getMonth() !== month && weeks.length > 0) break;
+  }
+
+  return weeks;
+}

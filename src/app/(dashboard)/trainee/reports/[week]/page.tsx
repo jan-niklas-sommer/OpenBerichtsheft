@@ -59,6 +59,11 @@ export default function ReportEditorPage() {
 
   const isEditable = report?.status === "draft" || report?.status === "needs_revision" || !report || isNewFromSlug;
 
+  const autosaveData = useMemo(() => {
+    if (!isEditable) return null;
+    return { reportText, dailyEntries };
+  }, [isEditable, reportText, dailyEntries]);
+
   useEffect(() => {
     fetch("/api/auth/session")
       .then((r) => r.json())
@@ -151,9 +156,9 @@ export default function ReportEditorPage() {
   };
 
   const { saveStatus, save } = useAutosave(
-    { reportText, dailyEntries },
+    autosaveData,
     handleSave,
-    1500
+    20000
   );
 
   const handleSubmit = async () => {

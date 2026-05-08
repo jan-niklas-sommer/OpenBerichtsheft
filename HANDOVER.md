@@ -573,3 +573,37 @@ npm run dev
 
 - `getIsoWeek` nutzt UTC-basierte Berechnung — kann bei Zeitzonen-Grenzen minimal abweichen.
 - Keine UI zum Bearbeiten des Eintrittsdatums nach Erstellung (Folge-Issue).
+
+---
+
+## 2026-05-08 – Arbeitspaket: Kalenderansicht für Wochenberichte (#21)
+
+### Planner
+
+- **Ziel**: Monatskalender-Ansicht auf `/trainee` mit Status-Markern pro KW. Klick öffnet Editor.
+- **Umfang**: Neue `ReportCalendar` Komponente, Trainee Dashboard umgestaltet, Utils erweitert.
+- **Nicht-Ziele**: Reviewer-Kalender (#23), Schnellnavigation (#22).
+- **Akzeptanzkriterien**: Kalender zeigt KWs mit Status, Monatsnavigation, aktuelle KW markiert, Wochen vor Eintritt deaktiviert, Tests.
+
+### Reviewer
+
+- **Bewertung**: Plan angemessen. Client Component mit monatsweiser Anzeige, Reports clientseitig gefiltert.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementer
+
+- **Utils**: `statusColor(status)` für Farbgebung, `getWeeksInMonth(year, month)` → Liste von `WeekInfo` mit year/week/startDate/label.
+- **ReportCalendar**: Client Component mit Monatsnavigation (vor/zurück), zeigt KWs als Liste mit Status-Badges, farbcodierte Kreise, "Fehlt" für fehlende Wochen, "Vor Eintritt" für Wochen vor trainingStartDate, "Aktuell" Badge für aktuelle KW.
+- **Trainee Dashboard**: Ersetzt Liste durch Kalenderansicht, lädt Reports + Session (trainingStartDate).
+
+### Verifier
+
+- **Tests**: 465 Tests (25 Dateien), alle bestanden. 17 neue Tests: ReportCalendar (7), statusColor (6), getWeeksInMonth (4).
+- **Lint**: 0 Errors, 3 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Typecheck**: `npx tsc --noEmit` – 0 Fehler.
+
+### Fixer
+
+- `let d` → `const d` in `getWeeksInMonth` (ESLint prefer-const).
+- Testdaten auf März 2026 angepasst (KW 9-13 statt Feb 5-8).

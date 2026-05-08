@@ -52,7 +52,7 @@ export function useAutosave<T>(
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => executeSave(data), delay);
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      clearTimeout(timeoutRef.current!);
     };
   }, [data, delay]);
 

@@ -192,4 +192,19 @@ describe("GET /api/reports/[id]/pdf", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("application/pdf");
   });
+
+  it("handles report with null submittedAt and reviewedAt", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const draftReport = {
+      ...baseReport,
+      status: "draft",
+      submittedAt: null,
+      reviewedAt: null,
+      reviewedBy: null,
+    };
+    mockFindUnique.mockResolvedValue(draftReport);
+    const res = await GET(makeRequest(), { params });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("application/pdf");
+  });
 });

@@ -639,3 +639,35 @@ npm run dev
 
 - Unused `Calendar` import entfernt.
 - `getAdjacentWeek` in useMemo inline verschoben (exhaustive-deps Warning).
+
+---
+
+## 2026-05-08 – Arbeitspaket: Reviewer-Dashboard-Verbesserung (#23)
+
+### Planner
+
+- **Ziel**: Übersicht pro Azubi mit Kalenderwochen-Status, Filter, Sortierung, Schnellzugriff auf offene Berichte.
+- **Umfang**: Server-Komponente lädt Daten, neue Client-Komponente mit Filter/Expand, Mini-Wochenübersicht.
+- **Akzeptanzkriterien**: Azubi-Gruppierung, Status-Filter, submitted-Reports priorisiert, Mini-Wochenübersicht, mobile kompatibel, Tests.
+
+### Reviewer
+
+- **Bewertung**: Plan angemessen. Server/Client-Split ermöglicht Interaktivität ohne Performance-Verlust.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementer
+
+- **ReviewerDashboard (Server)**: Lädt alle Reports + Trainees mit `trainingStartDate` und `profession`. Nutzt `getIsoWeek` für `currentYear/currentWeek`.
+- **ReviewerDashboardClient (Client)**: Azubi-Gruppierung mit Expand/Collapse, Mini-Wochenübersicht (12 Wochen, farbcodierte Kästchen), Status-Filter (Alle/Eingereicht/Überarbeitung/Genehmigt/Abgelehnt/Entwurf), Badge für offene Berichte, submitted-Reports priorisiert in Expanded-View.
+- **Tests**: 6 Tests angepasst/erweitert (Expand-Test, Officer-Role, Empty-State, Badge).
+
+### Verifier
+
+- **Tests**: 477 Tests (26 Dateien), alle bestanden. 3 neue Tests.
+- **Lint**: 0 Errors, 4 Warnings (1 neu: exhaustive-deps im Client, 3 vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+
+### Fixer
+
+- Button `variant="default"` → `variant="primary"` (Button unterstützt kein default).
+- Empty-State Test angepasst: kein Trainee = leer, nicht kein Report.

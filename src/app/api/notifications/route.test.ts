@@ -102,7 +102,7 @@ describe("PUT /api/notifications/[id]", () => {
 
   it("marks notification as read", async () => {
     mockAuth.mockResolvedValue(userSession);
-    const updated = { id: "n-1", userId: "user-1", read: true };
+    const updated = { id: "n-1", userId: "user-1", type: "missing_report", message: "Test", read: true, createdAt: "2026-01-01T00:00:00.000Z" };
     mockNotifUpdate.mockResolvedValue(updated);
     const req = new NextRequest("http://localhost:3000/api/notifications/n-1", { method: "PUT" });
     const res = await PutById(req, { params: Promise.resolve({ id: "n-1" }) });

@@ -54,10 +54,23 @@ const sampleReports = [
     calendarWeek: 10,
     status: "draft",
     reportText: "Test",
+    submittedAt: null,
+    reviewedAt: null,
+    reviewedById: null,
+    reviewComment: null,
     weekStartDate: "2025-03-03T00:00:00.000Z",
     weekEndDate: "2025-03-09T00:00:00.000Z",
+    createdAt: "2025-03-02T00:00:00.000Z",
+    updatedAt: "2025-03-02T00:00:00.000Z",
     dailyEntries: [],
     trainee: { id: "trainee-1", name: "Trainee", profession: { id: "prof-1", name: "FISI" } },
+  },
+];
+
+const sampleReportsWithAdmin = [
+  {
+    ...sampleReports[0],
+    trainee: { id: "trainee-1", name: "Trainee", email: "trainee@test.de", profession: { id: "prof-1", name: "FISI" } },
   },
 ];
 
@@ -107,11 +120,11 @@ describe("GET /api/reports", () => {
   it("returns assigned trainees reports as trainer", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockTrainerAssignments.mockResolvedValue([{ traineeId: "trainee-1" }]);
-    mockFindMany.mockResolvedValue(sampleReports);
+    mockFindMany.mockResolvedValue(sampleReportsWithAdmin);
     const res = await GET(makeGetRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual(sampleReports);
+    expect(json).toEqual(sampleReportsWithAdmin);
     expect(mockTrainerAssignments).toHaveBeenCalledWith({
       where: { trainerId: "trainer-1" },
     });
@@ -125,11 +138,11 @@ describe("GET /api/reports", () => {
   it("returns assigned trainees reports as training_officer", async () => {
     mockAuth.mockResolvedValue(officerSession);
     mockOfficerAssignments.mockResolvedValue([{ traineeId: "trainee-1" }]);
-    mockFindMany.mockResolvedValue(sampleReports);
+    mockFindMany.mockResolvedValue(sampleReportsWithAdmin);
     const res = await GET(makeGetRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual(sampleReports);
+    expect(json).toEqual(sampleReportsWithAdmin);
     expect(mockOfficerAssignments).toHaveBeenCalledWith({
       where: { trainingOfficerId: "officer-1" },
     });
@@ -142,11 +155,11 @@ describe("GET /api/reports", () => {
 
   it("returns all reports as admin", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockFindMany.mockResolvedValue(sampleReports);
+    mockFindMany.mockResolvedValue(sampleReportsWithAdmin);
     const res = await GET(makeGetRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual(sampleReports);
+    expect(json).toEqual(sampleReportsWithAdmin);
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {},
@@ -220,10 +233,18 @@ describe("POST /api/reports", () => {
   const upsertResult = {
     id: "report-1",
     traineeId: "trainee-1",
+    weekStartDate: "2025-03-02T23:00:00.000Z",
+    weekEndDate: "2025-03-08T23:00:00.000Z",
     calendarYear: 2025,
     calendarWeek: 10,
     status: "draft",
     reportText: "Bericht",
+    submittedAt: null,
+    reviewedAt: null,
+    reviewedById: null,
+    reviewComment: null,
+    createdAt: "2025-03-02T00:00:00.000Z",
+    updatedAt: "2025-03-02T00:00:00.000Z",
     dailyEntries: [],
   };
 

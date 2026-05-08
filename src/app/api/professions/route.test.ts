@@ -64,8 +64,8 @@ describe("GET /api/professions", () => {
   it("returns professions list for admin", async () => {
     mockAuth.mockResolvedValue(adminSession);
     const professions = [
-      { id: "prof-1", name: "FISI", _count: { users: 5 } },
-      { id: "prof-2", name: "FIAE", _count: { users: 3 } },
+      { id: "prof-1", name: "FISI", createdAt: "2025-01-01T00:00:00.000Z", updatedAt: "2025-01-01T00:00:00.000Z", _count: { users: 5 } },
+      { id: "prof-2", name: "FIAE", createdAt: "2025-01-02T00:00:00.000Z", updatedAt: "2025-01-02T00:00:00.000Z", _count: { users: 3 } },
     ];
     mockFindMany.mockResolvedValue(professions);
     const res = await GET();
@@ -127,7 +127,7 @@ describe("POST /api/professions", () => {
 
   it("creates profession successfully", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const created = { id: "prof-1", name: "FISI" };
+    const created = { id: "prof-1", name: "FISI", createdAt: "2025-01-01T00:00:00.000Z", updatedAt: "2025-01-01T00:00:00.000Z" };
     mockCreate.mockResolvedValue(created);
     const res = await POST(makePostRequest({ name: "FISI" }));
     expect(res.status).toBe(201);

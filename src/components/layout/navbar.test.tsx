@@ -224,4 +224,84 @@ describe("Navbar", () => {
     const bellSvg = document.querySelector(".lucide-bell");
     expect(bellSvg).toBeInTheDocument();
   });
+
+  it("handles undefined notifications gracefully", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({}),
+    });
+    render(<Navbar role="trainee" userName="Test" />);
+    await waitFor(() => {
+      const bellSvg = document.querySelector(".lucide-bell");
+      expect(bellSvg).toBeInTheDocument();
+    });
+  });
+
+  it("marks last unread notification and shows 0", async () => {
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({
+          notifications: [
+            { id: "n-1", userId: "u-1", type: "info", message: "Test", read: false, createdAt: "2026-03-10T10:00:00Z" },
+          ],
+          unreadCount: 1,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true });
+    const user = userEvent.setup();
+    render(<Navbar role="trainee" userName="Test" />);
+    await waitFor(() => {
+      expect(screen.getByText("1")).toBeInTheDocument();
+    });
+    const bellBtn = document.querySelector(".lucide-bell")!.closest("button")!;
+    await user.click(bellBtn);
+    const checkBtn = document.querySelector(".lucide-check")!.closest("button")!;
+    await user.click(checkBtn);
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+  });
+
+  it("marks notification read when unread count is already 0", async () => {
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({
+          notifications: [
+            { id: "n-1", userId: "u-1", type: "info", message: "Test", read: false, createdAt: "2026-03-10T10:00:00Z" },
+          ],
+          unreadCount: 0,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true });
+    const user = userEvent.setup();
+    render(<Navbar role="trainee" userName="Test" />);
+    await waitFor(() => {
+      expect(screen.getByText("Test")).toBeInTheDocument();
+    });
+    const bellBtn = document.querySelector(".lucide-bell")!.closest("button")!;
+    await user.click(bellBtn);
+    const checkBtn = document.querySelector(".lucide-check")!.closest("button")!;
+    await user.click(checkBtn);
+  });
+
+  it("marks one notification read among multiple", async () => {
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({
+          notifications: [
+            { id: "n-1", userId: "u-1", type: "info", message: "First", read: false, createdAt: "2026-03-10T10:00:00Z" },
+            { id: "n-2", userId: "u-1", type: "info", message: "Second", read: false, createdAt: "2026-03-11T10:00:00Z" },
+          ],
+          unreadCount: 2,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true });
+    const user = userEvent.setup();
+    render(<Navbar role="trainee" userName="Test" />);
+    await waitFor(() => {
+      expect(screen.getByText("2")).toBeInTheDocument();
+    });
+    const bellBtn = document.querySelector(".lucide-bell")!.closest("button")!;
+    await user.click(bellBtn);
+    const checkBtns = document.querySelectorAll(".lucide-check");
+    await user.click(checkBtns[0]!.closest("button")!);
+    expect(global.fetch).toHaveBeenCalledWith("/api/notifications/n-1", { method: "PUT" });
+  });
 });

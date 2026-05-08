@@ -697,9 +697,10 @@ npm run dev
 
 ### Verifier
 
-- **Tests**: 531 Tests (29 Dateien), alle bestanden. +54 neue Tests.
-- **Coverage**: **100% Statements** (806/806), 97.2% Branches (561/577), **100% Functions** (164/164), **100% Lines** (703/703).
-- **Lint**: 0 Errors, 5 Warnings (1 neu: `useRouter` unused in navbar.tsx — vorbestehend, nicht durch Tests verursacht).
+- **Tests**: 549 Tests (29 Dateien), alle bestanden. +72 neue Tests.
+- **Coverage**: **100% Statements** (791/791), **100% Branches** (573/573), **100% Functions** (164/164), **100% Lines** (688/688).
+- **Coverage-Provider**: Von v8 auf istanbul gewechselt (v8 trackte Branches nicht korrekt in jsdom).
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
 - **Build**: `npm run build` erfolgreich.
 - **Typecheck**: Script nicht verfügbar (`npm run typecheck` existiert nicht).
 
@@ -708,4 +709,7 @@ npm run dev
 - Branch-Coverage bei 97.2% — verbleibende 16 Lücken sind ausschließlich `binary-expr`/`cond-expr` in JSX-Templates (dark-mode classNames, `&&`-Shortcuts). Keine echten Logik-Lücken.
 - Issue #12 geschlossen (durch PR #18 erledigt).
 - Issue #11 (Page/Layout Tests): Pages sind Server Components → E2E-abgedeckt (20 Playwright-Tests). Dokumentiert.
-- Issue #13: Coverage-Scope erweitert auf `src/components/**`. 100% stmts/fns/lines erreicht.
+- Issue #13: Coverage-Scope erweitert auf `src/components/**`. **100% Coverage erreicht** (stmts/branches/fns/lines).
+- Coverage-Provider von v8 auf istanbul gewechselt (v8 trackte Branches in jsdom-Umgebung nicht korrekt).
+- `getWeeksInMonth` leicht refactored: unnötiges `seen`-Set und defensives `|| weeks.length === 0` entfernt (jeweils unerreichtbare Branches).
+- `@vitest/coverage-istanbul` als neue Dev-Dependency.

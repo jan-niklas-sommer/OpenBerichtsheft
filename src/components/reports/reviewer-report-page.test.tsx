@@ -227,6 +227,20 @@ describe("ReviewerReportPage", () => {
     });
   });
 
+  it("renders entry key using date when id is missing", async () => {
+    fetchMock.mockResolvedValueOnce({
+      json: () => Promise.resolve({
+        ...mockReport,
+        dailyEntries: [{ date: "2026-03-09", dayType: "company", hours: 8, minutes: 0 }],
+      }),
+    });
+    render(<ReviewerReportPage basePath="/trainer" />);
+    await waitFor(() => {
+      expect(screen.getByText(/KW 11\/2026/)).toBeInTheDocument();
+    });
+    expect(screen.getByText("8h 0min")).toBeInTheDocument();
+  });
+
   it("renders trainee without profession", async () => {
     fetchMock.mockResolvedValueOnce({
       json: () => Promise.resolve({

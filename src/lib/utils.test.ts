@@ -311,6 +311,10 @@ describe("statusColor", () => {
   it("returns red for missing", () => {
     expect(statusColor("missing")).toContain("red");
   });
+
+  it("returns neutral for unknown status", () => {
+    expect(statusColor("unknown_status" as never)).toContain("neutral");
+  });
 });
 
 describe("getWeeksInMonth", () => {

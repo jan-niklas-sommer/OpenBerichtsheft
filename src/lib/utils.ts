@@ -101,28 +101,22 @@ export interface WeekInfo {
 }
 
 export function getWeeksInMonth(year: number, month: number): WeekInfo[] {
-  const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
   const weeks: WeekInfo[] = [];
-  const seen = new Set<string>();
 
-  const d = new Date(firstDay);
+  const d = new Date(year, month, 1);
   d.setHours(12, 0, 0, 0);
 
-  while (d <= lastDay || weeks.length === 0) {
+  do {
     const { year: wy, week } = getIsoWeek(d);
-    const key = `${wy}-${week}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      const dates = getWeekDates(wy, week);
-      const startStr = dates[0].toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
-      const endStr = dates[6].toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
-      weeks.push({ year: wy, week, startDate: dates[0], label: `${startStr} – ${endStr}` });
-    }
+    const dates = getWeekDates(wy, week);
+    const startStr = dates[0].toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+    const endStr = dates[6].toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+    weeks.push({ year: wy, week, startDate: dates[0], label: `${startStr} – ${endStr}` });
     d.setDate(d.getDate() + 7);
     if (d.getMonth() !== month && weeks.length > 0) break;
-  }
+  } while (d <= lastDay);
 
   return weeks;
 }

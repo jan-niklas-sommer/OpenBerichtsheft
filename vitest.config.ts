@@ -10,7 +10,7 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
       include: ["src/lib/**", "src/hooks/**", "src/app/api/**", "src/components/**"],
       exclude: [
         "src/app/api/auth/**",

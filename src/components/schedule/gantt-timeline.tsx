@@ -135,14 +135,14 @@ export function GanttTimeline({
     return (
       <div
         key={index}
-        className={`absolute top-0 ${isWeekend ? "bg-neutral-100 dark:bg-neutral-900/50" : ""}`}
+        className={`absolute top-0 ${isWeekend ? "bg-surface-sunken" : ""}`}
         style={{ left: index * cellWidth, width: cellWidth, height }}
       >
         {top ? (
           <div
             className={`h-full rounded-[1px] ${
               showConflicts && getConflictsForDay(traineeId, date, assignments).length > 1
-                ? "ring-1 ring-red-400 ring-inset"
+                ? "ring-1 ring-danger ring-inset"
                 : ""
             } ${mode === "edit" && onCellClick ? "cursor-pointer" : ""}`}
             style={{
@@ -164,13 +164,13 @@ export function GanttTimeline({
   const renderTimelineContent = () => (
     <div className="relative" style={{ width: days.length * cellWidth }}>
       <div
-        className="flex border-b border-neutral-200 dark:border-neutral-800"
+        className="flex border-b border-stroke-subtle"
         style={{ height: monthRowHeight }}
       >
         {monthHeaders.map((m, i) => (
           <div
             key={i}
-            className="absolute flex items-center px-1 text-[10px] font-medium text-neutral-500 dark:text-neutral-400"
+            className="absolute flex items-center px-1 text-[10px] font-medium text-content-muted"
             style={{ left: m.offset, width: m.width, height: monthRowHeight }}
           >
             <span className="truncate">{m.label}</span>
@@ -179,13 +179,13 @@ export function GanttTimeline({
       </div>
 
       <div
-        className="relative flex border-b border-neutral-200 dark:border-neutral-800"
+        className="relative flex border-b border-stroke-subtle"
         style={{ height: weekRowHeight }}
       >
         {weekHeaders.map((w, i) => (
           <div
             key={i}
-            className="absolute flex items-center justify-center text-[9px] text-neutral-400 dark:text-neutral-500"
+            className="absolute flex items-center justify-center text-[9px] text-content-subtle"
             style={{ left: w.offset, width: w.width, height: weekRowHeight }}
           >
             {w.label}
@@ -194,7 +194,7 @@ export function GanttTimeline({
         {weekBoundaryIndices.map((idx) => (
           <div
             key={`wb-${idx}`}
-            className="absolute top-0 h-full border-l border-neutral-200/60 dark:border-neutral-800/60"
+            className="absolute top-0 h-full border-l border-stroke-subtle"
             style={{ left: idx * cellWidth }}
           />
         ))}
@@ -203,7 +203,7 @@ export function GanttTimeline({
       <div className="relative">
         {todayIndex >= 0 && (
           <div
-            className="absolute z-20 w-0 border-l-2 border-red-500 dark:border-red-400"
+            className="absolute z-20 w-0 border-l-2 border-danger"
             style={{
               left: todayIndex * cellWidth + cellWidth / 2,
               top: 0,
@@ -215,7 +215,7 @@ export function GanttTimeline({
         {rows.map((row) => (
           <div
             key={row.traineeId}
-            className="relative border-b border-neutral-100 dark:border-neutral-800/50"
+            className="relative border-b border-stroke-subtle"
             style={{ height: singleRow ? 40 : rowHeight }}
           >
             {days.map((date, i) =>
@@ -229,7 +229,7 @@ export function GanttTimeline({
             {weekBoundaryIndices.map((idx) => (
               <div
                 key={`wbr-${row.traineeId}-${idx}`}
-                className="absolute top-0 h-full border-l border-dashed border-neutral-200/40 dark:border-neutral-800/40"
+                className="absolute top-0 h-full border-l border-dashed border-stroke-subtle"
                 style={{ left: idx * cellWidth }}
               />
             ))}
@@ -241,26 +241,26 @@ export function GanttTimeline({
 
   if (singleRow && rows.length === 1) {
     return (
-      <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <div className="overflow-x-auto rounded-lg border border-stroke-subtle">
         {renderTimelineContent()}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+    <div className="overflow-x-auto rounded-lg border border-stroke-subtle">
       <div className="flex">
-        <div className="sticky left-0 z-10 min-w-[160px] border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-          <div style={{ height: headerHeight }} className="flex items-end border-b border-neutral-200 px-3 pb-1 text-xs font-medium text-neutral-500 dark:border-neutral-800">
+        <div className="sticky left-0 z-10 min-w-[160px] border-r border-stroke-subtle bg-surface-base">
+          <div style={{ height: headerHeight }} className="flex items-end border-b border-stroke-subtle px-3 pb-1 text-xs font-medium text-content-muted">
             Azubi
           </div>
           {rows.map((row) => (
             <div
               key={row.traineeId}
-              className="flex items-center border-b border-neutral-100 px-3 dark:border-neutral-800/50"
+              className="flex items-center border-b border-stroke-subtle px-3"
               style={{ height: rowHeight }}
             >
-              <span className="truncate text-xs font-medium text-neutral-900 dark:text-neutral-100">
+              <span className="truncate text-xs font-medium text-content-base">
                 {row.label}
               </span>
             </div>
@@ -282,7 +282,7 @@ export function ScheduleLegend() {
             className="h-3 w-3 rounded-sm"
             style={{ backgroundColor: TYPE_COLORS[type] }}
           />
-          <span className="text-xs text-neutral-500">{label}</span>
+          <span className="text-xs text-content-muted">{label}</span>
         </div>
       ))}
     </div>

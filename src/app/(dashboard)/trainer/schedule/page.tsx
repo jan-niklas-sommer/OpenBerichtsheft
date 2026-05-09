@@ -192,19 +192,19 @@ export default function SchedulePage() {
     setViewStart(d);
   };
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           Einsatzplanung
         </h1>
         <div className="flex gap-2">
           <Button variant="secondary" size="sm" onClick={() => navigateMonths(-1)}>
             ←
           </Button>
-          <span className="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
+          <span className="flex items-center text-sm text-content-muted">
             {viewStart.toLocaleDateString("de-DE", {
               month: "long",
               year: "numeric",
@@ -225,13 +225,13 @@ export default function SchedulePage() {
           placeholder="Azubi suchen..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-9 rounded-lg border border-neutral-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+          className="h-9 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
         />
         {professions.length > 1 && (
           <select
             value={professionFilter}
             onChange={(e) => setProfessionFilter(e.target.value)}
-            className="h-9 rounded-lg border border-neutral-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+            className="h-9 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
           >
             <option value="">Alle Berufe</option>
             {professions.map((p) => (
@@ -261,10 +261,10 @@ export default function SchedulePage() {
         >
           <div
             ref={popoverRef}
-            className="w-80 rounded-lg border border-neutral-200 bg-white p-5 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
+            className="w-80 rounded-lg border border-stroke-subtle bg-surface-elevated p-5 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="mb-3 font-semibold text-neutral-900 dark:text-neutral-100">
+            <h3 className="mb-3 font-semibold text-content-base">
               Bearbeiten
             </h3>
             <div className="space-y-3">
@@ -273,7 +273,7 @@ export default function SchedulePage() {
                 onChange={(e) =>
                   setForm({ ...form, scheduleType: e.target.value as ScheduleType })
                 }
-                className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
               >
                 {Object.entries(TYPE_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -283,21 +283,21 @@ export default function SchedulePage() {
               </select>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Von</label>
+                  <label className="mb-1 block text-xs text-content-muted">Von</label>
                   <input
                     type="date"
                     value={form.startDate}
                     onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                    className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Bis</label>
+                  <label className="mb-1 block text-xs text-content-muted">Bis</label>
                   <input
                     type="date"
                     value={form.endDate}
                     onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                    className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
                   />
                 </div>
               </div>
@@ -314,13 +314,13 @@ export default function SchedulePage() {
                   onChange={(e) =>
                     setForm({ ...form, department: e.target.value })
                   }
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
                 />
               )}
               <select
                 value={form.supervisorId}
                 onChange={(e) => setForm({ ...form, supervisorId: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
               >
                 <option value="">Betreuer (optional)...</option>
                 {officers.map((o) => (
@@ -329,7 +329,7 @@ export default function SchedulePage() {
                   </option>
                 ))}
               </select>
-              <div className="flex justify-end gap-2 border-t border-neutral-100 pt-3 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 border-t border-stroke-subtle pt-3">
                 <Button size="sm" onClick={handleUpdate}>
                   Speichern
                 </Button>

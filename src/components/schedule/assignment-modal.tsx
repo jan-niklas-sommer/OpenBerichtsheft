@@ -152,7 +152,7 @@ export function AssignmentModal({
   ];
 
   const inputClass =
-    "h-9 w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100";
+    "h-9 w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base";
   const selectClass = inputClass;
 
   return (
@@ -161,22 +161,22 @@ export function AssignmentModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-6 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
+        className="w-full max-w-lg rounded-lg border border-stroke-subtle bg-surface-elevated p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+        <h3 className="mb-4 text-lg font-semibold text-content-base">
           Einsatz planen
         </h3>
 
-        <div className="mb-4 flex gap-1 rounded-lg border border-neutral-200 p-1 dark:border-neutral-800">
+        <div className="mb-4 flex gap-1 rounded-lg border border-stroke-subtle p-1">
           {modeTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => { setMode(tab.key); setError(""); }}
               className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 mode === tab.key
-                  ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                  : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  ? "bg-accent text-accent-fg"
+                  : "text-content-muted hover:bg-surface-overlay"
               }`}
             >
               {tab.label}
@@ -215,7 +215,7 @@ export function AssignmentModal({
 
           {mode === "recurring" && (
             <div>
-              <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">
+              <label className="mb-1 block text-xs text-content-muted">
                 Wochentage
               </label>
               <div className="flex gap-1.5">
@@ -229,8 +229,8 @@ export function AssignmentModal({
                       onClick={() => toggleDay(day)}
                       className={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors ${
                         active
-                          ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                          : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                          ? "bg-accent text-accent-fg"
+                          : "border border-stroke-base text-content-muted hover:bg-surface-overlay"
                       }`}
                     >
                       {name}
@@ -243,7 +243,7 @@ export function AssignmentModal({
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Von</label>
+              <label className="mb-1 block text-xs text-content-muted">Von</label>
               <input
                 type="date"
                 value={startDate}
@@ -253,7 +253,7 @@ export function AssignmentModal({
               />
             </div>
             <div className="flex-1">
-              <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Bis</label>
+              <label className="mb-1 block text-xs text-content-muted">Bis</label>
               <input
                 type="date"
                 value={endDate}
@@ -302,11 +302,11 @@ export function AssignmentModal({
           </select>
 
           {mode === "recurring" && previewDates.length > 0 && (
-            <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
-              <p className="mb-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            <div className="rounded-lg border border-stroke-subtle bg-surface-overlay p-3">
+              <p className="mb-1.5 text-xs font-medium text-content-muted">
                 Nächste {previewDates.length} Termine
               </p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-neutral-700 dark:text-neutral-300">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-content-muted">
                 {previewDates.map((d) => (
                   <span key={d.toISOString()}>
                     {d.toLocaleDateString("de-DE", {
@@ -322,16 +322,16 @@ export function AssignmentModal({
           )}
 
           {mode === "recurring" && startDate && endDate && selectedDays.length > 0 && previewDates.length === 0 && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-danger">
               Diese Regel erzeugt keine Termine im Geltungszeitraum.
             </p>
           )}
 
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <p className="text-sm text-danger">{error}</p>
           )}
 
-          <div className="flex justify-end gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
+          <div className="flex justify-end gap-2 border-t border-stroke-subtle pt-4">
             <Button
               type="button"
               variant="ghost"

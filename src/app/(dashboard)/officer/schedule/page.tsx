@@ -50,12 +50,12 @@ export default function OfficerSchedulePage() {
       .sort((a, b) => a[1].localeCompare(b[1]));
   }, [filtered]);
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           Einsatzplanung
         </h1>
         <div className="flex gap-2">
@@ -70,7 +70,7 @@ export default function OfficerSchedulePage() {
           >
             ←
           </Button>
-          <span className="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
+          <span className="flex items-center text-sm text-content-muted">
             {viewStart.toLocaleDateString("de-DE", {
               month: "long",
               year: "numeric",
@@ -95,7 +95,7 @@ export default function OfficerSchedulePage() {
         placeholder="Azubi suchen..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 h-9 rounded-lg border border-neutral-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+        className="mb-4 h-9 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
       />
 
       <GanttTimeline

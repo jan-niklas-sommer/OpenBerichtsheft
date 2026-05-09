@@ -1318,3 +1318,35 @@ npm run dev
 
 - AP6: Schedule-Pages, Gantt-Timeline, Assignment-Modal
 - AP7: Report-Editor, PDF, Report-Komponenten
+
+---
+
+## 2026-05-09 – Arbeitspaket: Schedule-Komponenten auf Design-Token (AP6)
+
+### Planner
+
+- **Ziel:** Schedule-Pages (trainer/trainee/officer), Gantt-Timeline, Assignment-Modal auf Token umstellen.
+- **Umfang:** 5 Dateien, ~1500 Zeilen.
+- **Akzeptanzkriterien:** 0 hardcoded Farbklassen, 659 Tests grün, Build OK.
+
+### Reviewer
+
+- Freigabe. Gantt: Heute-Linie auf `border-danger`, Konflikt-Indikator auf `ring-danger`.
+
+### Implementierte Änderungen
+
+- `trainer/schedule/page.tsx` — Heading, Labels, 6 raw select/input, Edit-Popover, Footer auf Token
+- `trainee/schedule/page.tsx` — Heading, Labels, Empty-State auf Token
+- `officer/schedule/page.tsx` — Heading, Labels, Search-Input auf Token
+- `gantt-timeline.tsx` — Wochenenden `bg-surface-sunken`, Borders `border-stroke-subtle`, Texte `content-muted/subtle`, Heute-Linie `border-danger`, Konflikt `ring-danger`, Name-Spalte `bg-surface-base`, Legende `text-content-muted`
+- `assignment-modal.tsx` — shared inputClass auf Token, Modal `bg-surface-elevated`, Tab-Group `border-stroke-subtle`, Aktive Tabs `bg-accent text-accent-fg`, Day-Buttons auf accent-Inversion, Preview `bg-surface-overlay`, Errors `text-danger`, Footer `border-stroke-subtle`
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings.
+- **Tests**: 659 Tests, alle bestanden.
+- **Build**: erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- AP7: Report-Editor (`trainee/reports/[week]`), PDF (`pdf-document.tsx`), Report-Komponenten (year-calendar, report-calendar, reviewer-dashboard, reviewer-report)

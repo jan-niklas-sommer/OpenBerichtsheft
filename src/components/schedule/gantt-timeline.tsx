@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import {
   TYPE_COLORS,
+  TYPE_BORDER_COLORS,
   TYPE_LABELS,
   getTopAssignmentForDay,
   getConflictsForDay,
@@ -140,13 +141,14 @@ export function GanttTimeline({
       >
         {top ? (
           <div
-            className={`h-full rounded-[1px] ${
+            className={`h-full rounded-[1px] border-l-2 ${
               showConflicts && getConflictsForDay(traineeId, date, assignments).length > 1
                 ? "ring-1 ring-danger ring-inset"
                 : ""
             } ${mode === "edit" && onCellClick ? "cursor-pointer" : ""}`}
             style={{
               backgroundColor: TYPE_COLORS[top.scheduleType],
+              borderLeftColor: TYPE_BORDER_COLORS[top.scheduleType],
               opacity: isWeekend ? 0.6 : 1,
             }}
             title={`${TYPE_LABELS[top.scheduleType]}${top.department ? ` — ${top.department}` : ""}${top.supervisor ? ` — ${top.supervisor.name}` : ""}`}
@@ -279,8 +281,11 @@ export function ScheduleLegend() {
       {Object.entries(TYPE_LABELS).map(([type, label]) => (
         <div key={type} className="flex items-center gap-1.5">
           <div
-            className="h-3 w-3 rounded-sm"
-            style={{ backgroundColor: TYPE_COLORS[type] }}
+            className="h-3 w-3 rounded-sm border-l-2"
+            style={{
+              backgroundColor: TYPE_COLORS[type],
+              borderLeftColor: TYPE_BORDER_COLORS[type],
+            }}
           />
           <span className="text-xs text-content-muted">{label}</span>
         </div>

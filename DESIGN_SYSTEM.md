@@ -146,16 +146,16 @@ Vier Lernort-Kategorien. Hue-Spektrum bewusst getrennt von semantischen Farben.
 
 ```css
 --color-cat-department-fg: #5eead4;     /* teal-300 */
---color-cat-department-bg: rgba(20, 184, 166, 0.20);
+--color-cat-department-bg: rgba(20, 184, 166, 0.35);
 
 --color-cat-school-fg: #a5b4fc;         /* indigo-300 */
---color-cat-school-bg: rgba(99, 102, 241, 0.20);
+--color-cat-school-bg: rgba(99, 102, 241, 0.35);
 
 --color-cat-vacation-fg: #fde047;       /* yellow-300 */
---color-cat-vacation-bg: rgba(234, 179, 8, 0.18);
+--color-cat-vacation-bg: rgba(234, 179, 8, 0.30);
 
 --color-cat-other-fg: #f9a8d4;          /* pink-300 */
---color-cat-other-bg: rgba(236, 72, 153, 0.20);
+--color-cat-other-bg: rgba(236, 72, 153, 0.35);
 ```
 
 **Migration:**
@@ -352,6 +352,26 @@ outline-offset: 1px;
 ```
 
 **Placeholder:** `--color-fg-subtle`.
+
+### DatePicker
+
+```css
+/* Trigger Button */
+background: var(--color-bg-base);
+color: var(--color-fg-base);
+border: 1px solid var(--color-border-base);
+padding: var(--space-2) var(--space-3);
+border-radius: var(--radius-sm);
+font-size: var(--font-size-sm);
+height: 2.5rem;
+```
+
+**Calendar (im Popover):**
+- Selected: `bg-accent text-accent-fg`
+- Today: `text-accent font-semibold`
+- Outside/Disabled: `text-content-subtle opacity-50`
+- Hover: `bg-surface-overlay`
+- Deutsche Locale (`date-fns/locale/de`), `weekStartsOn: 1` (ISO)
 
 ### Cards
 

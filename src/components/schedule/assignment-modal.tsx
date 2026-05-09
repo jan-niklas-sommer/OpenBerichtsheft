@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   TYPE_LABELS,
   type ScheduleType,
@@ -244,22 +245,18 @@ export function AssignmentModal({
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="mb-1 block text-xs text-content-muted">Von</label>
-              <input
-                type="date"
+              <DatePicker
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                className={inputClass}
+                onChange={setStartDate}
+                placeholder="Startdatum"
               />
             </div>
             <div className="flex-1">
               <label className="mb-1 block text-xs text-content-muted">Bis</label>
-              <input
-                type="date"
+              <DatePicker
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-                className={inputClass}
+                onChange={setEndDate}
+                placeholder="Enddatum"
               />
             </div>
           </div>

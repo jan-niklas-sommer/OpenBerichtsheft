@@ -10,6 +10,8 @@
 | Datenbank | PostgreSQL | 16.x |
 | ORM | Prisma | 6.x |
 | Authentifizierung | Auth.js (NextAuth v5) | 5.x |
+| Kalender | react-day-picker | 10.x |
+| Popover | @radix-ui/react-popover | 1.x |
 | Runtime | Node.js | 22.x |
 | Deployment | Docker + docker-compose | - |
 
@@ -51,7 +53,7 @@ open-berichtsheft/
 │   │   ├── page.tsx           # Landing / Redirect
 │   │   └── globals.css
 │   ├── components/            # Wiederverwendbare UI-Komponenten
-│   │   ├── ui/                # Primitives (Button, Card, Input, etc.)
+│   │   ├── ui/                # Primitives (Button, Card, Input, DatePicker, Calendar, Popover, etc.)
 │   │   ├── layout/            # Shell, Sidebar, Navbar
 │   │   └── reports/           # Report-spezifische Komponenten
 │   ├── lib/                   # Utilities undShared Logic

@@ -1054,3 +1054,37 @@ npm run dev
 - RecurrenceException UI fehlt (nur Schema + API-seitiges Exception-Handling im Resolver).
 - Bericht-Editor Umbau (Prefill-Integration beim Lazy-Create) noch nicht implementiert.
 - Tagesplan-Modus (Composition) erstellt aktuell nur einen Einzeleinsatz — Erweiterung zu Mehrfach-Einsatz pro Tag in Phase 2.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Report Prefill Integration (Lazy-Create)
+
+### Planner
+
+- **Ziel**: Bericht-Editor mit Prefill aus der Einsatzplanung verknüpfen.
+- **Umfang**:
+  - `/api/reports/prefill` — Neuer Endpunkt, der aufgelöste DailyEntry-Daten für eine Woche zurückgibt
+  - Bericht-Editor: Prefill-Fetch wenn kein existierender Bericht gefunden wird (Lazy-Create)
+  - Week-Navigation nutzt ebenfalls Prefill
+- **Nicht-Ziele**: UI-Umbau des Editors (nur Datenanbindung).
+
+### Reviewer
+
+- Freigabe ohne Einwände.
+
+### Implementierte Änderungen
+
+- `src/app/api/reports/prefill/route.ts` — GET-Endpunkt: Lädt ScheduleAssignments + RecurrenceRules + Exceptions für den Trainee, resolvt die Woche via `buildDefaultEntries`, gibt 7 Einträge zurück
+- `src/app/(dashboard)/trainee/reports/[week]/page.tsx` — Bei `!found` (kein existierender Bericht): Prefill-Fetch, asynchrones Nachladen der aufgelösten Einträge. Gleicher Mechanismus bei `navigateWeek`.
+
+### Verifikation
+
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Prefill passiert asynchron nach initialem Render — kurzes Aufblitzen der Default-Werte möglich.
+- Prefill-Endpunkt hat keine Tests (sollte in Folgeaufgabe nachgeholt werden).
+- RecurrenceException UI fehlt weiterhin.

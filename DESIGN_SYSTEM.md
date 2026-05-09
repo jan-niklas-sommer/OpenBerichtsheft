@@ -392,7 +392,7 @@ font-weight: var(--font-weight-medium);
 ### Modals
 
 ```css
-overlay-background: rgba(0, 0, 0, 0.5); /* beide Modi */
+overlay-background: var(--ds-overlay-backdrop); /* rgba(0, 0, 0, 0.5) beide Modi */
 modal-background: var(--color-bg-elevated);
 border: 1px solid var(--color-border-subtle);
 border-radius: var(--radius-md);

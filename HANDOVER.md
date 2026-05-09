@@ -1384,3 +1384,157 @@ npm run dev
 ### Ergebnis
 
 **Design-System-Migration abgeschlossen.** Alle 7 Arbeitspakete (AP1–AP7) umgesetzt. Die gesamte `src/`-Codebase nutzt jetzt CSS-Variablen-basierte Design-Token.
+
+---
+
+## 2026-05-09 – Code-Review: Design-System-Migration (Post-Completion Audit)
+
+### Planner
+
+- **Ziel:** Nach Abschluss aller 7 Design-System-Migrations-Arbeitspakete (AP1–AP7) einen abschließenden Audit durchführen, um verbleibende Abweichungen von DESIGN_SYSTEM.md zu identifizieren.
+- **Umfang:** Alle `src/**/*.tsx`-Dateien, DESIGN_SYSTEM.md-Spezifikation, Token-Definitionen in `globals.css`.
+- **Nicht-Ziele:** Keine Code-Änderungen, nur Bestandsaufnahme und Dokumentation.
+
+### Reviewer
+
+- Freigabe. Audit ist rein dokumentativ.
+
+### Audit-Ergebnisse
+
+#### 1. Overlay-Backdrops (Mittel)
+
+**Spezifikation:** `overlay-background: rgba(0, 0, 0, 0.5)` (DESIGN_SYSTEM.md Zeile 395).
+**Ist-Zustand:**
+
+| Datei | Wert |
+|-------|------|
+| `assignment-modal.tsx:160` | `bg-black/30` |
+| `trainer/schedule/page.tsx:259` | `bg-black/30` |
+| `navbar.tsx:212` | `bg-black/20` |
+
+**Empfehlung:** Neuen Token `--color-overlay-backdrop` einführen (`rgba(0,0,0,0.5)`) oder bestehende Werte auf `/50` angleichen. Navbar-Mobilmenü kann bei `/20` bleiben (leichterer Overlay für mobile Navigation ist gängiges Muster).
+
+#### 2. font-bold außerhalb von Page-Headings (Niedrig)
+
+**Spezifikation:** "Bold (700) nur für Page-Headings. UI-Elemente nutzen Medium (500) oder Semibold (600)." (DESIGN_SYSTEM.md Zeile 201).
+**Ist-Zustand:** 3 Vorkommen in `admin/page.tsx:33,45,57` — alle sind Page-Headings (`<p className="text-3xl font-bold text-content-base">`).
+
+**Bewertung:** Konform. Alle `font-bold`-Nutzungen sind Page-Headings. Keine Aktion erforderlich.
+
+#### 3. Shadow-Hardcodes statt Token (Mittel)
+
+**Spezifikation:** Shadows sollen über Token `shadow-sm`, `shadow-md`, `shadow-lg` referenziert werden (DESIGN_SYSTEM.md Zeile 277-279).
+**Ist-Zustand:** Alle 5 `shadow-lg`-Nutzungen nutzen Tailwind `shadow-lg` Utility direkt, nicht den Design-System-Token.
+
+| Datei | Zeile | Kontext |
+|-------|------|---------|
+| `year-calendar.tsx` | 180 | Tooltip-Popup |
+| `assignment-modal.tsx` | 164 | Modal-Container |
+| `trainer/schedule/page.tsx` | 264 | Edit-Popover |
+| `navbar.tsx` | 102 | Dropdown-Menü |
+| `navbar.tsx` | 213 | Mobile Navigation |
+
+**Problem:** Tailwind `shadow-lg` verwendet Tailwind-eigene Shadow-Werte, nicht die `--shadow-lg` CSS-Variable aus dem Design-System. Die Token-Definition in `globals.css` existiert bereits (`--shadow-sm/md/lg`).
+
+**Empfehlung:** `@theme inline` in `globals.css` um Shadow-Token-Klassen erweitern, damit `shadow-sm/md/lg` die CSS-Variablen referenzieren. Dann sind alle 5 Stellen automatisch konform.
+
+#### 4. Destructive-Button hover:opacity-80 (Niedrig)
+
+**Spezifikation:** Anti-Pattern "Keine Opacity unter 0.4 für Text" (DESIGN_SYSTEM.md Zeile 573). Buttons nutzen Inversion oder Pastell.
+**Ist-Zustand:** `button.tsx:29` — `"bg-danger-soft text-danger hover:opacity-80"`.
+
+**Bewertung:** `opacity-80` ist über der 0.4-Schwelle und dient als Hover-Feedback auf Pastell-Button. Akzeptabel, aber besser wäre ein tokenisierter Hover-State (z.B. `hover:bg-danger-soft-hover`).
+
+#### 5. focus-visible:ring-offset-2 nicht tokenisiert (Niedrig)
+
+**Ist-Zustand:** `button.tsx:21` — `focus-visible:ring-2 focus-visible:ring-offset-2`. Der Ring-Offset nutzt den Tailwind-Standardwert (2px), nicht einen Design-System-Token.
+
+**Bewertung:** Kosmetisch. Focus-Ring-Verhalten ist funktional korrekt. Kann in einem späteren Token-Refinement-Paket adressiert werden.
+
+#### 6. backdrop-blur nicht tokenisiert (Niedrig)
+
+**Ist-Zustand:**
+| Datei | Zeile | Wert |
+|-------|------|------|
+| `navbar.tsx` | 159 | `backdrop-blur-lg` |
+| `year-calendar.tsx` | 180 | `backdrop-blur-sm` |
+
+**Bewertung:** DESIGN_SYSTEM.md spezifiziert keine Blur-Token. Funktional korrekt. Kann bei Bedarf in einem späteren Paket tokenisiert werden.
+
+#### 7. opacity-40 bei deaktivierten Kalendertagen (Niedrig)
+
+**Ist-Zustand:** `report-calendar.tsx:99` — `"pointer-events-none opacity-40"`.
+
+**Bewertung:** Opacity 0.4 ist exakt an der unteren Grenze der Anti-Pattern-Regel ("Keine Opacity unter 0.4"). Da es sich um deaktivierte Tage handelt, ist dies vertretbar, aber `opacity-50` wäre sicherer.
+
+#### 8. disabled:opacity-50 in UI-Primitives (Info)
+
+**Ist-Zustand:** `input.tsx`, `textarea`, `select.tsx`, `button.tsx` nutzen `disabled:opacity-50`.
+
+**Bewertung:** Standard-Pattern für deaktivierte Elemente. Konform mit Barrierefreiheit. Keine Aktion erforderlich.
+
+#### 9. bg-surface-base/95 in year-calendar (Info)
+
+**Ist-Zustand:** `year-calendar.tsx:180` — `bg-surface-base/95` mit `backdrop-blur-sm` für Tooltip.
+
+**Bewertung:** 95% Opacity mit Blur erzeugt einen leichten Frosted-Glass-Effekt. Nicht in DESIGN_SYSTEM.md spezifiziert, aber für Tooltips ein gängiges und ansprechendes Muster.
+
+### Zusammenfassung
+
+| # | Finding | Schwere | Aktion |
+|---|---------|---------|--------|
+| 1 | Overlay-Backdrops `/20`/`/30` statt spezifiziert `/50` | Mittel | Token `--color-overlay-backdrop` oder Werte angleichen |
+| 2 | font-bold nur auf Page-Headings | — | Konform, keine Aktion |
+| 3 | shadow-lg als Tailwind-Utility statt Token | Mittel | `@theme inline` Shadow-Token registrieren |
+| 4 | Destructive-Button hover:opacity-80 | Niedrig | Optional: tokenisierter Hover-State |
+| 5 | focus-visible:ring-offset-2 nicht tokenisiert | Niedrig | Optional: späteres Refinement |
+| 6 | backdrop-blur nicht tokenisiert | Niedrig | Optional: späteres Refinement |
+| 7 | opacity-40 an Anti-Pattern-Grenze | Niedrig | Optional: auf opacity-50 ändern |
+| 8 | disabled:opacity-50 | — | Konform, keine Aktion |
+| 9 | bg-surface-base/95 Tooltip | — | Info, keine Aktion |
+
+### Verifikation
+
+- Kein Code geändert — reiner Audit.
+- Basis: `DESIGN_SYSTEM.md`, `src/app/globals.css`, alle `src/**/*.tsx`-Dateien.
+
+### Offene Risiken / Folgeaufgaben
+
+- **Arbeitspaket empfohlen:** Token-Refinement — Overlay-Backdrops, Shadow-Token-Registrierung, optionale Hover-/Opacity-Anpassungen. Schätzung: ~30 Min.
+- Bestehende Tests und Build sind nicht betroffen (rein visuelle Anpassungen).
+
+---
+
+## 2026-05-09 – Arbeitspaket: Token-Refinement (Overlay-Backdrops)
+
+### Planner
+
+- **Ziel:** Die 2 mittleren Review-Findings aus dem Post-Completion Audit beheben: (1) Overlay-Backdrops tokenisieren, (2) Shadow-Token-Registrierung prüfen.
+- **Umfang:** `globals.css` (neuer Token), `assignment-modal.tsx`, `trainer/schedule/page.tsx` (bg-black/30 → Token), `DESIGN_SYSTEM.md` (Token-Referenz aktualisieren).
+- **Nicht-Ziele:** Low-Findings (opacity-40, hover:opacity-80, ring-offset, backdrop-blur). Navbar-Mobil-Backdrop (`bg-black/20`) bleibt als dokumentierte Ausnahme.
+- **Akzeptanzkriterien:** 0 `bg-black` in `src/*.tsx` (außer navbar mobile + test), Shadow-Token bereits registriert (Bestätigung), 659 Tests grün, Build OK.
+
+### Reviewer
+
+- Freigabe. Shadow-Token bereits in `@theme inline` registriert (globals.css:133-135) — Finding #3 war False Positive. Nur Finding #1 (Overlay-Backdrops) benötigt Implementierung.
+
+### Implementierte Änderungen
+
+- `globals.css` — Neuer CSS-Token `--ds-overlay-backdrop: rgba(0, 0, 0, 0.5)` in `:root` und `.dark`. Neuer `@theme inline` Eintrag `--color-overlay-backdrop` → Utility `bg-overlay-backdrop`.
+- `assignment-modal.tsx:160` — `bg-black/30` → `bg-overlay-backdrop`
+- `trainer/schedule/page.tsx:259` — `bg-black/30` → `bg-overlay-backdrop`
+- `navbar.tsx:212` — `bg-black/20` bleibt (Mobile-Nav, dokumentierte Ausnahme)
+- `DESIGN_SYSTEM.md:395` — Modal-Spec aktualisiert: `overlay-background: var(--ds-overlay-backdrop)`
+
+### Verifikation
+
+- **Lint:** 0 Errors, 5 Warnings (unverändert).
+- **Tests:** 659 Tests, alle bestanden (39 Dateien).
+- **Build:** erfolgreich.
+- **bg-black Audit:** Nur noch `navbar.tsx:212` (Mobile-Backdrop, dokumentiert) und `navbar.test.tsx:197` (Test-Selektor).
+
+### Offene Risiken / Folgeaufgaben
+
+- Navbar-Test (`navbar.test.tsx:197`) referenziert `.bg-black\\/20` — bei späterer Navbar-Migration muss Test angepasst werden.
+- Low-Findings aus Audit bleiben offen (optional): opacity-40, hover:opacity-80, ring-offset, backdrop-blur.
+- Nächste Arbeitspakete: shadcn Calendar+Popover, Frequenz-Intervall, RecurrenceException UI.

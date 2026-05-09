@@ -30,6 +30,7 @@ describe("Navbar", () => {
   it("renders trainee navigation items", () => {
     render(<Navbar role="trainee" userName="Test" />);
     expect(screen.getByText("Übersicht")).toBeInTheDocument();
+    expect(screen.getByText("Planung")).toBeInTheDocument();
   });
 
   it("renders admin navigation items", () => {

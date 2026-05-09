@@ -1,4 +1,3 @@
-import { getWeekDates } from "./utils";
 import { resolveWeek, type ScheduleType, type SingleAssignment, type RecurrenceRule, type RecurrenceException } from "./schedule-resolver";
 
 const SCHEDULE_TO_DAY_TYPE: Record<ScheduleType, "company" | "vocational_school" | "vacation" | "other"> = {

@@ -1019,3 +1019,38 @@ npm run dev
 - Assignment-Modal mit 3 Modi (Single, Recurring, DayComposition) noch nicht implementiert.
 - Bericht-Editor Umbau (Prefill-Integration beim Lazy-Create) noch nicht implementiert.
 - Virtualisierung der Timeline bei >1 Jahr Ansicht noch nicht implementiert.
+
+---
+
+## 2026-05-09 – Arbeitspaket: RecurrenceRule API + Assignment-Modal
+
+### Planner
+
+- **Ziel**: RecurrenceRule CRUD API und Erstellungsmodal mit 3 Modi implementieren.
+- **Umfang**:
+  - `/api/recurrence-rules` — GET/POST/PUT/DELETE mit rollenbasierter Autorisierung
+  - `AssignmentModal` — 3 Modi (Einzeleinsatz, Wiederholung, Tagesplan), Wochentag-Auswahl, Priorität
+  - Trainer-Schedule-Seite: Inline-Formular ersetzt durch Modal
+- **Nicht-Ziele**: RecurrenceException UI, Bericht-Editor Umbau.
+
+### Reviewer
+
+- Freigabe ohne Einwände.
+
+### Implementierte Änderungen
+
+- `src/app/api/recurrence-rules/route.ts` — Vollständige CRUD-API mit weekDays-Bitfeld-Akzeptanz (Array oder Integer), Trainer-Besitz-Check, Priorität
+- `src/components/schedule/assignment-modal.tsx` — Modal mit 3 Modi (Single, Recurring, Composition), Wochentag-Toggle-Buttons, Farb-/Prioritätsauswahl
+- `src/app/(dashboard)/trainer/schedule/page.tsx` — Inline-Formular entfernt, AssignmentModal integriert, `refreshData` Callback
+
+### Verifikation
+
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- RecurrenceException UI fehlt (nur Schema + API-seitiges Exception-Handling im Resolver).
+- Bericht-Editor Umbau (Prefill-Integration beim Lazy-Create) noch nicht implementiert.
+- Tagesplan-Modus (Composition) erstellt aktuell nur einen Einzeleinsatz — Erweiterung zu Mehrfach-Einsatz pro Tag in Phase 2.

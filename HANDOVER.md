@@ -1589,36 +1589,54 @@ npm run dev
 
 ---
 
-## 2026-05-09 – Arbeitspaket: UI-Korrekturen Phase 2
+## 2026-05-09 – Arbeitspaket: Gantt-Timeline Redesign (AP1)
 
 ### Planner
 
-- **Ziel:** 4 gezielte visuelle Korrekturen basierend auf UI-Review-Feedback.
-- **Umfang:** Gantt-Streifen-Fix, Calendar-Heute-Indikator, Popover-z-index, Edit-Dialog-Footer.
-- **Nicht-Ziele:** Header-Trennlinie (bereits OK), Badge-Glow (kein Bug), Heading-Gewicht (bereits semibold), Empty-State-Overhaul, Konflikt-Pattern-Neudesign.
-- **Akzeptanzkriterien:** Keine Streifen in Gantt-Balken, Heute subtil, DatePicker über Modal, Footer aufgeräumt. 659 Tests grün.
+- **Ziel:** Gantt-Timeline von SAP-Tabellen-Ästhetik zu schwebenden Pillen im Trade-Republic-Stil umgestalten.
+- **Umfang:** Kompletter Rewrite des Gantt-Renderings — weg von cell-by-cell (3px pro Tag) hin zu Block-basierten Pillen. Wochenenden entfernt. Hover-Tooltips statt nativer `title`-Attribute. Legende als Mini-Pillen.
+- **Nicht-Ziele:** Drag-Resize, Multi-Select, Edit-Modal-Änderungen, Assignment-Modal-Änderungen, Dashboard-Status-Indikatoren (AP2).
+- **Betroffene Dateien:** `gantt-timeline.tsx`, `types.ts`, 2 neue Testdateien.
+- **Akzeptanzkriterien:** Kein Zell-Background, keine Grid-Linien, Pillen statt Segmente, Wochenenden nicht gerendert, Inline-Labels, Hover-Tooltip, subtile Heute-Linie, KW-Labels nur jede 2. Woche, Legende als Pillen, Edit-Modus funktioniert.
 
 ### Reviewer
 
-- Freigabe. Analyse des Claude-Feedbacks ergab: Header-Trennlinie, Badge-Glow, Heading-Bold und Modal-Backdrop waren bereits korrekt. Nur 4 echte Fixes nötig.
+- Freigabe. Plan ist konsistent mit Design-System. Keine neuen Hardcoded-Farben (nur CSS-Variablen). Tooltip nutzt existierende `bg-surface-elevated`, `border-stroke-subtle`, `shadow-md` Token.
 
 ### Implementierte Änderungen
 
-1. **Gantt-Streifen-Fix** (`gantt-timeline.tsx`): `border-l-2` wird jetzt nur noch auf der ersten Zelle eines zusammenhängenden Assignment-Blocks gerendert. Prüfung: Vortag hat denselben Assignment (`prevTop.id === top.id`)? Nein → Border. Ja → kein Border. Entfernt die vertikalen Streifen-Artefakte.
+**1. `types.ts` — Neue Helper:**
+- `generateWorkDays(start, end)`: Wie `generateDays`, filtert aber Sa/So heraus. Nur Mo-Fr.
+- `computeBlocks(traineeId, workDays, assignments, cellWidth)`: Berechnet zusammenhängende Assignment-Blöcke als `AssignmentBlock[]` mit `startIndex`, `endIndex`, `width`, `offset`.
+- `TYPE_FG_COLORS`: Neues Mapping für Vordergrundfarben (aus `--color-cat-*-fg`), genutzt für Inline-Label und Legenden-Text.
+- `AssignmentBlock` Interface: Neuer Typ für Block-Darstellung.
 
-2. **Calendar Heute-Indikator** (`calendar.tsx`): `today` von `text-accent font-semibold` → `bg-surface-overlay text-content-base font-semibold rounded-md`. Im Dark Mode war `text-accent` (= weißer Text auf weißem Hintergrund) unsichtbar.
+**2. `gantt-timeline.tsx` — Kompletter Rewrite:**
+- **Rendering-Modell:** Statt 365 einzelner `<div>`s pro Zeile → `computeBlocks()` berechnet zusammenhängende Blöcke, pro Block ein `<div>` mit `rounded-full` (Pille).
+- **Wochenenden:** komplett entfernt. `workDays` via `generateWorkDays()`, nur Werktage.
+- **cellWidth:** Default von 3px auf 6px erhöht (weniger Tage = mehr Platz).
+- **rowHeight:** Default von 32px auf 36px erhöht.
+- **barHeight:** 24px, vertikal zentriert in Zeile.
+- **Hintergrund:** Komplett transparent. Kein `bg-surface-sunken`, keine dashed Grid-Linien, keine `border-b` zwischen Zeilen.
+- **Inline-Label:** Auf Blöcken mit `width > 80px`: „KW 19–23" in Kategorie-FG-Farbe.
+- **Heute-Linie:** 1px, `opacity-20`, `border-fg-base` (subtil).
+- **KW-Labels:** Nur jede 2. Woche sichtbar (`i % 2 === 0`), `text-content-subtle`.
+- **Hover-Tooltip:** State-gesteuert mit 200ms Delay. Zeigt: Kategorie + Detail, Datumsrange, Dauer (Wochen/Tage), Betreuer. Styling: `bg-surface-elevated`, `border-stroke-subtle`, `shadow-md`, `rounded-md`.
+- **Konflikt-Markierung:** `ring-1 ring-danger ring-inset` auf betroffenen Blöcken.
+- **Label-Spalte:** Kein `border-r` mehr, kein `border-b` zwischen Zeilen. Sauberer Look.
+- **Container:** Kein `rounded-lg border border-stroke-subtle` mehr auf dem Äußeren Container.
 
-3. **Popover z-index** (`popover.tsx`): `z-50` → `z-[60]`. DatePicker-Popover lag auf gleicher Ebene wie Edit-Modal (z-50), wurde verdeckt. Jetzt korrekt darüber.
-
-4. **Edit-Dialog Footer** (`trainer/schedule/page.tsx`): Button-Reihenfolge von [Speichern|Löschen|Abbrechen] rechts → [Löschen] links (Destructive), [Abbrechen|Speichern] rechts. Layout: `justify-between` mit Trennlinie.
+**3. `ScheduleLegend` — Update:**
+- Statt `h-3 w-3 rounded-sm border-l-2` Quadrate → `inline-flex rounded-full px-2.5 py-0.5` Pillen mit Kategorie-Background und Kategorie-FG-Text.
 
 ### Verifikation
 
-- **Lint:** 0 Errors, 4 Warnings (1 weniger — `isToday` entfernt).
-- **Tests:** 659 Tests, alle bestanden (39 Dateien).
+- **Lint:** 0 Errors, 4 Warnings (unverändert, keine neuen).
+- **Tests:** 686 Tests, 41 Dateien, alle bestanden (+27 neue Tests: 14 in `types.test.ts`, 13 in `gantt-timeline.test.tsx`).
 - **Build:** erfolgreich.
 
 ### Offene Risiken / Folgeaufgaben
 
-- Gantt-Block-Erkennung nutzt `prevTop.id` — funktioniert nur wenn dieselbe Assignment-Instanz an aufeinanderfolgenden Tagen vorliegt. Bei manuell erstellten Einzel-Zuweisungen mit identischem Typ an aufeinanderfolgenden Tagen (aber unterschiedlicher ID) wird jeder Tag einen Border zeigen. Akzeptables Verhalten.
-- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.
+- Assignment das nur am Wochenende liegt wird nicht gerendert (0 Werktage) — korrektes Verhalten.
+- Tooltip-Positionierung ist relativ zum Container (`containerRef`). Bei sehr schnellem Scrollen könnte Tooltip kurz daneben erscheinen — tolerabel.
+- **Nächstes AP:** Dashboard-Status-Indikatoren (AP2): Punkte vergrößern, voll gesättigte Farben, Hover-Tooltips, Klick-Navigation.

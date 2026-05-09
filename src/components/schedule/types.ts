@@ -5,6 +5,13 @@ export const TYPE_COLORS: Record<string, string> = {
   other: "var(--color-cat-other-bg)",
 };
 
+export const TYPE_FG_COLORS: Record<string, string> = {
+  school: "var(--color-cat-school-fg)",
+  vacation: "var(--color-cat-vacation-fg)",
+  department: "var(--color-cat-department-fg)",
+  other: "var(--color-cat-other-fg)",
+};
+
 export const TYPE_BORDER_COLORS: Record<string, string> = {
   school: "var(--color-cat-school-fg)",
   vacation: "var(--color-cat-vacation-fg)",
@@ -91,4 +98,64 @@ export function generateDays(start: Date, end: Date): Date[] {
     d.setDate(d.getDate() + 1);
   }
   return result;
+}
+
+export function generateWorkDays(start: Date, end: Date): Date[] {
+  const result: Date[] = [];
+  const d = new Date(start);
+  while (d < end) {
+    const day = d.getDay();
+    if (day !== 0 && day !== 6) {
+      result.push(new Date(d));
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return result;
+}
+
+export interface AssignmentBlock {
+  assignment: ScheduleAssignmentView;
+  startIndex: number;
+  endIndex: number;
+  width: number;
+  offset: number;
+}
+
+export function computeBlocks(
+  traineeId: string,
+  workDays: Date[],
+  assignments: ScheduleAssignmentView[],
+  cellWidth: number,
+): AssignmentBlock[] {
+  if (workDays.length === 0) return [];
+
+  const blocks: AssignmentBlock[] = [];
+  let currentId: string | null = null;
+  let currentRef: ScheduleAssignmentView | null = null;
+  let blockStart = 0;
+
+  for (let i = 0; i <= workDays.length; i++) {
+    const top =
+      i < workDays.length
+        ? getTopAssignmentForDay(traineeId, workDays[i], assignments)
+        : null;
+
+    const topId = top?.id ?? null;
+    if (topId !== currentId) {
+      if (currentRef) {
+        blocks.push({
+          assignment: currentRef,
+          startIndex: blockStart,
+          endIndex: i - 1,
+          width: (i - blockStart) * cellWidth,
+          offset: blockStart * cellWidth,
+        });
+      }
+      currentId = topId;
+      currentRef = top;
+      blockStart = i;
+    }
+  }
+
+  return blocks;
 }

@@ -457,12 +457,14 @@ src/
   components/
     schedule/
       types.ts               # Zentrale Typen für Schedule-Komponenten
-      gantt-timeline.tsx     # Gemeinsame Timeline-Komponente (mode: edit|readonly)
+      gantt-timeline.tsx     # Block-basierte Pillen-Timeline (mode: edit|readonly)
       assignment-modal.tsx   # Container-Modal für Zuweisungserstellung
       single-range-form.tsx  # Einzeleinsatz-Formular
       recurring-form.tsx     # Wiederholungsregel-Formular
       day-composition-form.tsx # Tageszusammensetzung-Formular
 ```
+
+**Gantt-Rendering-Modell:** Die Timeline rendert Assignment-Blöcke als durchgehende Pillen (`rounded-full`), nicht als einzelne Zellen. `computeBlocks()` gruppiert zusammenhängende Werktage mit gleichem Assignment zu einem Block. Wochenenden (Sa/So) werden nicht gerendert. Hover zeigt Tooltip (200ms Delay) mit Kategorie, Datumsrange, Dauer und Betreuer. Inline-Label auf Blöcken >80px Breite („KW X–Y").
 
 **Virtualisierungs-TODO:** Die Timeline-Komponente muss bei >1 Jahr Ansicht virtualisiert werden. Die Komponentengrenze ist so geschnitten, dass nachträgliche Virtualisierung kein Refactoring der Aufrufer erfordert.
 

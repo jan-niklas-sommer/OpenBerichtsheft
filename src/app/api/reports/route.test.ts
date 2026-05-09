@@ -10,12 +10,13 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     weeklyReport: {
       findMany: vi.fn(),
       upsert: vi.fn(),
     },
-    traineeTrainerAssignment: {
+    trainerProfessionAssignment: {
       findMany: vi.fn(),
     },
     traineeOfficerAssignment: {
@@ -29,9 +30,10 @@ import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockFindMany = prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>;
 const mockUpsert = prisma.weeklyReport.upsert as ReturnType<typeof vi.fn>;
-const mockTrainerAssignments = prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>;
+const mockTrainerProfessionAssignments = prisma.trainerProfessionAssignment.findMany as ReturnType<typeof vi.fn>;
 const mockOfficerAssignments = prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>;
 
 const traineeSession = {
@@ -123,14 +125,20 @@ describe("GET /api/reports", () => {
 
   it("returns assigned trainees reports as trainer", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockTrainerAssignments.mockResolvedValue([{ traineeId: "trainee-1" }]);
+    mockTrainerProfessionAssignments.mockResolvedValue([{ professionId: "prof-1" }]);
+    mockUserFindMany.mockResolvedValue([{ id: "trainee-1" }]);
     mockFindMany.mockResolvedValue(sampleReportsWithAdmin);
     const res = await GET(makeGetRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toEqual(sampleReportsWithAdmin);
-    expect(mockTrainerAssignments).toHaveBeenCalledWith({
+    expect(mockTrainerProfessionAssignments).toHaveBeenCalledWith({
       where: { trainerId: "trainer-1" },
+      select: { professionId: true },
+    });
+    expect(mockUserFindMany).toHaveBeenCalledWith({
+      where: { role: "trainee", professionId: { in: ["prof-1"] } },
+      select: { id: true },
     });
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -11,7 +11,10 @@ vi.mock("@/lib/prisma", () => ({
     weeklyReport: {
       findUnique: vi.fn(),
     },
-    traineeTrainerAssignment: {
+    user: {
+      findUnique: vi.fn(),
+    },
+    trainerProfessionAssignment: {
       findFirst: vi.fn(),
     },
     traineeOfficerAssignment: {
@@ -26,7 +29,8 @@ import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockFindUnique = prisma.weeklyReport.findUnique as ReturnType<typeof vi.fn>;
-const mockTrainerAssignment = prisma.traineeTrainerAssignment.findFirst as ReturnType<typeof vi.fn>;
+const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockTrainerProfessionAssignment = prisma.trainerProfessionAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockOfficerAssignment = prisma.traineeOfficerAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockTransaction = prisma.$transaction as ReturnType<typeof vi.fn>;
 
@@ -52,6 +56,8 @@ const submittedReport = {
   status: "submitted",
   calendarYear: 2025,
   calendarWeek: 10,
+  weekStartDate: new Date("2025-03-03"),
+  weekEndDate: new Date("2025-03-09"),
 };
 
 const updatedReport = {
@@ -109,7 +115,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("returns 403 if trainer has no assignment", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue(null);
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue(null);
     const res = await POST(makeRequest({ action: "approved" }), makeParams());
     expect(res.status).toBe(403);
   });
@@ -174,7 +181,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("returns needs_revision as trainer with assignment", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assign-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assign-1" });
     mockTransaction.mockImplementation(async (fn) => {
       const tx = {
         weeklyReport: {

@@ -8,14 +8,14 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const role = session.user.role;
-  if (role !== "admin" && role !== "trainer") {
+  if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const assignments = await prisma.traineeTrainerAssignment.findMany({
+  const assignments = await prisma.trainerProfessionAssignment.findMany({
     include: {
-      trainee: { select: { id: true, name: true, email: true, role: true } },
       trainer: { select: { id: true, name: true, email: true, role: true } },
+      profession: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -36,27 +36,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed" }, { status: 400 });
   }
 
-  const { traineeId, trainerId } = parsed.data;
+  const { trainerId, professionId } = parsed.data;
 
-  const trainee = await prisma.user.findUnique({ where: { id: traineeId } });
   const trainer = await prisma.user.findUnique({ where: { id: trainerId } });
+  const profession = await prisma.trainingProfession.findUnique({ where: { id: professionId } });
 
-  if (!trainee || trainee.role !== "trainee") {
-    return NextResponse.json({ error: "Invalid trainee" }, { status: 400 });
-  }
   if (!trainer || trainer.role !== "trainer") {
     return NextResponse.json({ error: "Invalid trainer" }, { status: 400 });
   }
+  if (!profession) {
+    return NextResponse.json({ error: "Invalid profession" }, { status: 400 });
+  }
 
-  const assignment = await prisma.traineeTrainerAssignment.upsert({
+  const assignment = await prisma.trainerProfessionAssignment.upsert({
     where: {
-      traineeId_trainerId: { traineeId, trainerId },
+      trainerId_professionId: { trainerId, professionId },
     },
-    create: { traineeId, trainerId },
+    create: { trainerId, professionId },
     update: {},
     include: {
-      trainee: { select: { id: true, name: true, email: true } },
       trainer: { select: { id: true, name: true, email: true } },
+      profession: { select: { id: true, name: true } },
     },
   });
 
@@ -74,6 +74,6 @@ export async function DELETE(req: NextRequest) {
   const id = url.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  await prisma.traineeTrainerAssignment.delete({ where: { id } });
+  await prisma.trainerProfessionAssignment.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

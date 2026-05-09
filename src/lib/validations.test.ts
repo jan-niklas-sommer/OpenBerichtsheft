@@ -487,35 +487,35 @@ describe("reviewSchema", () => {
 
 describe("assignmentSchema", () => {
   const valid = {
-    traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainerId: "660e8400-e29b-41d4-a716-446655440001",
+    professionId: "770e8400-e29b-41d4-a716-446655440002",
   };
 
   it("accepts valid input", () => {
     expect(assignmentSchema.parse(valid)).toEqual(valid);
   });
 
-  it("rejects missing traineeId", () => {
-    expect(() =>
-      assignmentSchema.parse({ trainerId: "660e8400-e29b-41d4-a716-446655440001" })
-    ).toThrow();
-  });
-
   it("rejects missing trainerId", () => {
     expect(() =>
-      assignmentSchema.parse({ traineeId: "550e8400-e29b-41d4-a716-446655440000" })
+      assignmentSchema.parse({ professionId: "770e8400-e29b-41d4-a716-446655440002" })
     ).toThrow();
   });
 
-  it("rejects non-UUID traineeId", () => {
+  it("rejects missing professionId", () => {
     expect(() =>
-      assignmentSchema.parse({ ...valid, traineeId: "not-a-uuid" })
+      assignmentSchema.parse({ trainerId: "660e8400-e29b-41d4-a716-446655440001" })
     ).toThrow();
   });
 
   it("rejects non-UUID trainerId", () => {
     expect(() =>
       assignmentSchema.parse({ ...valid, trainerId: "not-a-uuid" })
+    ).toThrow();
+  });
+
+  it("rejects non-UUID professionId", () => {
+    expect(() =>
+      assignmentSchema.parse({ ...valid, professionId: "not-a-uuid" })
     ).toThrow();
   });
 });
@@ -611,6 +611,8 @@ describe("officerAssignmentSchema", () => {
   const valid = {
     traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainingOfficerId: "770e8400-e29b-41d4-a716-446655440002",
+    validFrom: "2026-01-01",
+    validUntil: "2026-12-31",
   };
 
   it("accepts valid input", () => {
@@ -619,13 +621,13 @@ describe("officerAssignmentSchema", () => {
 
   it("rejects missing traineeId", () => {
     expect(() =>
-      officerAssignmentSchema.parse({ trainingOfficerId: "770e8400-e29b-41d4-a716-446655440002" })
+      officerAssignmentSchema.parse({ trainingOfficerId: "770e8400-e29b-41d4-a716-446655440002", validFrom: "2026-01-01", validUntil: "2026-12-31" })
     ).toThrow();
   });
 
   it("rejects missing trainingOfficerId", () => {
     expect(() =>
-      officerAssignmentSchema.parse({ traineeId: "550e8400-e29b-41d4-a716-446655440000" })
+      officerAssignmentSchema.parse({ traineeId: "550e8400-e29b-41d4-a716-446655440000", validFrom: "2026-01-01", validUntil: "2026-12-31" })
     ).toThrow();
   });
 

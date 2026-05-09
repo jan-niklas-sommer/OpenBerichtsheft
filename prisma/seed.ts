@@ -77,39 +77,42 @@ async function main() {
     },
   });
 
-  await prisma.traineeTrainerAssignment.upsert({
+  await prisma.trainerProfessionAssignment.upsert({
     where: {
-      traineeId_trainerId: { traineeId: trainee.id, trainerId: trainer.id },
+      trainerId_professionId: { trainerId: trainer.id, professionId: fiAe.id },
     },
     update: {},
     create: {
-      traineeId: trainee.id,
       trainerId: trainer.id,
+      professionId: fiAe.id,
     },
   });
 
-  await prisma.traineeTrainerAssignment.upsert({
+  await prisma.trainerProfessionAssignment.upsert({
     where: {
-      traineeId_trainerId: { traineeId: trainee2.id, trainerId: trainer.id },
+      trainerId_professionId: { trainerId: trainer.id, professionId: fiSi.id },
     },
     update: {},
     create: {
-      traineeId: trainee2.id,
       trainerId: trainer.id,
+      professionId: fiSi.id,
     },
   });
 
-  await prisma.traineeOfficerAssignment.upsert({
-    where: {
-      traineeId_trainingOfficerId: { traineeId: trainee.id, trainingOfficerId: officer.id },
-    },
-    update: {},
-    create: {
-      traineeId: trainee.id,
-      trainingOfficerId: officer.id,
-      trainerId: trainer.id,
-    },
+  const existingOfficerAssignment = await prisma.traineeOfficerAssignment.findFirst({
+    where: { traineeId: trainee.id, trainingOfficerId: officer.id },
   });
+  if (!existingOfficerAssignment) {
+    await prisma.traineeOfficerAssignment.create({
+      data: {
+        traineeId: trainee.id,
+        trainingOfficerId: officer.id,
+        assignedById: trainer.id,
+        validFrom: new Date("2026-01-01"),
+        validUntil: new Date("2026-12-31"),
+      },
+    });
+  }
 
   await prisma.appSetting.upsert({
     where: { key: "workingDays" },

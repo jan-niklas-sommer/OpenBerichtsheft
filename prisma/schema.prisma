@@ -51,6 +51,7 @@ model TrainingProfession {
   updatedAt DateTime @updatedAt
 
   users User[]
+  trainerAssignments TrainerProfessionAssignment[]
 
   @@map("training_professions")
 }
@@ -70,46 +71,48 @@ model User {
 
   profession TrainingProfession? @relation(fields: [professionId], references: [id], onDelete: SetNull)
 
-  traineeAssignments     TraineeTrainerAssignment[]  @relation("TraineeAssignments")
-  trainerAssignments     TraineeTrainerAssignment[]  @relation("TrainerAssignments")
-  officerAssignments     TraineeOfficerAssignment[]  @relation("OfficerAssignments")
-  managedOfficerAssignments TraineeOfficerAssignment[] @relation("ManagedOfficerAssignments")
-  officerTrainerRefs     TraineeOfficerAssignment[]  @relation("OfficerTrainerRef")
-  weeklyReports          WeeklyReport[]              @relation("ReportAuthor")
-  reviewedReports        WeeklyReport[]              @relation("ReportReviewer")
-  reviewEvents           ReviewEvent[]               @relation("ReviewActor")
-  notifications          Notification[]
+  trainerProfessionAssignments TrainerProfessionAssignment[] @relation("TrainerProfessions")
+  officerAssignments           TraineeOfficerAssignment[]    @relation("OfficerAssignments")
+  managedOfficerAssignments    TraineeOfficerAssignment[]    @relation("OfficerManager")
+  assignedOfficerAssignments   TraineeOfficerAssignment[]    @relation("OfficerAssignedBy")
+  weeklyReports                WeeklyReport[]                @relation("ReportAuthor")
+  reviewedReports              WeeklyReport[]                @relation("ReportReviewer")
+  reviewEvents                 ReviewEvent[]                 @relation("ReviewActor")
+  notifications                Notification[]
 
   @@map("users")
 }
 
-model TraineeTrainerAssignment {
-  id        String   @id @default(uuid())
-  traineeId String
-  trainerId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model TrainerProfessionAssignment {
+  id            String   @id @default(uuid())
+  trainerId     String
+  professionId  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  trainee  User @relation("TraineeAssignments", fields: [traineeId], references: [id], onDelete: Cascade)
-  trainer  User @relation("TrainerAssignments", fields: [trainerId], references: [id], onDelete: Cascade)
+  trainer    User              @relation("TrainerProfessions", fields: [trainerId], references: [id], onDelete: Cascade)
+  profession TrainingProfession @relation(fields: [professionId], references: [id], onDelete: Cascade)
 
-  @@unique([traineeId, trainerId])
-  @@map("trainee_trainer_assignments")
+  @@unique([trainerId, professionId])
+  @@map("trainer_profession_assignments")
 }
 
 model TraineeOfficerAssignment {
-  id               String   @id @default(uuid())
-  traineeId        String
+  id                String    @id @default(uuid())
+  traineeId         String
   trainingOfficerId String
-  trainerId        String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  assignedById      String
+  validFrom         DateTime
+  validUntil        DateTime
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   trainee         User @relation("OfficerAssignments", fields: [traineeId], references: [id], onDelete: Cascade)
-  trainingOfficer User @relation("ManagedOfficerAssignments", fields: [trainingOfficerId], references: [id], onDelete: Cascade)
-  trainer         User @relation("OfficerTrainerRef", fields: [trainerId], references: [id], onDelete: Cascade)
+  trainingOfficer User @relation("OfficerManager", fields: [trainingOfficerId], references: [id], onDelete: Cascade)
+  assignedBy      User @relation("OfficerAssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
 
-  @@unique([traineeId, trainingOfficerId])
+  @@index([traineeId])
+  @@index([trainingOfficerId])
   @@map("trainee_officer_assignments")
 }
 

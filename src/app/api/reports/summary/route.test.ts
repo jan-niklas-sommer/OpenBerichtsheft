@@ -11,7 +11,7 @@ vi.mock("@/lib/utils", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    traineeTrainerAssignment: {
+    trainerProfessionAssignment: {
       findMany: vi.fn(),
     },
     traineeOfficerAssignment: {
@@ -32,7 +32,7 @@ import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockGetIsoWeek = getIsoWeek as unknown as ReturnType<typeof vi.fn>;
-const mockTrainerAssignments = prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>;
+const mockTrainerProfessionAssignments = prisma.trainerProfessionAssignment.findMany as ReturnType<typeof vi.fn>;
 const mockOfficerAssignments = prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockReportFindMany = prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>;
@@ -107,20 +107,27 @@ describe("GET /api/reports/summary", () => {
 
   it("returns only assigned trainees for trainer", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockTrainerAssignments.mockResolvedValue([
-      { traineeId: "trainee-1" },
+    mockTrainerProfessionAssignments.mockResolvedValue([
+      { professionId: "prof-1" },
     ]);
-    mockUserFindMany.mockResolvedValue([sampleTrainees[0]]);
+    mockUserFindMany
+      .mockResolvedValueOnce([{ id: "trainee-1" }])
+      .mockResolvedValueOnce([sampleTrainees[0]]);
     mockReportFindMany.mockResolvedValue([]);
     const res = await GET();
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toHaveLength(1);
     expect(json[0].traineeId).toBe("trainee-1");
-    expect(mockTrainerAssignments).toHaveBeenCalledWith({
+    expect(mockTrainerProfessionAssignments).toHaveBeenCalledWith({
       where: { trainerId: "trainer-1" },
+      select: { professionId: true },
     });
-    expect(mockUserFindMany).toHaveBeenCalledWith({
+    expect(mockUserFindMany).toHaveBeenNthCalledWith(1, {
+      where: { role: "trainee", professionId: { in: ["prof-1"] } },
+      select: { id: true },
+    });
+    expect(mockUserFindMany).toHaveBeenNthCalledWith(2, {
       where: {
         role: "trainee",
         deactivatedAt: null,
@@ -169,7 +176,7 @@ describe("GET /api/reports/summary", () => {
 
   it("returns empty array when no trainees are assigned", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockTrainerAssignments.mockResolvedValue([]);
+    mockTrainerProfessionAssignments.mockResolvedValue([]);
     mockUserFindMany.mockResolvedValue([]);
     mockReportFindMany.mockResolvedValue([]);
     const res = await GET();

@@ -54,8 +54,8 @@ export const reviewSchema = z.object({
 });
 
 export const assignmentSchema = z.object({
-  traineeId: z.string().uuid(),
   trainerId: z.string().uuid(),
+  professionId: z.string().uuid(),
 });
 
 export const updateReportSchema = z.object({
@@ -73,6 +73,8 @@ export const updateReportSchema = z.object({
 export const officerAssignmentSchema = z.object({
   traineeId: z.string().uuid(),
   trainingOfficerId: z.string().uuid(),
+  validFrom: z.string(),
+  validUntil: z.string(),
 });
 
 export const updateSettingsSchema = z.object({

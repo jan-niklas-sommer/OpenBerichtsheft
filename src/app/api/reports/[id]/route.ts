@@ -30,15 +30,25 @@ export async function GET(
   }
 
   if (role === "trainer") {
-    const assignment = await prisma.traineeTrainerAssignment.findFirst({
-      where: { traineeId: report.traineeId, trainerId: userId },
+    const trainee = await prisma.user.findUnique({
+      where: { id: report.traineeId },
+      select: { professionId: true },
     });
-    if (!assignment) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!trainee?.professionId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const professionAssignment = await prisma.trainerProfessionAssignment.findFirst({
+      where: { trainerId: userId, professionId: trainee.professionId },
+    });
+    if (!professionAssignment) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   if (role === "training_officer") {
     const assignment = await prisma.traineeOfficerAssignment.findFirst({
-      where: { traineeId: report.traineeId, trainingOfficerId: userId },
+      where: {
+        traineeId: report.traineeId,
+        trainingOfficerId: userId,
+        validFrom: { lte: report.weekStartDate },
+        validUntil: { gte: report.weekEndDate },
+      },
     });
     if (!assignment) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

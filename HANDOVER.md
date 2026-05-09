@@ -1220,3 +1220,44 @@ npm run dev
 - AP6 (Schedule): Gantt-Timeline, Assignment-Modal
 - AP7 (Reports): PDF, Report-Komponenten
 - `--radius-sm` wurde von 4px auf 6px (0.375rem) geändert — bestehende `rounded-sm`-Nutzungen werden bei Komponenten-Migration in AP3 angepasst.
+
+---
+
+## 2026-05-09 – Arbeitspaket: UI-Primitives auf Design-Token (AP3)
+
+### Planner
+
+- **Ziel:** 5 UI-Basiskomponenten (Button, Badge, Input, Select, Card) von hardcoded Tailwind-Farben auf Design-Token umstellen.
+- **Umfang:**
+  - `button.tsx`: Primary (Inversion `bg-accent`), Secondary (`border-stroke-base`), Ghost, Destructive (`bg-danger-soft text-danger` statt vollrot)
+  - `badge.tsx`: Status-Mapping auf semantische Token (`bg-success-soft text-success`, etc.)
+  - `input.tsx` + `textarea`: Border, Focus, Error auf Token (`border-stroke-base`, `border-danger`, `text-danger`)
+  - `select.tsx`: Gleiche Migration wie Input
+  - `card.tsx`: Hintergrund `bg-surface-elevated`, Border `border-stroke-subtle`, Title `text-content-base`
+- **Akzeptanzkriterien:** Keine hardcoded Farbklassen in den 5 Dateien, alle Tests grün, Build OK.
+
+### Reviewer
+
+- Freigabe. Destructive-Button wechselt von vollrot zu Pastell-Muster (Design-System-Spec).
+
+### Implementierte Änderungen
+
+- `src/components/ui/button.tsx` — Alle 4 Varianten auf Token (`bg-accent`, `text-accent-fg`, `border-stroke-base`, `bg-danger-soft text-danger`, `text-content-muted`, `bg-surface-overlay`)
+- `src/components/ui/badge.tsx` — 5 Varianten auf semantische Token (`bg-success-soft text-success`, `bg-warning-soft text-warning`, etc.)
+- `src/components/ui/input.tsx` — Input + TextArea: Labels `text-content-muted`, Border `border-stroke-base`, Focus `border-stroke-strong`, Error `border-danger text-danger`, Placeholder `text-content-subtle`
+- `src/components/ui/select.tsx` — Gleiche Migration wie Input
+- `src/components/ui/card.tsx` — Card: `bg-surface-elevated border-stroke-subtle`, CardTitle: `text-content-base`
+- Test-Assertions angepasst: `bg-neutral-900` → `bg-accent`, `bg-red-600` → `bg-danger-soft`, `bg-green-100` → `bg-success-soft`, `border-red-500` → `border-danger`
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings (vorbestehend).
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- AP4 (Layout): Navbar, Layouts, Theme-Toggle
+- AP5 (Pages): Alle Dashboard-Pages
+- AP6 (Schedule): Gantt-Timeline, Assignment-Modal
+- AP7 (Reports): PDF, Report-Komponenten

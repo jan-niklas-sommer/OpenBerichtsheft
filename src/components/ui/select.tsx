@@ -17,7 +17,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            className="mb-1.5 block text-sm font-medium text-content-muted"
           >
             {label}
           </label>
@@ -25,7 +25,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           id={inputId}
           ref={ref}
-          className={`h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 ${error ? "border-red-500" : ""} ${className}`}
+          className={`h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong disabled:cursor-not-allowed disabled:opacity-50 ${error ? "border-danger" : ""} ${className}`}
           {...props}
         >
           {options.map((opt) => (
@@ -35,7 +35,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ))}
         </select>
         {error && (
-          <p className="mt-1 text-xs text-red-500">{error}</p>
+          <p className="mt-1 text-xs text-danger">{error}</p>
         )}
       </div>
     );

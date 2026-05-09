@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  TYPE_COLORS,
   TYPE_LABELS,
   type ScheduleType,
 } from "@/components/schedule/types";
+import { weekdayToBit } from "@/lib/schedule-resolver";
 
 const DAY_NAMES = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as const;
 
@@ -20,7 +20,7 @@ interface OfficerOption {
   name: string;
 }
 
-type ModalMode = "single" | "recurring" | "composition";
+type ModalMode = "single" | "recurring";
 
 interface AssignmentModalProps {
   open: boolean;
@@ -47,10 +47,25 @@ export function AssignmentModal({
   const [endDate, setEndDate] = useState("");
   const [department, setDepartment] = useState("");
   const [supervisorId, setSupervisorId] = useState("");
-  const [color, setColor] = useState("");
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [displayLabel, setDisplayLabel] = useState("");
-  const [priority, setPriority] = useState(0);
+
+  const previewDates = useMemo(() => {
+    if (mode !== "recurring" || !startDate || !endDate || selectedDays.length === 0) return [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const bitfield = selectedDays.reduce((acc, d) => acc | weekdayToBit(d), 0);
+    const dates: Date[] = [];
+    const d = new Date(start);
+    while (d <= end) {
+      const isoDay = d.getDay() === 0 ? 7 : d.getDay();
+      if ((bitfield & (1 << (isoDay - 1))) !== 0) {
+        dates.push(new Date(d));
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    return dates.slice(0, 12);
+  }, [mode, startDate, endDate, selectedDays]);
 
   if (!open) return null;
 
@@ -61,10 +76,8 @@ export function AssignmentModal({
     setEndDate("");
     setDepartment("");
     setSupervisorId("");
-    setColor("");
     setSelectedDays([1, 2, 3, 4, 5]);
     setDisplayLabel("");
-    setPriority(0);
     setError("");
   };
 
@@ -80,7 +93,7 @@ export function AssignmentModal({
     setSubmitting(true);
 
     try {
-      if (mode === "single" || mode === "composition") {
+      if (mode === "single") {
         const res = await fetch("/api/schedule", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -91,7 +104,6 @@ export function AssignmentModal({
             endDate,
             department: department || undefined,
             supervisorId: supervisorId || undefined,
-            color: color || undefined,
           }),
         });
         if (!res.ok) {
@@ -118,8 +130,6 @@ export function AssignmentModal({
             displayLabel: displayLabel || undefined,
             department: department || undefined,
             supervisorId: supervisorId || undefined,
-            color: color || undefined,
-            priority,
           }),
         });
         if (!res.ok) {
@@ -139,7 +149,6 @@ export function AssignmentModal({
   const modeTabs: { key: ModalMode; label: string }[] = [
     { key: "single", label: "Einzeleinsatz" },
     { key: "recurring", label: "Wiederholung" },
-    { key: "composition", label: "Tagesplan" },
   ];
 
   const inputClass =
@@ -152,7 +161,7 @@ export function AssignmentModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-5 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
+        className="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-6 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
@@ -164,7 +173,7 @@ export function AssignmentModal({
             <button
               key={tab.key}
               onClick={() => { setMode(tab.key); setError(""); }}
-              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 mode === tab.key
                   ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
                   : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
@@ -176,38 +185,40 @@ export function AssignmentModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <select
-            value={traineeId}
-            onChange={(e) => setTraineeId(e.target.value)}
-            required
-            className={selectClass}
-          >
-            <option value="">Azubi auswählen...</option>
-            {trainees.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-3">
+            <select
+              value={traineeId}
+              onChange={(e) => setTraineeId(e.target.value)}
+              required
+              className={selectClass}
+            >
+              <option value="">Azubi auswählen...</option>
+              {trainees.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
 
-          <select
-            value={scheduleType}
-            onChange={(e) => setScheduleType(e.target.value as ScheduleType)}
-            className={selectClass}
-          >
-            {Object.entries(TYPE_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v}
-              </option>
-            ))}
-          </select>
+            <select
+              value={scheduleType}
+              onChange={(e) => setScheduleType(e.target.value as ScheduleType)}
+              className={selectClass}
+            >
+              {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {mode === "recurring" && (
             <div>
-              <label className="mb-1 block text-xs text-neutral-500">
+              <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">
                 Wochentage
               </label>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 {DAY_NAMES.map((name, i) => {
                   const day = i + 1;
                   const active = selectedDays.includes(day);
@@ -216,7 +227,7 @@ export function AssignmentModal({
                       key={day}
                       type="button"
                       onClick={() => toggleDay(day)}
-                      className={`h-8 w-8 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors ${
                         active
                           ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
                           : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
@@ -230,29 +241,33 @@ export function AssignmentModal({
             </div>
           )}
 
-          <div className="flex gap-2">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              required
-              className={inputClass}
-              placeholder="Von"
-            />
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              required
-              className={inputClass}
-              placeholder="Bis"
-            />
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Von</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Bis</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
           </div>
 
           {mode === "recurring" && (
             <input
               type="text"
-              placeholder="Bezeichnung (optional)"
+              placeholder="Beschreibung dieser Regel (optional)"
               value={displayLabel}
               onChange={(e) => setDisplayLabel(e.target.value)}
               className={inputClass}
@@ -262,7 +277,11 @@ export function AssignmentModal({
           {(scheduleType === "department" || scheduleType === "other") && (
             <input
               type="text"
-              placeholder="Abteilung / Beschreibung"
+              placeholder={
+                scheduleType === "department"
+                  ? "Welche Abteilung?"
+                  : "Beschreibung"
+              }
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               className={inputClass}
@@ -282,40 +301,37 @@ export function AssignmentModal({
             ))}
           </select>
 
-          {(scheduleType === "department" || scheduleType === "other") && (
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-neutral-500">Farbe</label>
-              <input
-                type="color"
-                value={color || TYPE_COLORS[scheduleType]}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-8 w-10 cursor-pointer rounded border border-neutral-300 dark:border-neutral-700"
-              />
+          {mode === "recurring" && previewDates.length > 0 && (
+            <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
+              <p className="mb-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                Nächste {previewDates.length} Termine
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-neutral-700 dark:text-neutral-300">
+                {previewDates.map((d) => (
+                  <span key={d.toISOString()}>
+                    {d.toLocaleDateString("de-DE", {
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 
-          {mode === "recurring" && (
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-neutral-500">Priorität</label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={priority}
-                onChange={(e) => setPriority(Number(e.target.value))}
-                className="h-8 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              />
-            </div>
+          {mode === "recurring" && startDate && endDate && selectedDays.length > 0 && previewDates.length === 0 && (
+            <p className="text-sm text-red-500">
+              Diese Regel erzeugt keine Termine im Geltungszeitraum.
+            </p>
           )}
 
           {error && (
             <p className="text-sm text-red-500">{error}</p>
           )}
 
-          <div className="flex gap-2 pt-1">
-            <Button type="submit" size="sm" loading={submitting}>
-              {mode === "recurring" ? "Regel erstellen" : "Erstellen"}
-            </Button>
+          <div className="flex justify-end gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
             <Button
               type="button"
               variant="ghost"
@@ -326,6 +342,9 @@ export function AssignmentModal({
               }}
             >
               Abbrechen
+            </Button>
+            <Button type="submit" size="sm" loading={submitting}>
+              {mode === "recurring" ? "Regel erstellen" : "Erstellen"}
             </Button>
           </div>
         </form>

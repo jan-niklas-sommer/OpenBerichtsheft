@@ -1088,3 +1088,55 @@ npm run dev
 - Prefill passiert asynchron nach initialem Render — kurzes Aufblitzen der Default-Werte möglich.
 - Prefill-Endpunkt hat keine Tests (sollte in Folgeaufgabe nachgeholt werden).
 - RecurrenceException UI fehlt weiterhin.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Modal-Überholung + Timeline-Visu-Fix
+
+### Planner
+
+- **Ziel**: Modal aufräumen, Timeline visuell auf Akzeptanzkriterien-Niveau bringen.
+- **Umfang**:
+  - Tagesplan-Modus entfernen (war toter Code)
+  - Farbpicker + Priorität entfernen (Farbe folgt aus Kategorie, Konfliktauflösung über createdAt)
+  - Modal breiter (max-w-lg), Labels, Footer mit Trennlinie
+  - Vorschau nächste 12 Termine im Wiederholungs-Modus
+  - Timeline: Hierarchischer Header (Monat + KW), Wochenende-Hintergrund, Heute-Linie (rot), Wochengrenzen gestrichelt
+  - API: color/priority aus Validierungs-Schemas entfernt, im Code ignoriert
+- **Nicht-Ziele**: Datepicker-Tausch (shadcn Calendar nicht installiert), Frequenz-Feld (interval nicht im Resolver), DB-Migration zum Droppen der Spalten.
+
+### Reviewer
+
+- Freigabe ohne Einwände.
+
+### Implementierte Änderungen
+
+- `src/components/schedule/assignment-modal.tsx` — Komplett-rewrite: 2 Modi (single/recurring), kein Farbpicker/Priorität, Vorschau-Komponente, max-w-lg
+- `src/components/schedule/gantt-timeline.tsx` — Hierarchischer Header (Monatszeile + KW-Zeile), Wochenend-Hintergrund (`bg-neutral-100`), Heute-Linie (`border-red-500`), Wochengrenzen gestrichelt, Farbe nur aus `TYPE_COLORS`
+- `src/app/(dashboard)/trainer/schedule/page.tsx` — Farbpicker aus Edit-Modal entfernt, `color` aus form-state entfernt
+- `src/lib/schedule-resolver.ts` — `color` und `priority` aus Types/Candidate entfernt, Sortierung: layer → createdAt
+- `src/app/api/schedule/route.ts` — `color` aus createSchema/POST/PUT entfernt
+- `src/app/api/recurrence-rules/route.ts` — `color`/`priority` aus createSchema/POST/PUT entfernt
+- `src/app/api/reports/prefill/route.ts` — `color`/`priority` aus Mapping entfernt
+- Alle Testdateien angepasst (keine `priority: 0` oder `color` Referenzen mehr)
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings (vorbestehend).
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- `color` und `priority` Spalten existieren noch in der DB (nullable, werden ignoriert). Migration zum Droppen in Folgeaufgabe möglich.
+- shadcn Calendar+Popover nicht installiert — Datepicker-Upgrade in Folgeaufgabe.
+- Frequenz-Feld (interval) nicht implementiert — wäre ein neues Feature im Resolver.
+
+### Doku-Update (HANDBUCH.md)
+
+- Abschnitt 5.5 Einsatzplanung aktualisiert:
+  - Tagesplan-Modus entfernt (nur noch Einzeleinsatz + Wiederholung)
+  - Farbpicker-Referenzen entfernt (Farbe automatisch aus Kategorie)
+  - Priorität-Referenzen entfernt (Konfliktauflösung: Layer → createdAt)
+  - Timeline-Visu-Verbesserungen dokumentiert (hierarchischer Header, Heute-Linie, Wochenend-Hintergrund, Wochengrenzen)
+  - Vorschau der nächsten 12 Termine im Wiederholungs-Modus erwähnt

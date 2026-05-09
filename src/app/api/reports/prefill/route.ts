@@ -51,7 +51,6 @@ export async function GET(req: NextRequest) {
     endDate: a.endDate,
     department: a.department ?? undefined,
     supervisorId: a.supervisorId ?? undefined,
-    color: a.color ?? undefined,
   }));
 
   const recurrenceRules: RecurrenceRule[] = rules.map((r) => ({
@@ -64,8 +63,6 @@ export async function GET(req: NextRequest) {
     displayLabel: r.displayLabel ?? undefined,
     department: r.department ?? undefined,
     supervisorId: r.supervisorId ?? undefined,
-    color: r.color ?? undefined,
-    priority: r.priority,
     createdAt: r.createdAt,
   }));
 

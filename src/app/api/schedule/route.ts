@@ -10,7 +10,6 @@ const createSchema = z.object({
   endDate: z.string(),
   department: z.string().optional(),
   supervisorId: z.string().uuid().optional(),
-  color: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -136,7 +135,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { traineeId, scheduleType, startDate, endDate, department, supervisorId, color } = parsed.data;
+  const { traineeId, scheduleType, startDate, endDate, department, supervisorId } = parsed.data;
 
   if (role === "trainer") {
     const trainee = await prisma.user.findUnique({
@@ -162,7 +161,6 @@ export async function POST(req: NextRequest) {
       endDate: new Date(endDate),
       department: department || null,
       supervisorId: supervisorId || null,
-      color: color || null,
       createdBy: userId,
     },
     include: {
@@ -229,7 +227,6 @@ export async function PUT(req: NextRequest) {
   if (updates.endDate) data.endDate = new Date(updates.endDate);
   if (updates.department !== undefined) data.department = updates.department || null;
   if (updates.supervisorId !== undefined) data.supervisorId = updates.supervisorId || null;
-  if (updates.color !== undefined) data.color = updates.color || null;
 
   const assignment = await prisma.scheduleAssignment.update({
     where: { id },

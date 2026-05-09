@@ -268,7 +268,11 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 
 **Gantt-Chart Ansicht:**
 
-- Tagesgenaue Balken für jeden Auszubildenden
+- Hierarchischer Header: Monatszeile (Monat + Jahr) oben, Wochenzeile (KW) darunter
+- Wochenenden sind farblich hervorgehoben (Hellgrau / Dark Mode: dunkel)
+- Rote **Heute-Linie** markiert das aktuelle Datum
+- Wochengrenzen als gestrichelte Linien
+- Tagesgenaue Balken für jeden Auszubildenden, Farbe automatisch aus Zuweisungstyp abgeleitet
 - Bis zu 1 Jahr sichtbar, scrollbar
 - Navigieren Sie zwischen Monaten mit den Pfeiltasten
 
@@ -278,23 +282,20 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 2. Wählen Sie den Erstellungsmodus:
    - **Einzeleinsatz**: Einmaliger Einsatz für einen Zeitraum
    - **Wiederholung**: Regelmäßiger Einsatz an bestimmten Wochentagen (z.B. jeden Dienstag + Donnerstag Berufsschule)
-   - **Tagesplan**: Kompletter Tagesplan (Phase 1: Einzeleinsatz)
 3. Wählen Sie den Auszubildenden aus.
-4. Wählen Sie den **Zuweisungstyp**:
-   - **Abteilung**: Betrieblicher Einsatz (Farbe wählbar, z.B. "IT", "HR")
-   - **Schule**: Berufsschule (blau, fix)
-   - **Urlaub**: Urlaub (gelb, fix)
-   - **Sonstiges**: Feiertag, Krankheit, etc. (lila, wählbar)
+4. Wählen Sie den **Zuweisungstyp** — die Farbe wird automatisch bestimmt:
+   - **Abteilung**: Betrieblicher Einsatz (Blautöne)
+   - **Schule**: Berufsschule (Orange)
+   - **Urlaub**: Urlaub (Gelb)
+   - **Sonstiges**: Feiertag, Krankheit, etc. (Lila)
 5. Setzen Sie Start- und Enddatum.
 6. Optional: Wählen Sie einen Ausbildungsbeauftragten als Betreuer.
-7. Bei **Wiederholung**: Wählen Sie die Wochentage und optional eine Priorität.
+7. Bei **Wiederholung**: Wählen Sie die Wochentage. Das System zeigt eine Vorschau der nächsten 12 Termine.
 8. Klicken Sie auf **Erstellen** bzw. **Regel erstellen**.
 
-**Konflikterkennung:** Überlappende Zuweisungen am selben Tag werden mit einem roten Ring markiert. Das Layering bestimmt, welche Zuweisung angezeigt wird: Schule > Urlaub > Sonstiges > Abteilung.
+**Konflikterkennung:** Überlappende Zuweisungen am selben Tag werden mit einem roten Ring markiert. Die angezeigte Zuweisung wird durch Layering bestimmt: Schule > Urlaub > Sonstiges > Abteilung. Bei gleichem Typ gewinnt die zuletzt erstellte Regel.
 
-**Wiederholungsregeln** gelten für alle Tage im gewählten Zeitraum, die den konfigurierten Wochentagen entsprechen. Sie können Prioritäten haben — höhere Priorität gewinnt bei Konflikten.
-
-**Layering:** Bei überlappenden Zuweisungen gilt: Schule > Urlaub > Sonstiges > Abteilung.
+**Wiederholungsregeln** gelten für alle Tage im gewählten Zeitraum, die den konfigurierten Wochentagen entsprechen.
 
 **Hinweis:** Wenn Sie einen Ausbildungsbeauftragten als Betreuer auswählen, wird dieser automatisch für den Zeitraum dem Auszubildenden zugeordnet.
 

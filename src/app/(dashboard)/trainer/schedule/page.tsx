@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  TYPE_COLORS,
   TYPE_LABELS,
   type ScheduleAssignmentView,
   type ScheduleType,
@@ -45,7 +44,6 @@ export default function SchedulePage() {
     endDate: "",
     department: "",
     supervisorId: "",
-    color: "",
   });
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -157,7 +155,6 @@ export default function SchedulePage() {
         endDate: form.endDate,
         department: form.department,
         supervisorId: form.supervisorId,
-        color: form.color,
       }),
     });
     if (res.ok) {
@@ -186,7 +183,6 @@ export default function SchedulePage() {
       endDate: a.endDate.split("T")[0],
       department: a.department || "",
       supervisorId: a.supervisor?.id || "",
-      color: a.color || "",
     });
   };
 
@@ -265,7 +261,7 @@ export default function SchedulePage() {
         >
           <div
             ref={popoverRef}
-            className="w-80 rounded-lg border border-neutral-200 bg-white p-4 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
+            className="w-80 rounded-lg border border-neutral-200 bg-white p-5 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="mb-3 font-semibold text-neutral-900 dark:text-neutral-100">
@@ -285,23 +281,35 @@ export default function SchedulePage() {
                   </option>
                 ))}
               </select>
-              <input
-                type="date"
-                value={form.startDate}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              />
-              <input
-                type="date"
-                value={form.endDate}
-                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Von</label>
+                  <input
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">Bis</label>
+                  <input
+                    type="date"
+                    value={form.endDate}
+                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  />
+                </div>
+              </div>
               {(form.scheduleType === "department" ||
                 form.scheduleType === "other") && (
                 <input
                   type="text"
-                  placeholder="Abteilung"
+                  placeholder={
+                    form.scheduleType === "department"
+                      ? "Welche Abteilung?"
+                      : "Beschreibung"
+                  }
                   value={form.department}
                   onChange={(e) =>
                     setForm({ ...form, department: e.target.value })
@@ -314,23 +322,14 @@ export default function SchedulePage() {
                 onChange={(e) => setForm({ ...form, supervisorId: e.target.value })}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
               >
-                <option value="">Betreuer...</option>
+                <option value="">Betreuer (optional)...</option>
                 {officers.map((o) => (
                   <option key={o.id} value={o.id}>
                     {o.name}
                   </option>
                 ))}
               </select>
-              {(form.scheduleType === "department" ||
-                form.scheduleType === "other") && (
-                <input
-                  type="color"
-                  value={form.color || TYPE_COLORS[form.scheduleType]}
-                  onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="h-9 w-full cursor-pointer rounded-lg border border-neutral-300 dark:border-neutral-700"
-                />
-              )}
-              <div className="flex gap-2">
+              <div className="flex justify-end gap-2 border-t border-neutral-100 pt-3 dark:border-neutral-800">
                 <Button size="sm" onClick={handleUpdate}>
                   Speichern
                 </Button>

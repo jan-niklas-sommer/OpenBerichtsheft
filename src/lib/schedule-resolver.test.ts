@@ -89,7 +89,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: weekdayToBit(1) | weekdayToBit(3),
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const result = resolveDay(new Date("2025-06-16"), noAssignments, [rule], noExceptions);
@@ -104,7 +103,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: weekdayToBit(1),
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const result = resolveDay(new Date("2025-06-17"), noAssignments, [rule], noExceptions);
@@ -126,7 +124,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const result = resolveDay(new Date("2025-06-16"), [assignment], [rule], noExceptions);
@@ -141,7 +138,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const newerRule: RecurrenceRule = {
@@ -151,7 +147,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
       createdAt: new Date("2025-06-01"),
     };
     const result = resolveDay(new Date("2025-06-16"), noAssignments, [olderRule, newerRule], noExceptions);
@@ -166,7 +161,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const schoolRule: RecurrenceRule = {
@@ -176,7 +170,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const result = resolveDay(new Date("2025-06-16"), noAssignments, [deptRule, schoolRule], noExceptions);
@@ -191,7 +184,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
       createdAt: new Date("2025-01-01"),
     };
     const exception: RecurrenceException = {
@@ -212,7 +204,6 @@ describe("resolveDay (Auflösungsalgorithmus)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: weekdayToBit(2) | weekdayToBit(4),
-      priority: 0,
       createdAt: new Date("2025-06-01"),
     };
     const result = resolveDay(new Date("2025-03-11"), noAssignments, [rule], noExceptions);

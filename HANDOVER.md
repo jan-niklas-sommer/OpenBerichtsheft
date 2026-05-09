@@ -1640,3 +1640,52 @@ npm run dev
 - Assignment das nur am Wochenende liegt wird nicht gerendert (0 Werktage) — korrektes Verhalten.
 - Tooltip-Positionierung ist relativ zum Container (`containerRef`). Bei sehr schnellem Scrollen könnte Tooltip kurz daneben erscheinen — tolerabel.
 - **Nächstes AP:** Dashboard-Status-Indikatoren (AP2): Punkte vergrößern, voll gesättigte Farben, Hover-Tooltips, Klick-Navigation.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Dashboard-Status-Indikatoren Redesign (AP2)
+
+### Planner
+
+- **Ziel:** Status-Punkte im Ausbilder-Dashboard besser erkennbar machen. Punkte vergrößern, voll gesättigte Farben, Hover-Tooltips, Klick-Navigation.
+- **Umfang:** Neue `statusDotColor()` Helper, Reviewer-Dashboard Mini-Week-Grid, Year-Calendar Legende.
+- **Nicht-Ziele:** Gantt-Timeline (AP1 abgeschlossen), Badge-Komponente, Report-Calendar, Week-Navigator.
+- **Akzeptanzkriterien:** Punkte 16×16px, 8 Wochen, voll gesättigte Farben, Hover-Tooltip, Klick auf Punkt navigiert zum Bericht.
+
+### Reviewer
+
+- Freigabe. Keine neuen Hardcoded-Farben. `statusDotColor()` nutzt semantische Token (`bg-success`, `bg-warning`, `bg-danger`, `bg-info`). Tooltip nutzt bestehende `bg-surface-elevated` + `border-stroke-subtle` + `shadow-md`.
+
+### Implementierte Änderungen
+
+**1. `src/lib/utils.ts` — Neue `statusDotColor()` Funktion:**
+- Voll gesättigte Status-Farben statt Pastell (`bg-success` statt `bg-success-soft`).
+- `draft`: `bg-surface-overlay border border-stroke-subtle` (subtiler Umriss).
+- `missing`: `bg-danger` (voll rot).
+- Fallback: wie `draft`.
+
+**2. `src/components/reports/reviewer-dashboard-client.tsx` — Mini-Week-Grid:**
+- Punktgröße: `h-3 w-3` (12px) → `h-4 w-4` (16px), `gap-0.5` → `gap-1`.
+- Wochen: 12 → 8 letzte KWs.
+- Farben: `statusColor()` (Pastell) → `statusDotColor()` (gesättigt).
+- Punkte sind jetzt `<Link>`-Elemente: Klick navigiert direkt zum Bericht.
+- Custom Tooltip (state-gesteuert, positioniert über Punkt): „KW 19: Genehmigt" oder „KW 19: Kein Bericht".
+- Tooltip-Styling: `bg-surface-elevated`, `border-stroke-subtle`, `shadow-md`, `rounded-md`, `text-[10px]`.
+- Entfernter Import: `ReportStatus` (nicht mehr referenziert).
+
+**3. `src/components/reports/year-calendar.tsx` — Legende:**
+- Farbmapping: `statusColor()` → `statusDotColor()` für einheitliche Darstellung.
+- Legende-Indikatoren: `h-2.5 w-2.5` (10px) → `h-3 w-3` (12px).
+- Zukünftige Wochen ohne Bericht: `bg-surface-overlay border border-stroke-subtle` statt solid.
+
+### Verifikation
+
+- **Lint:** 0 Errors, 3 Warnings (1 weniger — `ReportStatus` Import entfernt).
+- **Tests:** 695 Tests, 41 Dateien, alle bestanden (+9 neue Tests: 7 `statusDotColor` in `utils.test.ts`, 3 `reviewer-dashboard-client` Tests aktualisiert/ergänzt).
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Tooltip im Reviewer-Dashboard nutzt `getBoundingClientRect()` relativ zum Dot-Container — bei Window-Resize könnte Position kurz veralten, tolerabel.
+- Year-Calendar nutzt weiterhin native `title`-Tooltips auf den Wochen-Zellen (nicht die gleichen custom Tooltips wie Reviewer-Dashboard). Konsistenz könnte in einem Folge-AP verbessert werden.
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.

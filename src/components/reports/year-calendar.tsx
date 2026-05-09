@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { getIsoWeek, statusColor, STATUS_LABELS, getWeekDates, formatDate, getWeeksInMonth } from "@/lib/utils";
+import { getIsoWeek, statusDotColor, STATUS_LABELS, getWeekDates, formatDate, getWeeksInMonth } from "@/lib/utils";
 import type { ReportStatus } from "@/types";
 
 interface ReportSummary {
@@ -93,9 +93,9 @@ export function YearCalendar({
     const isPast = year < currentWeek.year || (year === currentWeek.year && w <= currentWeek.week);
 
     if (beforeStart) return "bg-surface-sunken/40";
-    if (status) return statusColor(status);
-    if (isPast) return statusColor("missing");
-    return "bg-surface-overlay";
+    if (status) return statusDotColor(status);
+    if (isPast) return statusDotColor("missing");
+    return "bg-surface-overlay border border-stroke-subtle";
   };
 
   const getTooltip = (w: number) => {
@@ -185,7 +185,7 @@ export function YearCalendar({
         >
           {LEGEND_ITEMS.map((item) => (
             <span key={item.status} className="flex items-center gap-1">
-              <span className={`inline-block h-2.5 w-2.5 rounded-sm ${statusColor(item.status)}`} />
+              <span className={`inline-block h-3 w-3 rounded-sm ${statusDotColor(item.status)}`} />
               {item.label}
             </span>
           ))}

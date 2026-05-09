@@ -105,6 +105,18 @@ export function statusCellColor(status: string): string {
   return map[status] || "bg-surface-overlay";
 }
 
+export function statusDotColor(status: string): string {
+  const map: Record<string, string> = {
+    draft: "bg-surface-overlay border border-stroke-subtle",
+    submitted: "bg-warning",
+    approved: "bg-success",
+    rejected: "bg-danger",
+    needs_revision: "bg-info",
+    missing: "bg-danger",
+  };
+  return map[status] || "bg-surface-overlay border border-stroke-subtle";
+}
+
 export interface WeekInfo {
   year: number;
   week: number;

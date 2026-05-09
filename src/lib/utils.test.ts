@@ -14,6 +14,7 @@ import {
   DAY_TYPE_LABELS,
   DAY_TYPES,
   statusVariant,
+  statusDotColor,
 } from "./utils";
 
 describe("cn", () => {
@@ -345,5 +346,35 @@ describe("getWeeksInMonth", () => {
     const weeks = getWeeksInMonth(2026, 11);
     const weekNums = weeks.map((w) => w.week);
     expect(weekNums.some((w) => w >= 48)).toBe(true);
+  });
+});
+
+describe("statusDotColor", () => {
+  it("returns saturated color for submitted", () => {
+    expect(statusDotColor("submitted")).toContain("bg-warning");
+  });
+
+  it("returns saturated color for approved", () => {
+    expect(statusDotColor("approved")).toContain("bg-success");
+  });
+
+  it("returns saturated color for rejected", () => {
+    expect(statusDotColor("rejected")).toContain("bg-danger");
+  });
+
+  it("returns saturated color for needs_revision", () => {
+    expect(statusDotColor("needs_revision")).toContain("bg-info");
+  });
+
+  it("returns border style for draft", () => {
+    expect(statusDotColor("draft")).toContain("border");
+  });
+
+  it("returns danger for missing", () => {
+    expect(statusDotColor("missing")).toContain("bg-danger");
+  });
+
+  it("returns fallback for unknown status", () => {
+    expect(statusDotColor("unknown")).toContain("border");
   });
 });

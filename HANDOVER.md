@@ -965,3 +965,57 @@ npm run dev
 
 - Wochenenden im Editor sind visuell deemphasiert aber technisch noch wie Arbeitstage behandelbar — keine Pflichtfeld-Validierung ist bereits implementiert durch `isNonWorkingDay`.
 - Border-Radius-Tokens definiert aber noch nicht referenziert in Komponenten — Migration in Folgeaufgabe.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Recurrence Rules + Report Prefill Backend + UI-Refactor
+
+### Planner
+
+- **Ziel**: Wiederholungsregeln (RecurrenceRule), Bericht-Prefill und gemeinsame Gantt-Komponente implementieren.
+- **Umfang**:
+  - ARCHITECTURE.md: 8+ Designentscheidungen dokumentiert
+  - Schedule-Resolver mit Bitfeld-Helfern und Auflösungsalgorithmus
+  - Report-Builder für Lazy-Create Prefill
+  - Prisma-Schema: RecurrenceRule + RecurrenceException
+  - GanttTimeline-Komponente extrahiert (Duplikation entfernt)
+  - Konflikterkennung (visuell, Ring-Marker bei überlappenden Zuweisungen)
+- **Nicht-Ziele**: RecurrenceRule API CRUD (folgt), RecurrenceException UI, Drag-Interaktion.
+
+### Reviewer
+
+- Plan geprüft, Freigabe erteilt.
+- Klarstellungen: Bitfeld-Konvention (Bit 0=Mo), Resolver-Semantik (aktuelle Planung für historische Daten), Phase-1 Officer = volle Edit-Rechte.
+- Phase-1 Scope: Click-only, kein Drag.
+
+### Implementierte Änderungen
+
+- **PR #46 (gemerged)**: Backend-Fundamente
+  - `src/lib/schedule-resolver.ts` — Auflösungsalgorithmus, `weekdayToBit`, `bitfieldContainsWeekday`, `resolveDay`, `resolveWeek`
+  - `src/lib/report-builder.ts` — `buildDefaultEntries` mit ScheduleType→DayType Mapping
+  - `prisma/schema.prisma` — RecurrenceRule + RecurrenceException Models
+  - `prisma/migrations/20260509160000_add_recurrence_rules/migration.sql`
+  - `ARCHITECTURE.md` — 8+ neue Abschnitte
+  - 26 neue Tests (19 Resolver + 7 Report-Builder)
+- **UI-Refactor (dieser Branch)**:
+  - `src/components/schedule/types.ts` — Gemeinsame Typen, Konstanten, Helfer
+  - `src/components/schedule/gantt-timeline.tsx` — Geteilte Timeline mit `mode: edit|readonly`, Konflikterkennung, Single-Row
+  - Alle 3 Schedule-Seiten umgestellt auf gemeinsame Komponente
+  - Duplikation eliminiert (~340 Zeilen reduziert)
+  - `.env.remote` für Remote-DB erstellt, `.gitignore` aktualisiert
+
+### Verifikation
+
+- **Typecheck**: Nicht verfügbar (kein separates Script).
+- **Lint**: 0 Errors, 4 Warnings (alle vorbestehend).
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: `npm run build` erfolgreich.
+- **Migration remote**: Auf Prisma Postgres (`db.prisma.io`) angewendet.
+
+### Offene Risiken / Folgeaufgaben
+
+- RecurrenceRule CRUD API fehlt noch (nur Schema + Resolver existieren).
+- RecurrenceException UI fehlt (nur Schema existiert).
+- Assignment-Modal mit 3 Modi (Single, Recurring, DayComposition) noch nicht implementiert.
+- Bericht-Editor Umbau (Prefill-Integration beim Lazy-Create) noch nicht implementiert.
+- Virtualisierung der Timeline bei >1 Jahr Ansicht noch nicht implementiert.

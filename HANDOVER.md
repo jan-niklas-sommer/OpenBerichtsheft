@@ -1689,3 +1689,49 @@ npm run dev
 - Tooltip im Reviewer-Dashboard nutzt `getBoundingClientRect()` relativ zum Dot-Container — bei Window-Resize könnte Position kurz veralten, tolerabel.
 - Year-Calendar nutzt weiterhin native `title`-Tooltips auf den Wochen-Zellen (nicht die gleichen custom Tooltips wie Reviewer-Dashboard). Konsistenz könnte in einem Folge-AP verbessert werden.
 - Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Gantt + Dashboard Feinschluss (Phase 3)
+
+### Planner
+
+- **Ziel:** 9 Korrekturen basierend auf visuellem Review mit Screenshots. 3 Bugs (Tooltip-Overlap, Scrollbar, KW-Ausrichtung), 6 Feinjustierungen.
+- **Umfang:** Tooltip Auto-Flip, Custom Scrollbar, KW-Ausrichtung, Row-Höhe, Header-Trennlinie, Spalten-Whitespace, Status-Punkte-Größe, Card-Hover, Badge-Glow.
+- **Nicht-Ziele:** Drag-Resize, E2E-Tests, neue Features.
+- **Akzeptanzkriterien:** Tooltip nie hinter Header, Scrollbar dezent, KW+Monat linksbündig, Row 48px, Trennlinie unter Header, 24px Spalten-Whitespace, Legende mt-3, Punkte 14px/6px, Card-Hover, Badge ohne Glow.
+
+### Reviewer
+
+- Freigabe mit Präzisierungen: Tooltip-Schwelle dynamisch berechnet (headerHeight + TOOLTIP_ESTIMATED_HEIGHT), Card-Hover via `onClick`-Detection statt Prop, Scrollbar dezent sichtbar (nicht komplett versteckt).
+
+### Implementierte Änderungen
+
+1. **Tooltip Auto-Flip** (`gantt-timeline.tsx`): `TooltipState` um `flip: boolean` erweitert. `handleMouseEnter` berechnet ob genug Platz über dem Balken (barTopInContainer - 120px - 8px > headerHeight). Falls nicht: Tooltip unterhalb mit `transform: translate(-50%, 0)`.
+
+2. **Custom Scrollbar** (`globals.css` + `gantt-timeline.tsx`): Neue `.timeline-scroll` CSS-Klasse mit WebKit + Firefox Styling. Thin, neutral, Thumb wird bei Hover deutlicher.
+
+3. **KW-Header linksbündig** (`gantt-timeline.tsx`): `px-1` auf KW-Labels, konsistent zum Monats-Header.
+
+4. **Row-Höhe 48px** (`gantt-timeline.tsx`): `rowHeight` default 36→48. Balken 24px vertikal zentriert → 12px Whitespace.
+
+5. **Trennlinie unter Header** (`gantt-timeline.tsx`): `border-b border-stroke-subtle pb-3` auf Datenbereich.
+
+6. **Spalten-Whitespace + Legende** (`gantt-timeline.tsx`): `pr-6` auf Azubi-Spalte. `mt-3` auf Legende.
+
+7. **Status-Punkte 14px** (`reviewer-dashboard-client.tsx`): `h-[14px] w-[14px] gap-1.5`.
+
+8. **Card Hover-State** (`card.tsx`): `transition-colors hover:border-stroke-base`. `cursor-pointer` nur via `onClick`-Detection.
+
+9. **Badge Glow-Fix** (`badge.tsx`): `shadow-none` ergänzt.
+
+### Verifikation
+
+- **Lint:** 0 Errors, 3 Warnings.
+- **Tests:** 695 Tests, 41 Dateien, alle bestanden.
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Tooltip nutzt konservative 120px Schätzung für Tooltip-Höhe. Ref-basierte Höhenmessung wäre genauer, aber Overkill.
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.

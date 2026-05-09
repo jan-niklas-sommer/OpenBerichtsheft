@@ -142,19 +142,19 @@ describe("ReviewerDashboardClient", () => {
 
   it("renders mini week overview dots", async () => {
     render(<ReviewerDashboardClient {...defaultProps} />);
-    const dots = document.querySelectorAll(".h-4.w-4.rounded-sm");
+    const dots = document.querySelectorAll("a[class*='rounded-sm']");
     expect(dots.length).toBeGreaterThan(0);
   });
 
   it("renders exactly 8 week dots per trainee", () => {
     render(<ReviewerDashboardClient {...defaultProps} />);
-    const dots = document.querySelectorAll(".h-4.w-4.rounded-sm");
+    const dots = document.querySelectorAll("a[class*='rounded-sm']");
     expect(dots.length).toBe(16);
   });
 
   it("renders dots as links when report exists", () => {
     render(<ReviewerDashboardClient {...defaultProps} />);
-    const links = document.querySelectorAll("a.h-4.w-4.rounded-sm[href*='/trainer/report/']");
+    const links = document.querySelectorAll("a[class*='rounded-sm'][href*='/trainer/report/']");
     expect(links.length).toBeGreaterThan(0);
   });
 });

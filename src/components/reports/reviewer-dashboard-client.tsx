@@ -163,7 +163,7 @@ export function ReviewerDashboardClient({
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Mini week overview */}
-                    <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1">
+                    <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1.5">
                       {recentWeeks.map((w) => {
                         const report = trainee.reports.find(
                           (r) => r.calendarYear === w.year && r.calendarWeek === w.week
@@ -178,7 +178,7 @@ export function ReviewerDashboardClient({
                           <Link
                             key={`${w.year}-${w.week}`}
                             href={href}
-                            className={`h-4 w-4 rounded-sm ${report ? statusDotColor(report.status) : "bg-surface-overlay border border-stroke-subtle"}`}
+                            className={`h-[14px] w-[14px] rounded-sm ${report ? statusDotColor(report.status) : "bg-surface-overlay border border-stroke-subtle"}`}
                             onMouseEnter={(e) => handleDotEnter(tooltipText, e)}
                             onMouseLeave={handleDotLeave}
                           />

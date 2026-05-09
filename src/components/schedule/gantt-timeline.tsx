@@ -43,6 +43,7 @@ interface TooltipState {
   assignment: ScheduleAssignmentView;
   x: number;
   y: number;
+  flip: boolean;
 }
 
 export function GanttTimeline({
@@ -51,12 +52,18 @@ export function GanttTimeline({
   viewStart,
   daysVisible,
   cellWidth = 6,
-  rowHeight = 36,
+  rowHeight = 48,
   mode,
   singleRow = false,
   showConflicts = false,
   onCellClick,
 }: GanttTimelineProps) {
+  const headerHeight = 48;
+  const monthRowHeight = 22;
+  const weekRowHeight = 26;
+  const barHeight = 24;
+  const TOOLTIP_ESTIMATED_HEIGHT = 120;
+
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -135,28 +142,28 @@ export function GanttTimeline({
     (assignment: ScheduleAssignmentView, e: React.MouseEvent) => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = setTimeout(() => {
-        const rect = (e.target as HTMLElement).getBoundingClientRect();
+        const barRect = (e.target as HTMLElement).getBoundingClientRect();
         const containerRect = containerRef.current?.getBoundingClientRect();
         if (!containerRect) return;
+        const barTopInContainer = barRect.top - containerRect.top;
+        const fitsAbove = barTopInContainer - TOOLTIP_ESTIMATED_HEIGHT - 8 > headerHeight;
         setTooltip({
           assignment,
-          x: rect.left + rect.width / 2 - containerRect.left,
-          y: rect.top - containerRect.top - 8,
+          x: barRect.left + barRect.width / 2 - containerRect.left,
+          y: fitsAbove
+            ? barTopInContainer - 8
+            : barRect.bottom - containerRect.top + 8,
+          flip: !fitsAbove,
         });
       }, 200);
     },
-    [],
+    [headerHeight, TOOLTIP_ESTIMATED_HEIGHT],
   );
 
   const handleMouseLeave = useCallback(() => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     setTooltip(null);
   }, []);
-
-  const headerHeight = 48;
-  const monthRowHeight = 22;
-  const weekRowHeight = 26;
-  const barHeight = 24;
 
   const renderBlock = (
     block: AssignmentBlock,
@@ -231,7 +238,7 @@ export function GanttTimeline({
         style={{
           left: tooltip.x,
           top: tooltip.y,
-          transform: "translate(-50%, -100%)",
+          transform: tooltip.flip ? "translate(-50%, 0)" : "translate(-50%, -100%)",
         }}
       >
         <div className="text-xs font-medium text-content-base">
@@ -272,7 +279,7 @@ export function GanttTimeline({
           {weekHeaders.map((w, i) => (
             <div
               key={i}
-              className={`absolute flex items-center text-[9px] ${
+              className={`absolute flex items-center text-[9px] px-1 ${
                 i % 2 === 0 ? "text-content-subtle" : "text-content-subtle/0"
               }`}
               style={{
@@ -286,7 +293,7 @@ export function GanttTimeline({
           ))}
         </div>
 
-        <div className="relative">
+        <div className="border-b border-stroke-subtle pb-3">
           {todayIndex >= 0 && (
             <div
               className="absolute z-10 w-0 opacity-20"
@@ -325,16 +332,16 @@ export function GanttTimeline({
 
   if (singleRow && rows.length === 1) {
     return (
-      <div className="overflow-x-auto">
+      <div className="timeline-scroll overflow-x-auto">
         {renderTimelineContent()}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="timeline-scroll overflow-x-auto">
       <div className="flex">
-        <div className="sticky left-0 z-10 min-w-[140px] bg-surface-base">
+        <div className="sticky left-0 z-10 min-w-[140px] pr-6 bg-surface-base">
           <div
             style={{ height: headerHeight }}
             className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
@@ -362,7 +369,7 @@ export function GanttTimeline({
 
 export function ScheduleLegend() {
   return (
-    <div className="mt-4 flex flex-wrap gap-3">
+    <div className="mt-3 flex flex-wrap gap-3">
       {Object.entries(TYPE_LABELS).map(([type, label]) => (
         <div
           key={type}

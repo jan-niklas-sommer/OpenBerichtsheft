@@ -92,10 +92,10 @@ export function YearCalendar({
     const beforeStart = isBeforeTrainingStart(year, w);
     const isPast = year < currentWeek.year || (year === currentWeek.year && w <= currentWeek.week);
 
-    if (beforeStart) return "bg-neutral-200/40 dark:bg-neutral-700/40";
+    if (beforeStart) return "bg-surface-sunken/40";
     if (status) return statusColor(status);
     if (isPast) return statusColor("missing");
-    return "bg-neutral-100 dark:bg-neutral-800/50";
+    return "bg-surface-overlay";
   };
 
   const getTooltip = (w: number) => {
@@ -142,7 +142,7 @@ export function YearCalendar({
         {monthRanges.map((m) => (
           <span
             key={`${m.label}-${m.startIdx}`}
-            className="absolute text-[10px] text-neutral-400 leading-none"
+            className="absolute text-[10px] text-content-subtle leading-none"
             style={{
               left: `${(m.startIdx / weeks.length) * 100}%`,
               width: `${(m.span / weeks.length) * 100}%`,
@@ -167,7 +167,7 @@ export function YearCalendar({
               title={getTooltip(w.week)}
               className={`h-7 min-w-[3px] flex-1 rounded-sm transition-transform hover:scale-y-150 hover:z-10 ${colorClass} ${
                 isSelectedMonth && !beforeStart
-                  ? "ring-1 ring-neutral-900 dark:ring-neutral-100"
+                  ? "ring-1 ring-content-base"
                   : ""
               } ${beforeStart ? "pointer-events-none" : ""}`}
             />
@@ -177,7 +177,7 @@ export function YearCalendar({
 
       {legendPos && (
         <div
-          className="absolute pointer-events-none rounded-lg border border-neutral-200 bg-white/95 backdrop-blur-sm p-2.5 shadow-lg dark:border-neutral-700 dark:bg-neutral-900/95 z-20 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-neutral-500"
+          className="absolute pointer-events-none rounded-lg border border-stroke-subtle bg-surface-base/95 backdrop-blur-sm p-2.5 shadow-lg z-20 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-content-muted"
           style={{
             left: Math.min(legendPos.x + 12, legendPos.containerWidth - 220),
             top: legendPos.y + 12,

@@ -297,7 +297,7 @@ export default function ReportEditorPage() {
   };
 
   if (loading) {
-    return <div className="text-neutral-500">Laden...</div>;
+    return <div className="text-content-muted">Laden...</div>;
   }
 
   return (
@@ -305,7 +305,7 @@ export default function ReportEditorPage() {
       <div className="mb-2">
         <Link
           href="/trainee"
-          className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+          className="inline-flex items-center gap-1 text-sm text-content-muted hover:text-content-base"
         >
           <CalendarDays className="h-3.5 w-3.5" />
           Zurück zur Übersicht
@@ -324,20 +324,20 @@ export default function ReportEditorPage() {
         />
 
         <div className="flex items-center gap-3">
-          <div className="text-sm text-neutral-500">
+          <div className="text-sm text-content-muted">
             {saveStatus === "saving" && "Speichert…"}
             {saveStatus === "saved" && savedAt && (
-              <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+              <span className="flex items-center gap-1 text-success">
                 <Check className="h-3 w-3" /> Zuletzt gespeichert {relativeSaveText}
               </span>
             )}
             {saveStatus === "saved" && !savedAt && (
-              <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+              <span className="flex items-center gap-1 text-success">
                 <Check className="h-3 w-3" /> Gespeichert
               </span>
             )}
             {saveStatus === "error" && (
-              <span className="text-red-500">Fehler beim Speichern</span>
+              <span className="text-danger">Fehler beim Speichern</span>
             )}
           </div>
 
@@ -388,11 +388,11 @@ export default function ReportEditorPage() {
       </div>
 
       {report?.reviewComment && (
-        <Card className="mb-6 border-yellow-200 dark:border-yellow-900">
+        <Card className="mb-6 border-warning">
           <CardHeader>
             <CardTitle>Kommentar des Prüfers</CardTitle>
           </CardHeader>
-          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+          <p className="text-sm text-content-muted">
             {report.reviewComment}
           </p>
         </Card>
@@ -404,8 +404,8 @@ export default function ReportEditorPage() {
             onClick={() => setReportType("weekly")}
             className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
               reportType === "weekly"
-                ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
+                ? "border-accent bg-accent text-accent-fg"
+                : "border-stroke-subtle bg-surface-base text-content-muted hover:border-stroke-base"
             }`}
           >
             <FileText className="h-4 w-4" />
@@ -415,8 +415,8 @@ export default function ReportEditorPage() {
             onClick={() => setReportType("daily")}
             className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
               reportType === "daily"
-                ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
+                ? "border-accent bg-accent text-accent-fg"
+                : "border-stroke-subtle bg-surface-base text-content-muted hover:border-stroke-base"
             }`}
           >
             <FileSpreadsheet className="h-4 w-4" />
@@ -429,8 +429,8 @@ export default function ReportEditorPage() {
         <div className="mb-6 flex gap-2">
           <div className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium ${
             reportType === "weekly"
-              ? "border-neutral-300 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-              : "border-neutral-200 bg-white text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500"
+              ? "border-stroke-base bg-surface-overlay text-content-muted"
+              : "border-stroke-subtle bg-surface-base text-content-subtle"
           }`}>
             {reportType === "weekly" ? <FileText className="h-4 w-4" /> : <FileSpreadsheet className="h-4 w-4" />}
             {reportType === "weekly" ? "Wochenbericht" : "Tagesbericht"}
@@ -457,7 +457,7 @@ export default function ReportEditorPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Tageseinträge</CardTitle>
-            <span className="flex items-center gap-1.5 text-sm text-neutral-500">
+            <span className="flex items-center gap-1.5 text-sm text-content-muted">
               <Clock className="h-3.5 w-3.5" />
               {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min
             </span>
@@ -471,25 +471,25 @@ export default function ReportEditorPage() {
             return (
               <div
                 key={entry.date}
-                className={`rounded-lg border p-4 dark:border-neutral-800 ${
+                className={`rounded-lg border p-4 ${
                   nonWorking
-                    ? "border-neutral-100 bg-neutral-50/50 dark:border-neutral-800/50 dark:bg-neutral-900/30"
-                    : "border-neutral-200"
+                    ? "border-stroke-subtle bg-surface-overlay"
+                    : "border-stroke-subtle"
                 }`}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-[140px]">
-                    <p className={`font-medium ${nonWorking ? "text-neutral-400 dark:text-neutral-600" : "text-neutral-900 dark:text-neutral-100"}`}>
+                    <p className={`font-medium ${nonWorking ? "text-content-subtle" : "text-content-base"}`}>
                       {formatDayName(weekDates[index])}
                     </p>
-                    <p className="text-sm text-neutral-500">
+                    <p className="text-sm text-content-muted">
                       {formatDate(weekDates[index])}
                     </p>
                   </div>
 
                   {nonWorking ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-neutral-400 dark:text-neutral-600">&ndash;</span>
+                      <span className="text-sm text-content-subtle">&ndash;</span>
                     </div>
                   ) : (
                     <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
@@ -514,9 +514,9 @@ export default function ReportEditorPage() {
                             updateEntry(index, "hours", Math.min(24, Math.max(0, parseInt(e.target.value) || 0)))
                           }
                           disabled={!isEditable}
-                          className="h-10 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-center text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 disabled:opacity-50"
+                          className="h-10 w-16 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
                         />
-                        <span className="text-sm text-neutral-500">h</span>
+                        <span className="text-sm text-content-muted">h</span>
                         <input
                           type="number"
                           min={0}
@@ -526,9 +526,9 @@ export default function ReportEditorPage() {
                             updateEntry(index, "minutes", Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
                           }
                           disabled={!isEditable}
-                          className="h-10 w-16 rounded-lg border border-neutral-300 bg-white px-2 text-center text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 disabled:opacity-50"
+                          className="h-10 w-16 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
                         />
-                        <span className="text-sm text-neutral-500">min</span>
+                        <span className="text-sm text-content-muted">min</span>
                       </div>
                     </div>
                   )}

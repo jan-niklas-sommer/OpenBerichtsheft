@@ -67,7 +67,7 @@ export function ReportCalendar({
         <Button variant="ghost" size="sm" onClick={onPrevMonth}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="text-lg font-semibold text-content-base">
           {MONTH_NAMES[month]} {year}
         </h2>
         <Button variant="ghost" size="sm" onClick={onNextMonth}>
@@ -92,39 +92,39 @@ export function ReportCalendar({
               href={beforeStart ? "#" : `/trainee/reports/${weekInfo.year}-${weekInfo.week}`}
               className={`flex items-center gap-3 rounded-lg border transition-colors ${
                 current
-                  ? "border-neutral-900 dark:border-neutral-100"
-                  : "border-neutral-200 dark:border-neutral-800"
+                  ? "border-content-base"
+                  : "border-stroke-subtle"
               } ${
                 beforeStart
                   ? "pointer-events-none opacity-40"
-                  : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  : "hover:bg-surface-overlay"
               }`}
               style={{ minHeight: 44 }}
             >
-              <div className="flex items-center justify-center w-8 h-8 ml-3 shrink-0 rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+              <div className="flex items-center justify-center w-8 h-8 ml-3 shrink-0 rounded-full bg-surface-overlay text-xs font-semibold text-content-muted">
                 {weekInfo.week}
               </div>
               <div className="flex-1 flex items-center justify-between pr-3 py-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-neutral-500">KW {weekInfo.week}</span>
-                  <span className="text-xs text-neutral-400">{weekInfo.label}</span>
+                  <span className="text-sm text-content-muted">KW {weekInfo.week}</span>
+                  <span className="text-xs text-content-subtle">{weekInfo.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {status && (
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white dark:text-neutral-900 ${statusColor(status)}`}>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-accent-fg ${statusColor(status)}`}>
                       {STATUS_LABELS[status]}
                     </span>
                   )}
                   {missing && (
-                    <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger">
                       Fehlt
                     </span>
                   )}
                   {beforeStart && (
-                    <span className="text-xs text-neutral-400">Vor Eintritt</span>
+                    <span className="text-xs text-content-subtle">Vor Eintritt</span>
                   )}
                   {current && !beforeStart && (
-                    <span className="rounded-full bg-neutral-900 px-2 py-0.5 text-xs text-white dark:bg-neutral-100 dark:text-neutral-900">
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-fg">
                       Aktuell
                     </span>
                   )}

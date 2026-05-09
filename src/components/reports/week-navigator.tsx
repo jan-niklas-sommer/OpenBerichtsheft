@@ -71,11 +71,11 @@ export function WeekNavigator({
       </div>
 
       <div className="text-center min-w-[120px]">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           KW {currentWeek}/{currentYear}
         </h1>
         {professionName && (
-          <p className="text-sm text-neutral-500">{professionName}</p>
+          <p className="text-sm text-content-muted">{professionName}</p>
         )}
         {currentStatus && (
           <Badge

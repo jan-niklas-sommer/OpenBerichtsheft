@@ -81,7 +81,7 @@ export function ReviewerDashboardClient({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           {title}
         </h1>
         <div className="flex items-center gap-2">
@@ -114,8 +114,8 @@ export function ReviewerDashboardClient({
       {filteredTrainees.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center py-8 text-center">
-            <FileText className="mb-3 h-10 w-10 text-neutral-400" />
-            <p className="text-neutral-500">Keine offenen Berichte.</p>
+            <FileText className="mb-3 h-10 w-10 text-content-subtle" />
+            <p className="text-content-muted">Keine offenen Berichte.</p>
           </div>
         </Card>
       ) : (
@@ -131,14 +131,14 @@ export function ReviewerDashboardClient({
                   onClick={() => setExpandedTrainee(isExpanded ? null : trainee.id)}
                 >
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="font-medium text-content-base">
                       {trainee.name}
                     </p>
-                    <p className="text-sm text-neutral-500">
+                    <p className="text-sm text-content-muted">
                       {trainee.profession || "Kein Beruf"}
                       {" · "}{trainee.reports.length} Berichte
                       {submittedReports.length > 0 && (
-                        <span className="text-amber-600 dark:text-amber-400">
+                        <span className="text-warning">
                           {" · "}{submittedReports.length} offen
                         </span>
                       )}
@@ -154,33 +154,33 @@ export function ReviewerDashboardClient({
                         return (
                           <div
                             key={`${w.year}-${w.week}`}
-                            className={`h-3 w-3 rounded-sm ${report ? statusColor(report.status) : "bg-neutral-100 dark:bg-neutral-800"}`}
+                            className={`h-3 w-3 rounded-sm ${report ? statusColor(report.status) : "bg-surface-overlay"}`}
                             title={report ? `KW ${w.week}: ${STATUS_LABELS[report.status]}` : `KW ${w.week}: Kein Bericht`}
                           />
                         );
                       })}
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-neutral-400" />
+                      <ChevronUp className="h-4 w-4 text-content-subtle" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-neutral-400" />
+                      <ChevronDown className="h-4 w-4 text-content-subtle" />
                     )}
                   </div>
                 </button>
 
                 {isExpanded && (
-                  <div className="border-t border-neutral-200 dark:border-neutral-800 px-4 py-3 space-y-2">
+                  <div className="border-t border-stroke-subtle px-4 py-3 space-y-2">
                     {/* Submitted reports first */}
                     {submittedReports.length > 0 && (
                       <div className="mb-3">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-muted">
                           Zu prüfen
                         </p>
                         {submittedReports.map((report) => (
                           <Link key={report.id} href={`${basePath}/report/${report.id}`}>
-                            <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                            <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-surface-overlay">
                               <div>
-                                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                                <p className="text-sm font-medium text-content-base">
                                   KW {report.calendarWeek}/{report.calendarYear}
                                 </p>
                               </div>
@@ -198,9 +198,9 @@ export function ReviewerDashboardClient({
                       .filter((r) => r.status !== "submitted")
                       .map((report) => (
                         <Link key={report.id} href={`${basePath}/report/${report.id}`}>
-                          <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                          <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-surface-overlay">
                             <div>
-                              <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                              <p className="text-sm font-medium text-content-base">
                                 KW {report.calendarWeek}/{report.calendarYear}
                               </p>
                             </div>
@@ -212,7 +212,7 @@ export function ReviewerDashboardClient({
                       ))}
 
                     {trainee.reports.length === 0 && (
-                      <p className="text-sm text-neutral-500 py-2">Keine Berichte vorhanden.</p>
+                      <p className="text-sm text-content-muted py-2">Keine Berichte vorhanden.</p>
                     )}
                   </div>
                 )}

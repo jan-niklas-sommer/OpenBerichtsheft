@@ -44,17 +44,17 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
     setActionLoading(false);
   };
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
-  if (!report) return <div className="text-red-500">Bericht nicht gefunden</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
+  if (!report) return <div className="text-danger">Bericht nicht gefunden</div>;
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl font-semibold text-content-base">
             KW {report.calendarWeek}/{report.calendarYear}
           </h1>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-content-muted">
             von {report.trainee?.name}
             {report.trainee?.profession?.name && (
               <> &middot; {report.trainee.profession.name}</>
@@ -91,20 +91,20 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
                 .filter((e) => (e as { reportText?: string }).reportText)
                 .map((entry) => (
                   <div key={entry.id || entry.date}>
-                    <p className="mb-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="mb-1 text-sm font-medium text-content-base">
                       {formatDate(new Date(entry.date))} &middot; {DAY_TYPE_LABELS[entry.dayType]}
                     </p>
-                    <p className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+                    <p className="whitespace-pre-wrap text-sm text-content-muted">
                       {(entry as { reportText?: string }).reportText}
                     </p>
                   </div>
                 ))}
             </div>
           ) : (
-            <p className="text-sm text-neutral-500">Keine Tagesberichte vorhanden.</p>
+            <p className="text-sm text-content-muted">Keine Tagesberichte vorhanden.</p>
           )
         ) : (
-          <p className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+          <p className="whitespace-pre-wrap text-sm text-content-muted">
             {report.reportText || "Kein Berichtstext vorhanden."}
           </p>
         )}
@@ -118,17 +118,17 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
           {report.dailyEntries.map((entry) => (
             <div
               key={entry.id || entry.date}
-              className="flex items-center justify-between rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
+              className="flex items-center justify-between rounded-lg border border-stroke-subtle p-3"
             >
               <div>
-                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                <p className="text-sm font-medium text-content-base">
                   {formatDate(new Date(entry.date))}
                 </p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-content-muted">
                   {DAY_TYPE_LABELS[entry.dayType]}
                 </p>
               </div>
-              <p className="text-sm text-neutral-700 dark:text-neutral-300">
+              <p className="text-sm text-content-muted">
                 {entry.hours}h {entry.minutes}min
               </p>
             </div>
@@ -137,11 +137,11 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
       </Card>
 
       {report.reviewComment && (
-        <Card className="mb-6 border-yellow-200 dark:border-yellow-900">
+        <Card className="mb-6 border-warning">
           <CardHeader>
             <CardTitle>Letzter Prüfungskommentar</CardTitle>
           </CardHeader>
-          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+          <p className="text-sm text-content-muted">
             {report.reviewComment}
           </p>
         </Card>

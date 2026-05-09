@@ -1350,3 +1350,37 @@ npm run dev
 ### Offene Risiken / Folgeaufgaben
 
 - AP7: Report-Editor (`trainee/reports/[week]`), PDF (`pdf-document.tsx`), Report-Komponenten (year-calendar, report-calendar, reviewer-dashboard, reviewer-report)
+
+---
+
+## 2026-05-09 – Arbeitspaket: Report-Komponenten auf Design-Token (AP7)
+
+### Planner
+
+- **Ziel:** Report-Editor, Report-Komponenten (year-calendar, report-calendar, reviewer-dashboard, reviewer-report-page, week-navigator) auf Token umstellen.
+- **Umfang:** 6 Dateien. PDF (`pdf-document.tsx`) behält Hex-Werte (zulässig laut Design-System).
+- **Akzeptanzkriterien:** 0 hardcoded Farbklassen in `src/` (außer pdf-document.tsx), 659 Tests grün, Build OK.
+
+### Reviewer
+
+- Freigabe. Review-Comment-Card Border auf `border-warning` umgestellt.
+
+### Implementierte Änderungen
+
+- `trainee/reports/[week]/page.tsx` — Report-Type-Tabs (accent-Inversion), Review-Comment-Card (`border-warning`), Save-Status (`text-success`), Day-Cards (`border-stroke-subtle`, `bg-surface-overlay`), Non-Working-Day-Text (`text-content-subtle`), Hour/Minute-Inputs (`border-stroke-base`), alle Texte auf Token
+- `year-calendar.tsx` — Token für Texte, Borders, Statusfarben
+- `report-calendar.tsx` — Token für Texte, Borders, Statusfarben
+- `reviewer-dashboard-client.tsx` — Status-Texte auf Token
+- `reviewer-report-page.tsx` — Token für Texte, Borders, Warning-Card
+- `week-navigator.tsx` — Token für Texte, Borders
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings.
+- **Tests**: 659 Tests, alle bestanden.
+- **Build**: erfolgreich.
+- **Hardcoded-Color Audit**: `grep` über `src/**/*.tsx` liefert **0 Treffer** für `text-neutral-`, `bg-neutral-`, `border-neutral-`, `text-red-`, `bg-red-`, `text-green-`, `text-amber-`, `bg-amber-`, `bg-emerald-`, `bg-blue-`, `bg-white`, `text-white`. Einzige Ausnahme: `pdf-document.tsx` mit Hex-Werten (zulässig laut DESIGN_SYSTEM.md).
+
+### Ergebnis
+
+**Design-System-Migration abgeschlossen.** Alle 7 Arbeitspakete (AP1–AP7) umgesetzt. Die gesamte `src/`-Codebase nutzt jetzt CSS-Variablen-basierte Design-Token.

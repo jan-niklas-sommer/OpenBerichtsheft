@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -94,19 +95,20 @@ export default function SchedulePage() {
   }, [assignments, search, professionFilter]);
 
   const traineeRows = useMemo(() => {
-    const seen = new Map<string, { name: string; profession?: string | null }>();
-    for (const a of filteredAssignments) {
-      if (!seen.has(a.traineeId)) {
-        seen.set(a.traineeId, {
-          name: a.trainee.name,
-          profession: a.trainee.profession?.name,
-        });
-      }
-    }
-    return Array.from(seen.entries()).sort((a, b) =>
-      a[1].name.localeCompare(b[1].name),
-    );
-  }, [filteredAssignments]);
+    const assignmentTraineeIds = new Set(filteredAssignments.map((a) => a.traineeId));
+    return trainees
+      .filter((t) => {
+        if (!search && !professionFilter) return true;
+        const matchesSearch = !search || t.name.toLowerCase().includes(search.toLowerCase());
+        const matchesProfession = !professionFilter || filteredAssignments.some(
+          (a) => a.traineeId === t.id && a.trainee.profession?.name === professionFilter,
+        );
+        return matchesSearch && matchesProfession;
+      })
+      .filter((t) => assignmentTraineeIds.has(t.id))
+      .map((t) => [t.id, { name: t.name }] as [string, { name: string; profession?: string | null }])
+      .sort((a, b) => a[1].name.localeCompare(b[1].name));
+  }, [trainees, filteredAssignments, search, professionFilter]);
 
   const professions = useMemo(() => {
     const set = new Set<string>();
@@ -255,7 +257,7 @@ export default function SchedulePage() {
         officers={officers.map((o) => ({ id: o.id, name: o.name }))}
       />
 
-      {editItem && (
+      {editItem && typeof window !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-backdrop"
           onClick={() => setEditItem(null)}
@@ -351,7 +353,8 @@ export default function SchedulePage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       <GanttTimeline

@@ -1735,3 +1735,34 @@ npm run dev
 
 - Tooltip nutzt konservative 120px Schätzung für Tooltip-Höhe. Ref-basierte Höhenmessung wäre genauer, aber Overkill.
 - Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Gantt Datenintegrität + Tooltip Portal + Scrollbar + Modal
+
+### Planner
+
+- **Ziel:** 3 Bugs + 2 Verbesserungen. Geisterzeile (Erika) durch Datenfluss-Fix, Tooltip-Abschneiden durch Portal, Scrollbar durch `!important`, Modal-Zentrierung durch Portal, Backend-Role-Validierung.
+
+### Implementierte Änderungen
+
+1. **traineeRows aus Trainee-Liste** (`trainer/schedule/page.tsx`): Vorher aus `filteredAssignments` → Nachher aus `trainees` State. Verhindert Geister-Zeilen für Nicht-Azubis.
+
+2. **POST Role-Validierung** (`api/schedule/route.ts`): `findUnique` auf `traineeId` prüft `role === "trainee"`. 400 bei Nicht-Azubis. Neuer Test.
+
+3. **Tooltip via createPortal** (`gantt-timeline.tsx`): Portal → `document.body`, Maus-Tracking mit Boundary-Check. Löst Clipping + Scroll-Expansion.
+
+4. **Scrollbar CSS** (`globals.css`): `!important` auf WebKit-Pseudo-Elemente.
+
+5. **Edit-Modal via createPortal** (`trainer/schedule/page.tsx`): Portal entkoppelt von Parent-Containern.
+
+### Verifikation
+
+- **Lint:** 0 Errors, 3 Warnings.
+- **Tests:** 696 Tests, 41 Dateien, alle bestanden (+1 neuer).
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- PUT-Handler hat keine Role-Validierung — nachziehen in Folge-AP.
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.

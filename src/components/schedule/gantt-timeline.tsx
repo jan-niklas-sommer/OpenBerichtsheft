@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   TYPE_COLORS,
   TYPE_FG_COLORS,
@@ -62,10 +63,8 @@ export function GanttTimeline({
   const monthRowHeight = 22;
   const weekRowHeight = 26;
   const barHeight = 24;
-  const TOOLTIP_ESTIMATED_HEIGHT = 120;
 
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const viewEnd = useMemo(() => {
@@ -141,23 +140,24 @@ export function GanttTimeline({
   const handleMouseEnter = useCallback(
     (assignment: ScheduleAssignmentView, e: React.MouseEvent) => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      const clientX = e.clientX;
+      const clientY = e.clientY;
       hoverTimerRef.current = setTimeout(() => {
-        const barRect = (e.target as HTMLElement).getBoundingClientRect();
-        const containerRect = containerRef.current?.getBoundingClientRect();
-        if (!containerRect) return;
-        const barTopInContainer = barRect.top - containerRect.top;
-        const fitsAbove = barTopInContainer - TOOLTIP_ESTIMATED_HEIGHT - 8 > headerHeight;
-        setTooltip({
-          assignment,
-          x: barRect.left + barRect.width / 2 - containerRect.left,
-          y: fitsAbove
-            ? barTopInContainer - 8
-            : barRect.bottom - containerRect.top + 8,
-          flip: !fitsAbove,
-        });
+        const vw = window.innerWidth;
+        const tooltipWidth = 320;
+        const tooltipHeight = 120;
+        const x = Math.min(
+          Math.max(clientX + 12, 8),
+          vw - tooltipWidth - 8,
+        );
+        const fitsAbove = clientY - tooltipHeight - 12 > 0;
+        const y = fitsAbove
+          ? clientY - 12
+          : clientY + 20;
+        setTooltip({ assignment, x, y, flip: !fitsAbove });
       }, 200);
     },
-    [headerHeight, TOOLTIP_ESTIMATED_HEIGHT],
+    [],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -218,7 +218,7 @@ export function GanttTimeline({
   };
 
   const renderTooltip = () => {
-    if (!tooltip) return null;
+    if (!tooltip || typeof document === "undefined") return null;
     const a = tooltip.assignment;
     const start = new Date(a.startDate);
     const end = new Date(a.endDate);
@@ -232,13 +232,13 @@ export function GanttTimeline({
       ? `${diffWeeks} Woche${diffWeeks !== 1 ? "n" : ""}, ${diffDays} Tage`
       : `${diffDays} Tag${diffDays !== 1 ? "e" : ""}`;
 
-    return (
+    return createPortal(
       <div
-        className="pointer-events-none absolute z-30 max-w-xs rounded-md border border-stroke-subtle bg-surface-elevated px-3 py-2 shadow-md"
+        className="pointer-events-none fixed z-[9999] max-w-xs rounded-md border border-stroke-subtle bg-surface-elevated px-3 py-2 shadow-md"
         style={{
           left: tooltip.x,
           top: tooltip.y,
-          transform: tooltip.flip ? "translate(-50%, 0)" : "translate(-50%, -100%)",
+          transform: tooltip.flip ? "translate(0, 0)" : "translate(0, -100%)",
         }}
       >
         <div className="text-xs font-medium text-content-base">
@@ -254,7 +254,8 @@ export function GanttTimeline({
             Betreuer: {a.supervisor.name}
           </div>
         )}
-      </div>
+      </div>,
+      document.body,
     );
   };
 
@@ -262,7 +263,7 @@ export function GanttTimeline({
     const totalWidth = workDays.length * cellWidth;
 
     return (
-      <div ref={containerRef} className="relative" style={{ width: totalWidth }}>
+      <div className="relative" style={{ width: totalWidth }}>
         <div style={{ height: monthRowHeight }}>
           {monthHeaders.map((m, i) => (
             <div
@@ -324,24 +325,28 @@ export function GanttTimeline({
             );
           })}
         </div>
-
-        {renderTooltip()}
       </div>
     );
   };
 
+  const tooltipPortal = renderTooltip();
+
   if (singleRow && rows.length === 1) {
     return (
-      <div className="timeline-scroll overflow-x-auto">
-        {renderTimelineContent()}
-      </div>
+      <>
+        <div className="timeline-scroll overflow-x-auto">
+          {renderTimelineContent()}
+        </div>
+        {tooltipPortal}
+      </>
     );
   }
 
   return (
-    <div className="timeline-scroll overflow-x-auto">
-      <div className="flex">
-        <div className="sticky left-0 z-10 min-w-[140px] pr-6 bg-surface-base">
+    <>
+      <div className="timeline-scroll overflow-x-auto">
+        <div className="flex">
+          <div className="sticky left-0 z-10 min-w-[140px] pr-6 bg-surface-base">
           <div
             style={{ height: headerHeight }}
             className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
@@ -364,6 +369,8 @@ export function GanttTimeline({
         {renderTimelineContent()}
       </div>
     </div>
+    {tooltipPortal}
+  </>
   );
 }
 

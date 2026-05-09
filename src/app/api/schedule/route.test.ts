@@ -143,10 +143,23 @@ describe("POST /api/schedule", () => {
     expect(res.status).toBe(400);
   });
 
+  it("rejects assignment for non-trainee user", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindUnique.mockResolvedValue({ id: "officer-id", role: "training_officer" });
+    const res = await POST(makePostRequest({
+      traineeId: "officer-id",
+      scheduleType: "department",
+      startDate: "2026-01-05",
+      endDate: "2026-01-09",
+      department: "IT",
+    }));
+    expect(res.status).toBe(400);
+  });
+
   it("creates assignment as admin", async () => {
     const traineeId = "e68ee10b-4c07-48b5-b071-c5ea06138f79";
     mockAuth.mockResolvedValue(adminSession);
-    mockUserFindUnique.mockResolvedValue(null);
+    mockUserFindUnique.mockResolvedValue({ id: traineeId, role: "trainee", professionId: null });
     mockScheduleCreate.mockResolvedValue({
       id: "sa-1",
       traineeId,
@@ -174,7 +187,7 @@ describe("POST /api/schedule", () => {
 
     mockAuth.mockResolvedValue(trainerSession);
     mockUserFindUnique
-      .mockResolvedValueOnce({ professionId: profId })
+      .mockResolvedValueOnce({ id: traineeId, role: "trainee", professionId: profId })
       .mockResolvedValueOnce({ role: "training_officer" });
     mockProfessions.mockResolvedValue([{ professionId: profId }]);
     mockProfessionFindFirst.mockResolvedValue({ id: "tpa-1", trainerId: trainerSession.user.id, professionId: profId });

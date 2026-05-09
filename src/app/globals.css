@@ -163,18 +163,18 @@ body {
 }
 
 .timeline-scroll::-webkit-scrollbar {
-  height: 6px;
+  height: 6px !important;
 }
 
 .timeline-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent !important;
 }
 
 .timeline-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-border-base);
-  border-radius: var(--radius-full);
+  background: var(--color-border-base) !important;
+  border-radius: var(--radius-full) !important;
 }
 
 .timeline-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-strong);
+  background: var(--color-border-strong) !important;
 }

@@ -41,6 +41,13 @@ const reports = [
   { calendarYear: 2026, calendarWeek: 15, status: "needs_revision" as const },
 ];
 
+const defaultProps = {
+  year: 2026,
+  month: 4,
+  reports: [] as { calendarYear: number; calendarWeek: number; status: "draft" }[],
+  trainingStartDate: null as string | null,
+};
+
 describe("YearCalendar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,24 +55,12 @@ describe("YearCalendar", () => {
   });
 
   it("renders month labels", () => {
-    render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-      />
-    );
+    render(<YearCalendar {...defaultProps} />);
     expect(screen.getByText("Jan")).toBeInTheDocument();
   });
 
   it("renders links to report editor", () => {
-    render(
-      <YearCalendar
-        year={2026}
-        reports={reports}
-        trainingStartDate={null}
-      />
-    );
+    render(<YearCalendar {...defaultProps} reports={reports} />);
     const links = screen.getAllByRole("link");
     const hrefs = links.map((l) => l.getAttribute("href"));
     expect(hrefs.some((h) => h?.includes("/trainee/reports/2026-1"))).toBe(true);
@@ -73,26 +68,14 @@ describe("YearCalendar", () => {
   });
 
   it("disables weeks before training start date", () => {
-    render(
-      <YearCalendar
-        year={2026}
-        reports={reports}
-        trainingStartDate="2026-03-01"
-      />
-    );
+    render(<YearCalendar {...defaultProps} reports={reports} trainingStartDate="2026-03-01" />);
     const links = screen.getAllByRole("link");
     const disabledLinks = links.filter((l) => l.getAttribute("href") === "#");
     expect(disabledLinks.length).toBeGreaterThan(0);
   });
 
   it("renders tooltips with date range and status", () => {
-    render(
-      <YearCalendar
-        year={2026}
-        reports={reports}
-        trainingStartDate={null}
-      />
-    );
+    render(<YearCalendar {...defaultProps} reports={reports} />);
     const tooltips = screen.getAllByTitle(/KW \d+/);
     expect(tooltips.length).toBeGreaterThan(0);
     const approvedTooltips = tooltips.filter((t) => t.getAttribute("title")?.includes("Genehmigt"));
@@ -100,36 +83,18 @@ describe("YearCalendar", () => {
   });
 
   it("renders with no reports", () => {
-    const { container } = render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-      />
-    );
+    const { container } = render(<YearCalendar {...defaultProps} />);
     expect(container.querySelectorAll("a").length).toBeGreaterThan(0);
   });
 
   it("renders with empty grid for leap year", () => {
-    const { container } = render(
-      <YearCalendar
-        year={2024}
-        reports={[]}
-        trainingStartDate={null}
-      />
-    );
+    const { container } = render(<YearCalendar {...defaultProps} year={2024} />);
     expect(container.querySelectorAll("a").length).toBeGreaterThan(0);
   });
 
-  it("shows legend on hover", async () => {
+  it("shows legend following mouse on hover", async () => {
     const user = userEvent.setup();
-    const { container } = render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-      />
-    );
+    const { container } = render(<YearCalendar {...defaultProps} />);
     await user.hover(container.firstElementChild!);
     expect(screen.getByText("Entwurf")).toBeInTheDocument();
     expect(screen.getByText("Genehmigt")).toBeInTheDocument();
@@ -137,17 +102,16 @@ describe("YearCalendar", () => {
   });
 
   it("renders responsive flex cells", () => {
-    const { container } = render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-      />
-    );
+    const { container } = render(<YearCalendar {...defaultProps} />);
     const cells = container.querySelectorAll("a");
-    expect(cells.length).toBeGreaterThan(0);
     cells.forEach((cell) => {
       expect(cell.className).toContain("flex-1");
     });
+  });
+
+  it("highlights weeks of selected month with ring", () => {
+    const { container } = render(<YearCalendar {...defaultProps} month={0} />);
+    const ringed = container.querySelectorAll(".ring-1");
+    expect(ringed.length).toBeGreaterThan(0);
   });
 });

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { getIsoWeek, statusColor, STATUS_LABELS, getWeekDates, formatDate } from "@/lib/utils";
+import { getIsoWeek, statusColor, STATUS_LABELS, getWeekDates, formatDate, getWeeksInMonth } from "@/lib/utils";
 import type { ReportStatus } from "@/types";
 
 interface ReportSummary {
@@ -13,6 +13,7 @@ interface ReportSummary {
 
 interface YearCalendarProps {
   year: number;
+  month: number;
   reports: ReportSummary[];
   trainingStartDate: string | null;
 }
@@ -21,10 +22,12 @@ const MONTH_LABELS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "
 
 export function YearCalendar({
   year,
+  month,
   reports,
   trainingStartDate,
 }: YearCalendarProps) {
-  const [hovered, setHovered] = useState(false);
+  const [legendPos, setLegendPos] = useState<{ x: number; y: number; containerWidth: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const reportMap = useMemo(() => {
     const map = new Map<string, ReportStatus>();
@@ -57,6 +60,15 @@ export function YearCalendar({
     }
     return result;
   }, [year]);
+
+  const monthWeeks = useMemo(() => {
+    const mw = new Set<number>();
+    const monthWeekInfos = getWeeksInMonth(year, month);
+    for (const wi of monthWeekInfos) {
+      mw.add(wi.week);
+    }
+    return mw;
+  }, [year, month]);
 
   const monthRanges = useMemo(() => {
     const ranges: { label: string; startIdx: number; span: number }[] = [];
@@ -102,6 +114,14 @@ export function YearCalendar({
     return beforeStart ? "#" : `/trainee/reports/${year}-${w}`;
   };
 
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setLegendPos({ x, y, containerWidth: rect.width });
+  }, []);
+
   const LEGEND_ITEMS = [
     { status: "draft", label: "Entwurf" },
     { status: "submitted", label: "Eingereicht" },
@@ -113,9 +133,10 @@ export function YearCalendar({
 
   return (
     <div
+      ref={containerRef}
       className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setLegendPos(null)}
     >
       <div className="mb-0.5 relative h-4">
         {monthRanges.map((m) => (
@@ -135,7 +156,7 @@ export function YearCalendar({
       <div className="flex gap-[2px] w-full">
         {weeks.map((w) => {
           const colorClass = getStatusColor(w.week);
-          const isCurrentWeek = year === currentWeek.year && w.week === currentWeek.week;
+          const isSelectedMonth = monthWeeks.has(w.week) && w.month === month;
           const beforeStart = isBeforeTrainingStart(year, w.week);
           const href = getWeekHref(w.week);
 
@@ -145,7 +166,7 @@ export function YearCalendar({
               href={href}
               title={getTooltip(w.week)}
               className={`h-7 min-w-[3px] flex-1 rounded-sm transition-transform hover:scale-y-150 hover:z-10 ${colorClass} ${
-                isCurrentWeek && !beforeStart
+                isSelectedMonth && !beforeStart
                   ? "ring-1 ring-neutral-900 dark:ring-neutral-100"
                   : ""
               } ${beforeStart ? "pointer-events-none" : ""}`}
@@ -154,8 +175,14 @@ export function YearCalendar({
         })}
       </div>
 
-      {hovered && (
-        <div className="absolute top-0 right-0 rounded-lg border border-neutral-200 bg-white/95 backdrop-blur-sm p-2.5 shadow-lg dark:border-neutral-700 dark:bg-neutral-900/95 z-20 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-neutral-500">
+      {legendPos && (
+        <div
+          className="absolute pointer-events-none rounded-lg border border-neutral-200 bg-white/95 backdrop-blur-sm p-2.5 shadow-lg dark:border-neutral-700 dark:bg-neutral-900/95 z-20 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-neutral-500"
+          style={{
+            left: Math.min(legendPos.x + 12, legendPos.containerWidth - 220),
+            top: legendPos.y + 12,
+          }}
+        >
           {LEGEND_ITEMS.map((item) => (
             <span key={item.status} className="flex items-center gap-1">
               <span className={`inline-block h-2.5 w-2.5 rounded-sm ${statusColor(item.status)}`} />

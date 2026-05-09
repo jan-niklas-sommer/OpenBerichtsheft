@@ -81,6 +81,7 @@ export default function TraineeDashboard() {
 
       <YearCalendar
         year={viewYear}
+        month={viewMonth}
         reports={reportSummaries}
         trainingStartDate={trainingStartDate}
       />

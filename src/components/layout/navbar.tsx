@@ -17,6 +17,7 @@ import {
   BarChart3,
   Bell,
   Settings,
+  CalendarDays,
   Check,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
@@ -34,10 +35,12 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
   ],
   trainer: [
     { href: "/trainer", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: "/trainer/schedule", label: "Planung", icon: <CalendarDays className="h-4 w-4" /> },
     { href: "/trainer/officers", label: "Beauftragte", icon: <UserCheck className="h-4 w-4" /> },
   ],
   training_officer: [
     { href: "/officer", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: "/officer/schedule", label: "Planung", icon: <CalendarDays className="h-4 w-4" /> },
   ],
   admin: [
     { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },

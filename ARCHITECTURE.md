@@ -181,6 +181,26 @@ Unique Constraint: `(traineeId, calendarYear, calendarWeek)`
 **Default-Settings:**
 - `workingDays` = `[1,2,3,4,5]` (Montag–Freitag, JS `Date.getDay()` Werte)
 
+### ScheduleAssignment
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| id | String (UUID) | Primärschlüssel |
+| traineeId | String (FK → User) | Auszubildender |
+| scheduleType | Enum | `department`, `school`, `vacation`, `other` |
+| startDate | DateTime | Startdatum der Zuweisung |
+| endDate | DateTime | Enddatum der Zuweisung |
+| department | String? | Abteilungsname (bei scheduleType=department) |
+| supervisorId | String? (FK → User) | Ausbildungsbeauftragter (optional) |
+| color | String? | Benutzerdefinierte Farbe |
+| createdBy | String (FK → User) | Ersteller (Admin oder Ausbilder) |
+| createdAt | DateTime | Erstellungszeitpunkt |
+| updatedAt | DateTime | Letzte Änderung |
+
+Unique Constraint: keine (mehrere Zuweisungen pro Tag möglich, Layering beachten)
+
+**Layering-Regel:** Schule > Urlaub > Sonstiges > Abteilung (höherer Typ überdeckt niedrigeren am selben Tag)
+
 ---
 
 ## Rollen- und Berechtigungsmodell
@@ -317,6 +337,10 @@ draft → submitted → approved
 | POST | `/api/assignments` | Zuordnung erstellen | admin, trainer |
 | GET | `/api/settings` | App-Einstellungen abrufen | Alle (auth) |
 | PUT | `/api/settings` | App-Einstellungen aktualisieren | admin |
+| GET | `/api/schedule` | Einsatzplanung abrufen | admin, trainer, training_officer |
+| POST | `/api/schedule` | Einsatzplanung erstellen | admin, trainer |
+| PUT | `/api/schedule` | Einsatzplanung aktualisieren | admin, trainer (eigene) |
+| DELETE | `/api/schedule` | Einsatzplanung löschen | admin, trainer (eigene) |
 
 ---
 

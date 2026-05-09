@@ -674,7 +674,6 @@ npm run dev
 
 ---
 
-<<<<<<< HEAD
 ## 2026-05-08 – Arbeitspaket: Test-Lücke schließen (#11 + #13)
 
 ### Planner
@@ -875,3 +874,45 @@ npm run dev
 ### Offene Risiken / Folgeaufgaben
 
 - Officer-UI für Ausbilder (Officer+Azubi+Zeitraum zuordnen) noch nicht als eigene Seite — API unterstützt es bereits.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Einsatzplanung / Gantt-Chart
+
+### Planner
+
+- **Ziel**: Ausbilder und Admins können tagesgenaue Einsatzplanungen für Auszubildende erstellen (Gantt-Chart Ansicht). Ausbildungsbeauftragte sehen eine read-only Ansicht ihrer Zeiträume.
+- **Umfang**: Datenmodell (`ScheduleAssignment`), Migration, API-Route (`/api/schedule`), Gantt-Chart UI (`/trainer/schedule`), read-only UI (`/officer/schedule`), Navbar-Updates, API-Tests.
+- **Betroffene Dateien**: `prisma/schema.prisma`, `prisma/migrations/20260509140000_add_schedule_assignments/`, `src/app/api/schedule/`, `src/app/(dashboard)/trainer/schedule/`, `src/app/(dashboard)/officer/schedule/`, `src/components/layout/navbar.tsx`.
+- **Akzeptanzkriterien**: Gantt-Chart tagesgenau, bis 1 Jahr sichtbar, 4 Zuweisungstypen (Abteilung, Schule, Urlaub, Sonstiges), Layering, Officer read-only, alle Tests bestanden.
+
+### Reviewer
+
+- **Bewertung**: Plan deckt alle Anforderungen. Datenmodell minimal erweitert, keine Breaking Changes.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementierte Änderungen
+
+- **Migration**: `ScheduleAssignment`-Modell (traineeId, scheduleType, startDate, endDate, department, supervisorId, color, createdBy).
+- **API**: `GET/POST/PUT/DELETE /api/schedule` — Admin: alles, Trainer: nur eigene Azubis (über TrainerProfessionAssignment), Auto-Inferenz: wenn supervisor ein Officer ist, wird automatisch eine `TraineeOfficerAssignment` erstellt.
+- **UI Trainer**: `/trainer/schedule` — Gantt-Chart mit tagesgenauen Balken, Farb-Kodierung nach Typ, Drag&Drop-Range zum Erstellen, Edit/Delete, Monatsnavigation, Legende.
+- **UI Officer**: `/officer/schedule` — Read-only Gantt-Chart, nur zugewiesene Zeiträume.
+- **Navbar**: "Planung"-Link für Trainer und Officer mit `CalendarDays`-Icon.
+- **Tests**: `src/app/api/schedule/route.test.ts` — 14 Tests (GET: auth, role, admin, trainer; POST: auth, role, validation, create, auto-officer; PUT: auth, update, forbidden; DELETE: auth, delete).
+
+### Verifier
+
+- **Tests**: 635 Tests (37 Dateien), alle bestanden.
+- **Lint**: 0 Errors, 5 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+- **Migration**: Manuell erstellt und angewendet (`20260509140000`).
+
+### Fixer
+
+- UUID-Validierung: Testdaten verwendeten `"00000000-..."` Platzhalter die von Zod `.uuid()` abgelehnt werden → echte v4-UUIDs verwendet.
+- Fehlender Mock für `trainerProfessionAssignment.findFirst` ergänzt.
+
+### Offene Risiken / Folgeaufgaben
+
+- Keine E2E-Tests für Einsatzplanung (Folgeaufgabe).
+- Gantt-Chart ist Client-seitig — bei sehr vielen Zuweisungen könnte Performance ein Thema werden.

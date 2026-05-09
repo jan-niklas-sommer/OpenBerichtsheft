@@ -255,7 +255,36 @@ Unterhalb der Berichtsdetails sehen Sie den Bereich **Prüfung**:
 
 ### 5.4 Ausbildungsbeauftragte zuordnen
 
-Ausbilder können Ausbildungsbeauftragte ihren Auszubildenden zuordnen. Diese Funktion wird durch den Administrator bereitgestellt – wenden Sie sich an den Administrator, wenn Sie eine Zuordnung benötigen.
+Unter **Officer** (Navigation) können Sie Ausbildungsbeauftragte Ihren Auszubildenden zuordnen. Wählen Sie den Auszubildenden, den Ausbildungsbeauftragten und den Zeitraum (von/bis).
+
+### 5.5 Einsatzplanung
+
+Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubildenden verwalten.
+
+**Gantt-Chart Ansicht:**
+
+- Tagesgenaue Balken für jeden Auszubildenden
+- Bis zu 1 Jahr sichtbar, scrollbar
+- Navigieren Sie zwischen Monaten mit den Pfeiltasten
+
+**Zuweisung erstellen:**
+
+1. Klicken Sie auf den "+" Button oder ziehen Sie einen Bereich im Gantt-Chart.
+2. Wählen Sie den Auszubildenden aus.
+3. Wählen Sie den **Zuweisungstyp**:
+   - **Abteilung**: Betrieblicher Einsatz (Farbe wählbar, z.B. "IT", "HR")
+   - **Schule**: Berufsschule (blau, fix)
+   - **Urlaub**: Urlaub (gelb, fix)
+   - **Sonstiges**: Feiertag, Krankheit, etc. (lila, wählbar)
+4. Setzen Sie Start- und Enddatum.
+5. Optional: Wählen Sie einen Ausbildungsbeauftragten als Betreuer.
+6. Klicken Sie auf **Speichern**.
+
+**Layering:** Bei überlappenden Zuweisungen gilt: Schule > Urlaub > Sonstiges > Abteilung.
+
+**Hinweis:** Wenn Sie einen Ausbildungsbeauftragten als Betreuer auswählen, wird dieser automatisch für den Zeitraum dem Auszubildenden zugeordnet.
+
+**Zuweisung bearbeiten/löschen:** Klicken Sie auf eine Zuweisung im Gantt-Chart, um sie zu bearbeiten oder zu löschen.
 
 ---
 
@@ -276,6 +305,10 @@ Die Prüfung funktioniert identisch zum Ausbilder (siehe Abschnitt 5.2 und 5.3).
 - **Ablehnen** (mit Kommentar)
 
 **Hinweis:** Eine einzige Genehmigung durch einen zuständigen Prüfer (Ausbilder oder Ausbildungsbeauftragter) genügt, um den Bericht auf "Genehmigt" zu setzen.
+
+### 6.3 Einsatzplanung einsehen
+
+Unter **Planung** (Navigation) sehen Sie eine read-only Ansicht der Einsatzplanung für Ihre zugeordneten Auszubildenden. Sie können die Planungen einsehen, aber nicht bearbeiten.
 
 ---
 

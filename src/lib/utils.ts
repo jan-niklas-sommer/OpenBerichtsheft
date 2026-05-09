@@ -84,7 +84,19 @@ export function statusVariant(status: string): "success" | "warning" | "danger" 
 export function statusColor(status: string): string {
   const map: Record<string, string> = {
     draft: "bg-neutral-200 dark:bg-neutral-700",
-    submitted: "bg-amber-300 dark:bg-amber-700",
+    submitted: "bg-amber-400 dark:bg-amber-500",
+    approved: "bg-emerald-500 dark:bg-emerald-400",
+    rejected: "bg-red-500 dark:bg-red-400",
+    needs_revision: "bg-blue-400 dark:bg-blue-500",
+    missing: "bg-red-100 dark:bg-red-900/30",
+  };
+  return map[status] || "bg-neutral-100 dark:bg-neutral-800";
+}
+
+export function statusCellColor(status: string): string {
+  const map: Record<string, string> = {
+    draft: "bg-neutral-200 dark:bg-neutral-700",
+    submitted: "bg-amber-300 dark:bg-amber-600",
     approved: "bg-emerald-400 dark:bg-emerald-600",
     rejected: "bg-red-400 dark:bg-red-600",
     needs_revision: "bg-blue-300 dark:bg-blue-600",

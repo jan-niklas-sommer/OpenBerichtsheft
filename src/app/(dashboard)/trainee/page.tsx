@@ -43,7 +43,7 @@ export default function TraineeDashboard() {
     [reports]
   );
 
-  const handlePrevMonth = () => {
+  const handlePrev = () => {
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear((y) => y - 1);
@@ -52,7 +52,7 @@ export default function TraineeDashboard() {
     }
   };
 
-  const handleNextMonth = () => {
+  const handleNext = () => {
     if (viewMonth === 11) {
       setViewMonth(0);
       setViewYear((y) => y + 1);
@@ -92,8 +92,8 @@ export default function TraineeDashboard() {
         month={viewMonth}
         reports={reportSummaries}
         trainingStartDate={trainingStartDate}
-        onPrevMonth={handlePrevMonth}
-        onNextMonth={handleNextMonth}
+        onPrevMonth={handlePrev}
+        onNextMonth={handleNext}
       />
     </div>
   );

@@ -19,12 +19,12 @@ describe("Navbar", () => {
     mockSignOut.mockClear();
   });
 
-  it("renders user name", () => {
+  it("renders user avatar initials", () => {
     global.fetch = vi.fn().mockResolvedValue({
       json: () => Promise.resolve({ notifications: [], unreadCount: 0 }),
     });
     render(<Navbar role="trainee" userName="Anna Azubi" />);
-    expect(screen.getByText("Anna Azubi")).toBeInTheDocument();
+    expect(screen.getByText("AA")).toBeInTheDocument();
   });
 
   it("renders trainee navigation items", () => {
@@ -270,7 +270,7 @@ describe("Navbar", () => {
     const user = userEvent.setup();
     render(<Navbar role="trainee" userName="Test" />);
     await waitFor(() => {
-      expect(screen.getByText("Test")).toBeInTheDocument();
+      expect(screen.getByText("T")).toBeInTheDocument();
     });
     const bellBtn = document.querySelector(".lucide-bell")!.closest("button")!;
     await user.click(bellBtn);

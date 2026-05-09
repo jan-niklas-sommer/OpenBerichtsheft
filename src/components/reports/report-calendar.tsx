@@ -3,8 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getWeeksInMonth, getIsoWeek, statusColor } from "@/lib/utils";
-import { STATUS_LABELS } from "@/lib/utils";
+import { getWeeksInMonth, getIsoWeek, statusColor, STATUS_LABELS } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReportStatus } from "@/types";
 
@@ -76,7 +75,7 @@ export function ReportCalendar({
         </Button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         {weeks.map((weekInfo) => {
           const key = `${weekInfo.year}-${weekInfo.week}`;
           const status = reportMap.get(key);
@@ -87,44 +86,37 @@ export function ReportCalendar({
             (weekInfo.year === currentWeek.year && weekInfo.week <= currentWeek.week)
           );
 
-          const colorClass = beforeStart
-            ? "bg-neutral-100 dark:bg-neutral-800/50 opacity-40"
-            : status
-              ? statusColor(status)
-              : missing
-                ? statusColor("missing")
-                : "bg-neutral-50 dark:bg-neutral-800/30";
-
           return (
             <Link
               key={key}
               href={beforeStart ? "#" : `/trainee/reports/${weekInfo.year}-${weekInfo.week}`}
-              className={`block rounded-lg border transition-colors ${
+              className={`flex items-center gap-3 rounded-lg border transition-colors ${
                 current
-                  ? "border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100"
+                  ? "border-neutral-900 dark:border-neutral-100"
                   : "border-neutral-200 dark:border-neutral-800"
-              } ${beforeStart ? "pointer-events-none" : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"}`}
+              } ${
+                beforeStart
+                  ? "pointer-events-none opacity-40"
+                  : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+              }`}
+              style={{ minHeight: 44 }}
             >
-              <div className="flex items-center gap-3 px-4 py-3">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${colorClass}`}>
-                  {weekInfo.week}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    KW {weekInfo.week}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {weekInfo.label}
-                  </p>
+              <div className="flex items-center justify-center w-8 h-8 ml-3 shrink-0 rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                {weekInfo.week}
+              </div>
+              <div className="flex-1 flex items-center justify-between pr-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-neutral-500">KW {weekInfo.week}</span>
+                  <span className="text-xs text-neutral-400">{weekInfo.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {status && (
-                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white dark:text-neutral-900 ${statusColor(status)}`}>
                       {STATUS_LABELS[status]}
                     </span>
                   )}
                   {missing && (
-                    <span className="text-xs font-medium text-red-500 dark:text-red-400">
+                    <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
                       Fehlt
                     </span>
                   )}

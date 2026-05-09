@@ -916,3 +916,52 @@ npm run dev
 
 - Keine E2E-Tests für Einsatzplanung (Folgeaufgabe).
 - Gantt-Chart ist Client-seitig — bei sehr vielen Zuweisungen könnte Performance ein Thema werden.
+
+---
+
+## 2026-05-09 – Arbeitspaket: UI-Overhaul Übersichtsseite + Editor + Navbar
+
+### Planner
+
+- **Ziel**: Übersichtsseite vereinfachen (Wochenleiste statt Tages-Heatmap, kompakte Karten, Status-Pills), Editor verbessern (Wochensumme Stunden, relative Speicherzeit), Navbar modernisieren (Avatar-Initialen, Design-Tokens).
+- **Umfang**: `year-calendar.tsx`, `report-calendar.tsx`, `trainee/page.tsx`, `trainee/reports/[week]/page.tsx`, `navbar.tsx`, `utils.ts`, `globals.css`.
+- **Nicht-Ziele**: Mikrotypografie, Farbnuancen, Icon-Tuning (explizit zurückgestellt).
+- **Akzeptanzkriterien**: Alle Tests bestanden, 0 Lint-Errors, Build erfolgreich, Design konsistent über Themes.
+
+### Reviewer
+
+- **Bewertung**: Plan deckt alle Anforderungen. Keine Datenmodell- oder API-Änderungen. Alle Änderungen rein visuell/strukturell.
+- **Entscheidung**: **Freigabe erteilt.**
+
+### Implementierte Änderungen
+
+**Übersichtsseite:**
+- `year-calendar.tsx`: 7×53 Tagesraster ersetzt durch 1×52 Wochenleiste (jede Zelle = eine Woche). Monats-Labels beibehalten. Statuslegende hinter Tooltip-Icon verborgen. Hover-Tooltips mit Datumsbereich und Statuslabel.
+- `report-calendar.tsx`: Karten auf 44px Zeilenhöhe reduziert. Wochennummer als neutraler Kreis, Status als rechtsbündige farbige Pill. Gesamte Karte klickbar.
+- `trainee/page.tsx`: Keine strukturellen Änderungen, nur Aufräumen.
+
+**Erstellungsmaske:**
+- `trainee/reports/[week]/page.tsx`: Wochensumme der Stunden sichtbar im Tageseinträge-Header (Clock-Icon + Xh Ymin). Speicherstatus zeigt "Zuletzt gespeichert vor X Sekunden" statt statischem "Gespeichert". `savedAt` wird direkt in `handleSave` gesetzt (kein useEffect-Sync-SetState).
+
+**Navbar:**
+- `navbar.tsx`: Username-Text ersetzt durch Avatar-Kreis mit Initialen (max 2 Buchstaben). Theme-Toggle visuell vom Logout-Button getrennt (16px Spacer).
+
+**Design-Tokens:**
+- `globals.css`: Border-Radius-Tokens hinzugefügt (`--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-full`).
+- `utils.ts`: Neuer `statusCellColor()` für Heatmap-Zellen. `statusColor()` leicht angepasst (höhere Sättigung für aktive Status).
+
+**Tests aktualisiert:**
+- `year-calendar.test.tsx`: Day-Label-Tests entfernt, Legende-Tooltip-Test ergänzt.
+- `report-calendar.test.tsx`: Keine Änderungen nötig (generische Assertions).
+- `navbar.test.tsx`: Avatar-Initialen-Test statt Username-Text-Test.
+
+### Verifier
+
+- **Tests**: 635 Tests (37 Dateien), alle bestanden.
+- **Lint**: 0 Errors, 5 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Wochenenden im Editor sind visuell deemphasiert aber technisch noch wie Arbeitstage behandelbar — keine Pflichtfeld-Validierung ist bereits implementiert durch `isNonWorkingDay`.
+- Border-Radius-Tokens definiert aber noch nicht referenziert in Komponenten — Migration in Folgeaufgabe.

@@ -1140,3 +1140,38 @@ npm run dev
   - Priorität-Referenzen entfernt (Konfliktauflösung: Layer → createdAt)
   - Timeline-Visu-Verbesserungen dokumentiert (hierarchischer Header, Heute-Linie, Wochenend-Hintergrund, Wochengrenzen)
   - Vorschau der nächsten 12 Termine im Wiederholungs-Modus erwähnt
+
+---
+
+## 2026-05-09 – Arbeitspaket: Design-System-Einführung (AP1: Dokumentation)
+
+### Planner
+
+- **Ziel:** Verbindliches Design-System als `DESIGN_SYSTEM.md` im Repo verankern, Agenten-Regeln aktualisieren.
+- **Umfang:**
+  - `DESIGN_SYSTEM.md` erstellen mit vollständiger Spezifikation (Farbsystem 4 Schichten, Typografie, Abstände, Radien, Schatten, Komponenten-Spec, Anti-Patterns)
+  - `AGENTS.md`: `ui-rules`-Block ersetzen durch `design-system-rules` mit Verweis auf DESIGN_SYSTEM.md und Token-Pflicht
+  - `ARCHITECTURE.md`: Verweis auf DESIGN_SYSTEM.md im Tailwind-Abschnitt
+- **Nicht-Ziele:** Kein produktiver Code-Change. Keine CSS-Variablen, keine Komponenten-Migration.
+- **Akzeptanzkriterien:** DESIGN_SYSTEM.md vollständig, AGENTS.md referenziert es, kein Code geändert.
+
+### Reviewer
+
+- Freigabe ohne Einwände. Spezifikation ist konsistent mit bestehender Architektur.
+
+### Implementierte Änderungen
+
+- `DESIGN_SYSTEM.md` — Neu erstellt. Enthält: Designprinzipien, Farbsystem (4 Schichten mit Light/Dark Werten), Typografie, Abstände, Radien, Schatten, Komponenten-Spezifikation (Buttons, Inputs, Cards, Badges, Modals, Navigation, Gantt, Heatmap), Layout-Regeln, Iconographie, Animation, Anti-Patterns, Warnungen.
+- `AGENTS.md` — `<!-- BEGIN:ui-rules -->` ersetzt durch `<!-- BEGIN:design-system-rules -->` mit Token-Pflicht, Farbschichten-Trennung, Komponenten-Spezifikation, Anti-Patterns und Migrationshinweis.
+- `ARCHITECTURE.md` — Tailwind-Abschnitt erweitert mit Verweis auf `DESIGN_SYSTEM.md`.
+
+### Verifikation
+
+- **Lint**: 0 Errors (nur Markdown-Dateien geändert).
+- **Build**: Nicht erforderlich (kein Code geändert).
+
+### Offene Risiken / Folgeaufgaben
+
+- AP2–AP7 stehen aus: Token-Foundation in `globals.css`, UI-Primitives, Layout, Pages, Schedule, Reports/PDF.
+- Bestehende 693 Hardcoded-Color-Referenzen (38 Dateien) müssen schrittweise migriert werden.
+- `pdf-document.tsx` behält Hex-Werte (zulässig laut Design-System, da `@react-pdf/renderer` keine Tailwind-Klassen unterstützt).

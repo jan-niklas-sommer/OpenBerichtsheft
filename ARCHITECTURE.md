@@ -16,7 +16,7 @@
 ### Begründung
 
 - **Next.js**: Bietet Frontend und API-Routes in einem Framework. App Router ermöglicht Server Components, Streaming und moderne Patterns. File-based Routing reduziert Boilerplate.
-- **Tailwind CSS**: Utility-first, ideal für reduzierte, konsistente Designsysteme. Dark Mode ist nativ unterstützt.
+- **Tailwind CSS**: Utility-first, ideal für reduzierte, konsistente Designsysteme. Dark Mode ist nativ unterstützt. Alle Farbwerte, Abstände, Radien und Schatten werden über CSS-Variablen (Design-Tokens) referenziert — siehe `DESIGN_SYSTEM.md` für die verbindliche Spezifikation.
 - **PostgreSQL**: Bewährte relationale Datenbank mit starkem Constraint-System, Transaktionen und Volltextsuche-Fähigkeiten.
 - **Prisma**: Type-safe ORM mit Migrationstooling, guter DX und automatischer Typgenerierung.
 - **Auth.js**: Die native Next.js-Auth-Bibliothek. Unterstützt Credentials-Provider, Session-Management und rollenbasierte Autorisierung.

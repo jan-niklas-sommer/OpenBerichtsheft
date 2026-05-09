@@ -1,6 +1,6 @@
 # Benutzerhandbuch – OpenBerichtsheft
 
-Letzte Aktualisierung: 2026-05-07
+Letzte Aktualisierung: 2026-05-09
 
 ---
 
@@ -107,6 +107,9 @@ Darunter sehen Sie die detaillierte Monatsansicht mit Wochen und Status-Labels.
 1. Klicken Sie auf **Neuer Bericht** (oben rechts).
 2. Die aktuelle Kalenderwoche wird automatisch geöffnet.
 3. Wenn für diese Woche bereits ein Entwurf existiert, wird dieser geladen.
+4. Wenn **kein Bericht existiert**, werden die Tageseinträge automatisch aus der Einsatzplanung **vorausgefüllt** (z.B. Berufsschultage, Abteilungseinsatz). Sie können alle Felder frei bearbeiten.
+
+**Hinweis:** Der Prefill basiert auf der aktuellen Einsatzplanung — wenn Ihr Ausbilder die Planung ändert, wirkt sich das nur auf noch nicht erstellte Berichte aus. Bereits erstellte Berichte bleiben unverändert.
 
 ### 4.3 Wochen- oder Tagesbericht schreiben
 
@@ -271,16 +274,25 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 
 **Zuweisung erstellen:**
 
-1. Klicken Sie auf den "+" Button oder ziehen Sie einen Bereich im Gantt-Chart.
-2. Wählen Sie den Auszubildenden aus.
-3. Wählen Sie den **Zuweisungstyp**:
+1. Klicken Sie auf **"Eintrag hinzufügen"**.
+2. Wählen Sie den Erstellungsmodus:
+   - **Einzeleinsatz**: Einmaliger Einsatz für einen Zeitraum
+   - **Wiederholung**: Regelmäßiger Einsatz an bestimmten Wochentagen (z.B. jeden Dienstag + Donnerstag Berufsschule)
+   - **Tagesplan**: Kompletter Tagesplan (Phase 1: Einzeleinsatz)
+3. Wählen Sie den Auszubildenden aus.
+4. Wählen Sie den **Zuweisungstyp**:
    - **Abteilung**: Betrieblicher Einsatz (Farbe wählbar, z.B. "IT", "HR")
    - **Schule**: Berufsschule (blau, fix)
    - **Urlaub**: Urlaub (gelb, fix)
    - **Sonstiges**: Feiertag, Krankheit, etc. (lila, wählbar)
-4. Setzen Sie Start- und Enddatum.
-5. Optional: Wählen Sie einen Ausbildungsbeauftragten als Betreuer.
-6. Klicken Sie auf **Speichern**.
+5. Setzen Sie Start- und Enddatum.
+6. Optional: Wählen Sie einen Ausbildungsbeauftragten als Betreuer.
+7. Bei **Wiederholung**: Wählen Sie die Wochentage und optional eine Priorität.
+8. Klicken Sie auf **Erstellen** bzw. **Regel erstellen**.
+
+**Konflikterkennung:** Überlappende Zuweisungen am selben Tag werden mit einem roten Ring markiert. Das Layering bestimmt, welche Zuweisung angezeigt wird: Schule > Urlaub > Sonstiges > Abteilung.
+
+**Wiederholungsregeln** gelten für alle Tage im gewählten Zeitraum, die den konfigurierten Wochentagen entsprechen. Sie können Prioritäten haben — höhere Priorität gewinnt bei Konflikten.
 
 **Layering:** Bei überlappenden Zuweisungen gilt: Schule > Urlaub > Sonstiges > Abteilung.
 

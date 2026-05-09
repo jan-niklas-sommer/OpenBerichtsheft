@@ -341,6 +341,11 @@ draft → submitted → approved
 | POST | `/api/schedule` | Einsatzplanung erstellen | admin, trainer |
 | PUT | `/api/schedule` | Einsatzplanung aktualisieren | admin, trainer (eigene) |
 | DELETE | `/api/schedule` | Einsatzplanung löschen | admin, trainer (eigene) |
+| GET | `/api/recurrence-rules` | Wiederholungsregeln abrufen | admin, trainer, training_officer, trainee (eigene) |
+| POST | `/api/recurrence-rules` | Wiederholungsregel erstellen | admin, trainer |
+| PUT | `/api/recurrence-rules` | Wiederholungsregel aktualisieren | admin, trainer (eigene) |
+| DELETE | `/api/recurrence-rules` | Wiederholungsregel löschen | admin, trainer (eigene) |
+| GET | `/api/reports/prefill` | Prefill-Daten für Bericht abrufen | trainee |
 
 ---
 

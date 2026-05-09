@@ -26,7 +26,7 @@ describe("buildDefaultEntries (Prefill)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: weekdayToBit(1) | weekdayToBit(2),
-      priority: 0,
+    
       createdAt: new Date("2025-01-01"),
     };
     const entries = buildDefaultEntries(2025, 10, noAssignments, [rule], noExceptions);
@@ -64,7 +64,7 @@ describe("buildDefaultEntries (Prefill)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
+    
       createdAt: new Date("2025-01-01"),
     };
     const schoolRule: RecurrenceRule = {
@@ -74,7 +74,7 @@ describe("buildDefaultEntries (Prefill)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: weekdayToBit(1),
-      priority: 0,
+    
       createdAt: new Date("2025-01-01"),
     };
     const entries = buildDefaultEntries(2025, 10, noAssignments, [deptRule, schoolRule], noExceptions);
@@ -90,7 +90,7 @@ describe("buildDefaultEntries (Prefill)", () => {
       startDate: new Date("2025-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: 127,
-      priority: 0,
+    
       createdAt: new Date("2025-01-01"),
     };
     const entries = buildDefaultEntries(2025, 10, noAssignments, [rule], noExceptions);

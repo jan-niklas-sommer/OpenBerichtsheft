@@ -8,7 +8,6 @@ export interface ResolvedEntry {
   department?: string;
   displayLabel?: string;
   supervisorId?: string;
-  color?: string;
 }
 
 export interface SingleAssignment {
@@ -19,7 +18,6 @@ export interface SingleAssignment {
   endDate: Date;
   department?: string;
   supervisorId?: string;
-  color?: string;
 }
 
 export interface RecurrenceRule {
@@ -32,8 +30,6 @@ export interface RecurrenceRule {
   displayLabel?: string;
   department?: string;
   supervisorId?: string;
-  color?: string;
-  priority: number;
   createdAt: Date;
 }
 
@@ -88,9 +84,7 @@ interface Candidate {
   department?: string;
   displayLabel?: string;
   supervisorId?: string;
-  color?: string;
   layer: number;
-  priority: number;
   createdAt: Date;
 }
 
@@ -113,9 +107,7 @@ export function resolveDay(
         scheduleType: assignment.scheduleType,
         department: assignment.department,
         supervisorId: assignment.supervisorId,
-        color: assignment.color,
         layer: SCHEDULE_TYPE_LAYER[assignment.scheduleType],
-        priority: 1000,
         createdAt: new Date(0),
       });
     }
@@ -132,9 +124,7 @@ export function resolveDay(
       department: rule.department,
       displayLabel: rule.displayLabel,
       supervisorId: rule.supervisorId,
-      color: rule.color,
       layer: SCHEDULE_TYPE_LAYER[rule.scheduleType],
-      priority: rule.priority,
       createdAt: rule.createdAt,
     });
   }
@@ -147,7 +137,6 @@ export function resolveDay(
   }
 
   candidates.sort((a, b) => {
-    if (a.priority !== b.priority) return b.priority - a.priority;
     if (a.layer !== b.layer) return b.layer - a.layer;
     return b.createdAt.getTime() - a.createdAt.getTime();
   });
@@ -159,7 +148,6 @@ export function resolveDay(
     department: winner.department,
     displayLabel: winner.displayLabel,
     supervisorId: winner.supervisorId,
-    color: winner.color,
   };
 }
 

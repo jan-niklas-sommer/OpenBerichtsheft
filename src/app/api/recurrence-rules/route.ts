@@ -16,8 +16,6 @@ const createRuleSchema = z.object({
   displayLabel: z.string().optional(),
   department: z.string().optional(),
   supervisorId: z.string().uuid().optional(),
-  color: z.string().optional(),
-  priority: z.number().int().min(0).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -90,7 +88,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { traineeId, scheduleType, startDate, endDate, weekDays, displayLabel, department, supervisorId, color, priority } = parsed.data;
+  const { traineeId, scheduleType, startDate, endDate, weekDays, displayLabel, department, supervisorId } = parsed.data;
 
   if (role === "trainer") {
     const trainee = await prisma.user.findUnique({
@@ -122,8 +120,6 @@ export async function POST(req: NextRequest) {
       displayLabel: displayLabel || null,
       department: department || null,
       supervisorId: supervisorId || null,
-      color: color || null,
-      priority: priority ?? 0,
       createdById: userId,
     },
     include: {
@@ -169,8 +165,6 @@ export async function PUT(req: NextRequest) {
   if (updates.displayLabel !== undefined) data.displayLabel = updates.displayLabel || null;
   if (updates.department !== undefined) data.department = updates.department || null;
   if (updates.supervisorId !== undefined) data.supervisorId = updates.supervisorId || null;
-  if (updates.color !== undefined) data.color = updates.color || null;
-  if (updates.priority !== undefined) data.priority = updates.priority;
   if (Object.keys(data).length > 0) {
     data.updatedById = userId;
   }

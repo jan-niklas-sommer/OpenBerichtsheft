@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
   const [userCount, reportCount, assignmentCount] = await Promise.all([
     prisma.user.count({ where: { deactivatedAt: null } }),
     prisma.weeklyReport.count(),
-    prisma.traineeTrainerAssignment.count(),
+    prisma.trainerProfessionAssignment.count(),
   ]);
 
   return (

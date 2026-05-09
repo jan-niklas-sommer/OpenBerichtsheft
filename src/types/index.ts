@@ -76,10 +76,10 @@ export interface NotificationData {
 
 export interface AssignmentData {
   id: string;
-  traineeId: string;
   trainerId: string;
-  trainee?: { id: string; name: string; email: string };
+  professionId: string;
   trainer?: { id: string; name: string; email: string };
+  profession?: { id: string; name: string };
 }
 
 export interface AppSettingsData {

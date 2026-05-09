@@ -26,7 +26,10 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
-    traineeTrainerAssignment: {
+    user: {
+      findUnique: vi.fn(),
+    },
+    trainerProfessionAssignment: {
       findFirst: vi.fn(),
     },
     traineeOfficerAssignment: {
@@ -45,7 +48,8 @@ import { prisma } from "@/lib/prisma";
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockFindUnique = prisma.weeklyReport.findUnique as ReturnType<typeof vi.fn>;
 const mockUpdate = prisma.weeklyReport.update as ReturnType<typeof vi.fn>;
-const mockTrainerAssignment = prisma.traineeTrainerAssignment.findFirst as ReturnType<typeof vi.fn>;
+const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockTrainerProfessionAssignment = prisma.trainerProfessionAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockOfficerAssignment = prisma.traineeOfficerAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockTransaction = prisma.$transaction as ReturnType<typeof vi.fn>;
 
@@ -162,7 +166,8 @@ describe("GET /api/reports/[id]", () => {
   it("returns 200 when trainer accesses assigned trainee's report", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(baseReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const res = await GET(makeRequest(), { params });
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -172,7 +177,8 @@ describe("GET /api/reports/[id]", () => {
   it("returns 403 when trainer accesses unassigned trainee's report", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(baseReport);
-    mockTrainerAssignment.mockResolvedValue(null);
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue(null);
     const res = await GET(makeRequest(), { params });
     expect(res.status).toBe(403);
     const json = await res.json();
@@ -463,7 +469,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("returns 403 for unassigned trainer on review", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue(null);
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue(null);
     const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });
     expect(res.status).toBe(403);
     const json = await res.json();
@@ -491,7 +498,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("returns 400 for invalid action", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const res = await REVIEW(makeRequest("POST", { action: "invalid_action" }), { params });
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -501,7 +509,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("approves submitted report (submitted → approved)", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const approvedReport = { ...flatReport, status: "approved", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(approvedReport);
@@ -529,7 +538,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("marks report as needs_revision (submitted → needs_revision)", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const revisionReport = { ...flatReport, status: "needs_revision", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(revisionReport);
@@ -553,7 +563,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("rejects submitted report (submitted → rejected)", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const rejectedReport = { ...flatReport, status: "rejected", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(rejectedReport);
@@ -610,14 +621,15 @@ describe("POST /api/reports/[id]/review", () => {
     mockTx.reviewEvent.create.mockResolvedValue({});
     const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });
     expect(res.status).toBe(200);
-    expect(mockTrainerAssignment).not.toHaveBeenCalled();
+    expect(mockTrainerProfessionAssignment).not.toHaveBeenCalled();
     expect(mockOfficerAssignment).not.toHaveBeenCalled();
   });
 
   it("returns 400 when transaction re-check finds report deleted", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     mockTx.weeklyReport.findUnique.mockResolvedValue(null);
     const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });
     expect(res.status).toBe(400);
@@ -628,7 +640,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("returns 400 when transaction re-check finds status changed", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     mockTx.weeklyReport.findUnique.mockResolvedValue({ ...flatReport, status: "approved" });
     const res = await REVIEW(makeRequest("POST", { action: "approved" }), { params });
     expect(res.status).toBe(400);
@@ -639,7 +652,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("re-throws unexpected transaction errors in review", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     mockTransaction.mockRejectedValueOnce(new Error("DB error"));
     await expect(REVIEW(makeRequest("POST", { action: "approved" }), { params })).rejects.toThrow("DB error");
   });
@@ -647,7 +661,8 @@ describe("POST /api/reports/[id]/review", () => {
   it("approves with comment", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(submittedReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const approvedReport = { ...flatReport, status: "approved", submittedAt: "2025-03-10T00:00:00.000Z", reviewedAt: "2025-03-11T00:00:00.000Z", reviewedById: "trainer-1", reviewComment: "Well done", updatedAt: "2025-03-11T00:00:00.000Z" };
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(approvedReport);

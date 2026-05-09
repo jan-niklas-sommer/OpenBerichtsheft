@@ -8,12 +8,15 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    traineeTrainerAssignment: {
+    trainerProfessionAssignment: {
       findMany: vi.fn(),
       upsert: vi.fn(),
       delete: vi.fn(),
     },
     user: {
+      findUnique: vi.fn(),
+    },
+    trainingProfession: {
       findUnique: vi.fn(),
     },
   },
@@ -23,10 +26,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
-const mockFindMany = prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>;
-const mockUpsert = prisma.traineeTrainerAssignment.upsert as ReturnType<typeof vi.fn>;
-const mockDelete = prisma.traineeTrainerAssignment.delete as ReturnType<typeof vi.fn>;
-const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockFindMany = prisma.trainerProfessionAssignment.findMany as ReturnType<typeof vi.fn>;
+const mockUpsert = prisma.trainerProfessionAssignment.upsert as ReturnType<typeof vi.fn>;
+const mockDelete = prisma.trainerProfessionAssignment.delete as ReturnType<typeof vi.fn>;
+const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockProfessionFindUnique = prisma.trainingProfession.findUnique as ReturnType<typeof vi.fn>;
 
 const adminSession = {
   user: { id: "admin-1", role: "admin", email: "admin@test.de", name: "Admin" },
@@ -43,12 +47,12 @@ const traineeSession = {
 const sampleAssignments = [
   {
     id: "assign-1",
-    traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainerId: "660e8400-e29b-41d4-a716-446655440001",
+    professionId: "770e8400-e29b-41d4-a716-446655440002",
     createdAt: "2025-01-01T00:00:00.000Z",
     updatedAt: "2025-01-01T00:00:00.000Z",
-    trainee: { id: "550e8400-e29b-41d4-a716-446655440000", name: "Trainee", email: "trainee@test.de", role: "trainee" },
     trainer: { id: "660e8400-e29b-41d4-a716-446655440001", name: "Trainer", email: "trainer@test.de", role: "trainer" },
+    profession: { id: "770e8400-e29b-41d4-a716-446655440002", name: "FISI" },
   },
 ];
 
@@ -87,17 +91,16 @@ describe("GET /api/assignments", () => {
     expect(json.error).toBe("Forbidden");
   });
 
-  it("returns assignments for admin", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    mockFindMany.mockResolvedValue(sampleAssignments);
+  it("returns 403 for trainer role", async () => {
+    mockAuth.mockResolvedValue(trainerSession);
     const res = await GET();
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(403);
     const json = await res.json();
-    expect(json).toEqual(sampleAssignments);
+    expect(json.error).toBe("Forbidden");
   });
 
-  it("returns assignments for trainer", async () => {
-    mockAuth.mockResolvedValue(trainerSession);
+  it("returns assignments for admin", async () => {
+    mockAuth.mockResolvedValue(adminSession);
     mockFindMany.mockResolvedValue(sampleAssignments);
     const res = await GET();
     expect(res.status).toBe(200);
@@ -108,8 +111,8 @@ describe("GET /api/assignments", () => {
 
 describe("POST /api/assignments", () => {
   const validBody = {
-    traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainerId: "660e8400-e29b-41d4-a716-446655440001",
+    professionId: "770e8400-e29b-41d4-a716-446655440002",
   };
 
   beforeEach(() => {
@@ -148,42 +151,16 @@ describe("POST /api/assignments", () => {
 
   it("returns 400 for invalid UUIDs", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const res = await POST(makePostRequest({ traineeId: "not-a-uuid", trainerId: "not-a-uuid" }));
+    const res = await POST(makePostRequest({ trainerId: "not-a-uuid", professionId: "not-a-uuid" }));
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toBe("Validation failed");
   });
 
-  it("returns 400 when trainee not found", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    mockFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return null;
-      return { id: validBody.trainerId, role: "trainer" };
-    });
-    const res = await POST(makePostRequest(validBody));
-    expect(res.status).toBe(400);
-    const json = await res.json();
-    expect(json.error).toBe("Invalid trainee");
-  });
-
-  it("returns 400 when trainee is not a trainee role", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    mockFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainer" };
-      return { id: validBody.trainerId, role: "trainer" };
-    });
-    const res = await POST(makePostRequest(validBody));
-    expect(res.status).toBe(400);
-    const json = await res.json();
-    expect(json.error).toBe("Invalid trainee");
-  });
-
   it("returns 400 when trainer not found", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee" };
-      return null;
-    });
+    mockUserFindUnique.mockResolvedValue(null);
+    mockProfessionFindUnique.mockResolvedValue({ id: validBody.professionId, name: "FISI" });
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -192,30 +169,36 @@ describe("POST /api/assignments", () => {
 
   it("returns 400 when trainer is not a trainer role", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee" };
-      return { id: validBody.trainerId, role: "trainee" };
-    });
+    mockUserFindUnique.mockResolvedValue({ id: validBody.trainerId, role: "trainee" });
+    mockProfessionFindUnique.mockResolvedValue({ id: validBody.professionId, name: "FISI" });
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toBe("Invalid trainer");
   });
 
+  it("returns 400 when profession not found", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockUserFindUnique.mockResolvedValue({ id: validBody.trainerId, role: "trainer" });
+    mockProfessionFindUnique.mockResolvedValue(null);
+    const res = await POST(makePostRequest(validBody));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toBe("Invalid profession");
+  });
+
   it("creates assignment successfully as admin", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    mockFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee" };
-      return { id: validBody.trainerId, role: "trainer" };
-    });
+    mockUserFindUnique.mockResolvedValue({ id: validBody.trainerId, role: "trainer" });
+    mockProfessionFindUnique.mockResolvedValue({ id: validBody.professionId, name: "FISI" });
     const created = {
       id: "assign-1",
-      traineeId: validBody.traineeId,
       trainerId: validBody.trainerId,
+      professionId: validBody.professionId,
       createdAt: "2025-01-01T00:00:00.000Z",
       updatedAt: "2025-01-01T00:00:00.000Z",
-      trainee: { id: validBody.traineeId, name: "Trainee", email: "t@test.de" },
       trainer: { id: validBody.trainerId, name: "Trainer", email: "tr@test.de" },
+      profession: { id: validBody.professionId, name: "FISI" },
     };
     mockUpsert.mockResolvedValue(created);
     const res = await POST(makePostRequest(validBody));
@@ -224,13 +207,13 @@ describe("POST /api/assignments", () => {
     expect(json).toEqual(created);
     expect(mockUpsert).toHaveBeenCalledWith({
       where: {
-        traineeId_trainerId: { traineeId: validBody.traineeId, trainerId: validBody.trainerId },
+        trainerId_professionId: { trainerId: validBody.trainerId, professionId: validBody.professionId },
       },
-      create: { traineeId: validBody.traineeId, trainerId: validBody.trainerId },
+      create: { trainerId: validBody.trainerId, professionId: validBody.professionId },
       update: {},
       include: {
-        trainee: { select: { id: true, name: true, email: true } },
         trainer: { select: { id: true, name: true, email: true } },
+        profession: { select: { id: true, name: true } },
       },
     });
   });

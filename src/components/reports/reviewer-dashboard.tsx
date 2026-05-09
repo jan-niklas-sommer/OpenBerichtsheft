@@ -24,21 +24,31 @@ interface TraineeWithReports {
 }
 
 export async function ReviewerDashboard({ userId, role, title, basePath }: ReviewerDashboardProps) {
-  let assignments: { traineeId: string; trainee: { id: string; name: string; profession: { name: string } | null; trainingStartDate: Date | null } }[] = [];
+  let traineeIds: string[] = [];
+  let traineeMap: Map<string, { id: string; name: string; profession: { name: string } | null; trainingStartDate: Date | null }> = new Map();
 
   if (role === "trainer") {
-    assignments = await prisma.traineeTrainerAssignment.findMany({
+    const professionAssignments = await prisma.trainerProfessionAssignment.findMany({
       where: { trainerId: userId },
-      include: { trainee: { select: { id: true, name: true, profession: { select: { name: true } }, trainingStartDate: true } } },
+      select: { professionId: true },
     });
+    const professionIds = professionAssignments.map((a) => a.professionId);
+    if (professionIds.length > 0) {
+      const trainees = await prisma.user.findMany({
+        where: { role: "trainee", professionId: { in: professionIds } },
+        select: { id: true, name: true, profession: { select: { name: true } }, trainingStartDate: true },
+      });
+      traineeIds = trainees.map((t) => t.id);
+      traineeMap = new Map(trainees.map((t) => [t.id, t]));
+    }
   } else {
-    assignments = await prisma.traineeOfficerAssignment.findMany({
+    const officerAssignments = await prisma.traineeOfficerAssignment.findMany({
       where: { trainingOfficerId: userId },
       include: { trainee: { select: { id: true, name: true, profession: { select: { name: true } }, trainingStartDate: true } } },
     });
+    traineeIds = officerAssignments.map((a) => a.traineeId);
+    traineeMap = new Map(officerAssignments.map((a) => [a.trainee.id, a.trainee]));
   }
-
-  const traineeIds = assignments.map((a) => a.traineeId);
 
   const allReports = await prisma.weeklyReport.findMany({
     where: { traineeId: { in: traineeIds } },
@@ -55,21 +65,24 @@ export async function ReviewerDashboard({ userId, role, title, basePath }: Revie
 
   const { year: currentYear, week: currentWeek } = getIsoWeek(new Date());
 
-  const traineeData: TraineeWithReports[] = assignments.map((a) => ({
-    id: a.trainee.id,
-    name: a.trainee.name,
-    profession: a.trainee.profession?.name ?? null,
-    trainingStartDate: a.trainee.trainingStartDate?.toISOString() ?? null,
-    reports: allReports
-      .filter((r) => r.traineeId === a.trainee.id)
-      .map((r) => ({
-        id: r.id,
-        calendarYear: r.calendarYear,
-        calendarWeek: r.calendarWeek,
-        status: r.status,
-        submittedAt: r.submittedAt?.toISOString() ?? null,
-      })),
-  }));
+  const traineeData: TraineeWithReports[] = traineeIds.map((id) => {
+    const trainee = traineeMap.get(id)!;
+    return {
+      id: trainee.id,
+      name: trainee.name,
+      profession: trainee.profession?.name ?? null,
+      trainingStartDate: trainee.trainingStartDate?.toISOString() ?? null,
+      reports: allReports
+        .filter((r) => r.traineeId === id)
+        .map((r) => ({
+          id: r.id,
+          calendarYear: r.calendarYear,
+          calendarWeek: r.calendarWeek,
+          status: r.status,
+          submittedAt: r.submittedAt?.toISOString() ?? null,
+        })),
+    };
+  });
 
   return (
     <ReviewerDashboardClient

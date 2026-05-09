@@ -1,6 +1,33 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+
+const {
+  mockTrainerProfessionFindMany,
+  mockUserFindMany,
+  mockOfficerFindMany,
+  mockReportFindMany,
+} = vi.hoisted(() => ({
+  mockTrainerProfessionFindMany: vi.fn().mockResolvedValue([
+    { professionId: "prof-1" },
+  ]),
+  mockUserFindMany: vi.fn().mockResolvedValue([
+    { id: "t-1", name: "Anna", profession: { name: "FiAE" }, trainingStartDate: null },
+  ]),
+  mockOfficerFindMany: vi.fn().mockResolvedValue([
+    { traineeId: "t-1", trainee: { id: "t-1", name: "Anna", profession: { name: "FiAE" }, trainingStartDate: null } },
+  ]),
+  mockReportFindMany: vi.fn().mockResolvedValue([
+    {
+      id: "r-1",
+      calendarWeek: 10,
+      calendarYear: 2026,
+      traineeId: "t-1",
+      status: "submitted",
+      submittedAt: new Date("2026-03-10"),
+    },
+  ]),
+}));
 
 vi.mock("@/lib/utils", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/lib/utils")>();
@@ -12,27 +39,17 @@ vi.mock("@/lib/utils", async (importOriginal) => {
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    traineeTrainerAssignment: {
-      findMany: vi.fn().mockResolvedValue([
-        { traineeId: "t-1", trainee: { id: "t-1", name: "Anna", profession: { name: "FiAE" }, trainingStartDate: null } },
-      ]),
+    trainerProfessionAssignment: {
+      findMany: mockTrainerProfessionFindMany,
+    },
+    user: {
+      findMany: mockUserFindMany,
     },
     traineeOfficerAssignment: {
-      findMany: vi.fn().mockResolvedValue([
-        { traineeId: "t-1", trainee: { id: "t-1", name: "Anna", profession: { name: "FiAE" }, trainingStartDate: null } },
-      ]),
+      findMany: mockOfficerFindMany,
     },
     weeklyReport: {
-      findMany: vi.fn().mockResolvedValue([
-        {
-          id: "r-1",
-          calendarWeek: 10,
-          calendarYear: 2026,
-          traineeId: "t-1",
-          status: "submitted",
-          submittedAt: new Date("2026-03-10"),
-        },
-      ]),
+      findMany: mockReportFindMany,
     },
   },
 }));
@@ -48,6 +65,10 @@ vi.mock("@/lib/auth", () => ({
 import { ReviewerDashboard } from "./reviewer-dashboard";
 
 describe("ReviewerDashboard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders dashboard title", async () => {
     const result = await ReviewerDashboard({
       userId: "trainer-1",
@@ -73,9 +94,8 @@ describe("ReviewerDashboard", () => {
   });
 
   it("renders empty state when no trainees exist", async () => {
-    const { prisma } = await import("@/lib/prisma");
-    (prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
-    (prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+    mockTrainerProfessionFindMany.mockResolvedValueOnce([]);
+    mockReportFindMany.mockResolvedValueOnce([]);
     const result = await ReviewerDashboard({
       userId: "trainer-1",
       role: "trainer",
@@ -87,11 +107,11 @@ describe("ReviewerDashboard", () => {
   });
 
   it("renders trainee without profession", async () => {
-    const { prisma } = await import("@/lib/prisma");
-    (prisma.traineeTrainerAssignment.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
-      { traineeId: "t-2", trainee: { id: "t-2", name: "Ben", profession: null, trainingStartDate: null } },
+    mockTrainerProfessionFindMany.mockResolvedValueOnce([{ professionId: "prof-1" }]);
+    mockUserFindMany.mockResolvedValueOnce([
+      { id: "t-2", name: "Ben", profession: null, trainingStartDate: null },
     ]);
-    (prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+    mockReportFindMany.mockResolvedValueOnce([
       { id: "r-2", calendarWeek: 10, calendarYear: 2026, traineeId: "t-2", status: "draft", submittedAt: null },
     ]);
     const result = await ReviewerDashboard({

@@ -12,7 +12,10 @@ vi.mock("@/lib/prisma", () => ({
     weeklyReport: {
       findUnique: vi.fn(),
     },
-    traineeTrainerAssignment: {
+    user: {
+      findUnique: vi.fn(),
+    },
+    trainerProfessionAssignment: {
       findFirst: vi.fn(),
     },
     traineeOfficerAssignment: {
@@ -35,7 +38,8 @@ import { renderToStream } from "@react-pdf/renderer";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockFindUnique = prisma.weeklyReport.findUnique as ReturnType<typeof vi.fn>;
-const mockTrainerAssignment = prisma.traineeTrainerAssignment.findFirst as ReturnType<typeof vi.fn>;
+const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
+const mockTrainerProfessionAssignment = prisma.trainerProfessionAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockOfficerAssignment = prisma.traineeOfficerAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockRenderToStream = renderToStream as unknown as ReturnType<typeof vi.fn>;
 
@@ -140,7 +144,8 @@ describe("GET /api/reports/[id]/pdf", () => {
   it("returns 403 when trainer is not assigned", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(baseReport);
-    mockTrainerAssignment.mockResolvedValue(null);
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue(null);
     const res = await GET(makeRequest(), { params });
     expect(res.status).toBe(403);
     const json = await res.json();
@@ -174,7 +179,8 @@ describe("GET /api/reports/[id]/pdf", () => {
   it("returns 200 for assigned trainer", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockFindUnique.mockResolvedValue(baseReport);
-    mockTrainerAssignment.mockResolvedValue({ id: "assignment-1" });
+    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockTrainerProfessionAssignment.mockResolvedValue({ id: "assignment-1" });
     const res = await GET(makeRequest(), { params });
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("application/pdf");

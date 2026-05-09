@@ -12,14 +12,14 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const where = role === "trainer" ? { trainerId: session.user.id } : {};
+  const where = role === "trainer" ? { assignedById: session.user.id } : {};
 
   const assignments = await prisma.traineeOfficerAssignment.findMany({
     where,
     include: {
       trainee: { select: { id: true, name: true, email: true } },
       trainingOfficer: { select: { id: true, name: true, email: true } },
-      trainer: { select: { id: true, name: true } },
+      assignedBy: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed" }, { status: 400 });
   }
 
-  const { traineeId, trainingOfficerId } = parsed.data;
+  const { traineeId, trainingOfficerId, validFrom, validUntil } = parsed.data;
 
   const trainee = await prisma.user.findUnique({ where: { id: traineeId } });
   const officer = await prisma.user.findUnique({ where: { id: trainingOfficerId } });
@@ -56,20 +56,26 @@ export async function POST(req: NextRequest) {
   }
 
   if (role === "trainer") {
-    const trainerAssignment = await prisma.traineeTrainerAssignment.findFirst({
-      where: { traineeId, trainerId: userId },
+    const traineeProfessionId = trainee.professionId;
+    if (!traineeProfessionId) {
+      return NextResponse.json({ error: "Not assigned to this trainee" }, { status: 403 });
+    }
+    const professionAssignment = await prisma.trainerProfessionAssignment.findFirst({
+      where: { trainerId: userId, professionId: traineeProfessionId },
     });
-    if (!trainerAssignment) {
+    if (!professionAssignment) {
       return NextResponse.json({ error: "Not assigned to this trainee" }, { status: 403 });
     }
   }
 
-  const assignment = await prisma.traineeOfficerAssignment.upsert({
-    where: {
-      traineeId_trainingOfficerId: { traineeId, trainingOfficerId },
+  const assignment = await prisma.traineeOfficerAssignment.create({
+    data: {
+      traineeId,
+      trainingOfficerId,
+      assignedById: userId,
+      validFrom: new Date(validFrom),
+      validUntil: new Date(validUntil),
     },
-    create: { traineeId, trainingOfficerId, trainerId: userId },
-    update: {},
     include: {
       trainee: { select: { id: true, name: true, email: true } },
       trainingOfficer: { select: { id: true, name: true, email: true } },
@@ -95,7 +101,7 @@ export async function DELETE(req: NextRequest) {
 
   if (role === "trainer") {
     const assignment = await prisma.traineeOfficerAssignment.findUnique({ where: { id } });
-    if (!assignment || assignment.trainerId !== userId) {
+    if (!assignment || assignment.assignedById !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

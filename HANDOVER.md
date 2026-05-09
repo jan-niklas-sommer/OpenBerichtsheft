@@ -846,3 +846,32 @@ npm run dev
 ### Offene Risiken / Folgeaufgaben
 
 - Keine.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Neues Zuordnungsmodell (#38)
+
+### Planner
+
+- **Ziel**: Ausbilder werden Berufen zugeordnet (sehen alle Azubis des Berufs). Ausbildungsbeauftragte bekommen Azubi+Zeitraum (nur Berichte im Zeitraum sichtbar). Ausbilder können Officer berechtigen.
+- **Umfang**: Datenmodell, Migration, API-Routen, Admin-UI, Tests.
+- **Akzeptanzkriterien**: Alle Tests bestanden, Build erfolgreich, alte Zuordnungen migriert.
+
+### Implementierte Änderungen
+
+- **Migration**: `TraineeTrainerAssignment` → `TrainerProfessionAssignment` (trainerId + professionId). `TraineeOfficerAssignment` bekommt `validFrom`, `validUntil`, `assignedById` (ersetzt `trainerId`). Datenmigration für bestehende Einträge.
+- **API**: Alle Report-Zugriffsprüfungen für Trainer nutzen jetzt `TrainerProfessionAssignment` (zwei-Schritt: Professionen → Azubis). Officer-Filter inkludiert Zeitraum-Prüfung.
+- **Validierung**: `assignmentSchema` → `{trainerId, professionId}`. `officerAssignmentSchema` → + `validFrom`, `validUntil`.
+- **Admin-UI**: `/admin/assignments` zeigt Trainer→Beruf Zuordnungen. Formular mit Trainer+Beruf Dropdowns.
+- **Seed**: `TrainerProfessionAssignment` statt `TraineeTrainerAssignment`. Officer-Zuordnung mit Zeitraum.
+- **Tests**: Alle 16 betroffenen Testdateien aktualisiert (Mocks, Assertions).
+
+### Verifier
+
+- **Tests**: 617 Tests (36 Dateien), alle bestanden.
+- **Lint**: 0 Errors, 5 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Officer-UI für Ausbilder (Officer+Azubi+Zeitraum zuordnen) noch nicht als eigene Seite — API unterstützt es bereits.

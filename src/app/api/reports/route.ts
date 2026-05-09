@@ -34,10 +34,18 @@ export async function GET(req: NextRequest) {
     let traineeIds: string[] = [];
 
     if (role === "trainer") {
-      const assignments = await prisma.traineeTrainerAssignment.findMany({
+      const professionAssignments = await prisma.trainerProfessionAssignment.findMany({
         where: { trainerId: userId },
+        select: { professionId: true },
       });
-      traineeIds = assignments.map((a) => a.traineeId);
+      const professionIds = professionAssignments.map((a) => a.professionId);
+      if (professionIds.length > 0) {
+        const trainees = await prisma.user.findMany({
+          where: { role: "trainee", professionId: { in: professionIds } },
+          select: { id: true },
+        });
+        traineeIds = trainees.map((t) => t.id);
+      }
     } else if (role === "training_officer") {
       const assignments = await prisma.traineeOfficerAssignment.findMany({
         where: { trainingOfficerId: userId },

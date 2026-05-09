@@ -10,11 +10,11 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     traineeOfficerAssignment: {
       findMany: vi.fn(),
-      upsert: vi.fn(),
+      create: vi.fn(),
       delete: vi.fn(),
       findUnique: vi.fn(),
     },
-    traineeTrainerAssignment: {
+    trainerProfessionAssignment: {
       findFirst: vi.fn(),
     },
     user: {
@@ -28,10 +28,10 @@ import { prisma } from "@/lib/prisma";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockFindMany = prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>;
-const mockUpsert = prisma.traineeOfficerAssignment.upsert as ReturnType<typeof vi.fn>;
+const mockCreate = prisma.traineeOfficerAssignment.create as ReturnType<typeof vi.fn>;
 const mockDelete = prisma.traineeOfficerAssignment.delete as ReturnType<typeof vi.fn>;
 const mockFindUnique = prisma.traineeOfficerAssignment.findUnique as ReturnType<typeof vi.fn>;
-const mockFindFirst = prisma.traineeTrainerAssignment.findFirst as ReturnType<typeof vi.fn>;
+const mockProfessionFindFirst = prisma.trainerProfessionAssignment.findFirst as ReturnType<typeof vi.fn>;
 const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 
 const adminSession = {
@@ -55,10 +55,12 @@ const sampleAssignments = [
     id: "oa-1",
     traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainingOfficerId: "770e8400-e29b-41d4-a716-446655440002",
-    trainerId: "trainer-1",
+    assignedById: "trainer-1",
+    validFrom: "2026-01-01T00:00:00.000Z",
+    validUntil: "2026-12-31T00:00:00.000Z",
     trainee: { id: "550e8400-e29b-41d4-a716-446655440000", name: "Trainee", email: "trainee@test.de" },
     trainingOfficer: { id: "770e8400-e29b-41d4-a716-446655440002", name: "Officer", email: "officer@test.de" },
-    trainer: { id: "trainer-1", name: "Trainer" },
+    assignedBy: { id: "trainer-1", name: "Trainer" },
     createdAt: "2026-05-07T00:00:00.000Z",
     updatedAt: "2026-05-07T00:00:00.000Z",
   },
@@ -119,7 +121,7 @@ describe("GET /api/officer-assignments", () => {
       include: {
         trainee: { select: { id: true, name: true, email: true } },
         trainingOfficer: { select: { id: true, name: true, email: true } },
-        trainer: { select: { id: true, name: true } },
+        assignedBy: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -133,11 +135,11 @@ describe("GET /api/officer-assignments", () => {
     const json = await res.json();
     expect(json).toEqual(sampleAssignments);
     expect(mockFindMany).toHaveBeenCalledWith({
-      where: { trainerId: "trainer-1" },
+      where: { assignedById: "trainer-1" },
       include: {
         trainee: { select: { id: true, name: true, email: true } },
         trainingOfficer: { select: { id: true, name: true, email: true } },
-        trainer: { select: { id: true, name: true } },
+        assignedBy: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -148,6 +150,8 @@ describe("POST /api/officer-assignments", () => {
   const validBody = {
     traineeId: "550e8400-e29b-41d4-a716-446655440000",
     trainingOfficerId: "770e8400-e29b-41d4-a716-446655440002",
+    validFrom: "2026-01-01",
+    validUntil: "2026-12-31",
   };
 
   beforeEach(() => {
@@ -188,7 +192,7 @@ describe("POST /api/officer-assignments", () => {
 
   it("returns 400 for invalid UUIDs", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const res = await POST(makePostRequest({ traineeId: "bad", trainingOfficerId: "bad" }));
+    const res = await POST(makePostRequest({ traineeId: "bad", trainingOfficerId: "bad", validFrom: "2026-01-01", validUntil: "2026-12-31" }));
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toBe("Validation failed");
@@ -242,13 +246,25 @@ describe("POST /api/officer-assignments", () => {
     expect(json.error).toBe("Invalid training officer");
   });
 
-  it("returns 403 when trainer is not assigned to trainee", async () => {
+  it("returns 403 when trainer is not assigned to trainee's profession", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockUserFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee" };
+      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee", professionId: "prof-1" };
       return { id: validBody.trainingOfficerId, role: "training_officer" };
     });
-    mockFindFirst.mockResolvedValue(null);
+    mockProfessionFindFirst.mockResolvedValue(null);
+    const res = await POST(makePostRequest(validBody));
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toBe("Not assigned to this trainee");
+  });
+
+  it("returns 403 when trainee has no profession", async () => {
+    mockAuth.mockResolvedValue(trainerSession);
+    mockUserFindUnique.mockImplementation((args: { where: { id: string } }) => {
+      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee", professionId: null };
+      return { id: validBody.trainingOfficerId, role: "training_officer" };
+    });
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(403);
     const json = await res.json();
@@ -265,23 +281,27 @@ describe("POST /api/officer-assignments", () => {
       id: "oa-new",
       traineeId: validBody.traineeId,
       trainingOfficerId: validBody.trainingOfficerId,
-      trainerId: "admin-1",
+      assignedById: "admin-1",
+      validFrom: "2026-01-01T00:00:00.000Z",
+      validUntil: "2026-12-31T00:00:00.000Z",
       createdAt: "2026-05-07T00:00:00.000Z",
       updatedAt: "2026-05-07T00:00:00.000Z",
       trainee: { id: validBody.traineeId, name: "Trainee", email: "t@test.de" },
       trainingOfficer: { id: validBody.trainingOfficerId, name: "Officer", email: "o@test.de" },
     };
-    mockUpsert.mockResolvedValue(created);
+    mockCreate.mockResolvedValue(created);
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(201);
     const json = await res.json();
     expect(json).toEqual(created);
-    expect(mockUpsert).toHaveBeenCalledWith({
-      where: {
-        traineeId_trainingOfficerId: { traineeId: validBody.traineeId, trainingOfficerId: validBody.trainingOfficerId },
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: {
+        traineeId: validBody.traineeId,
+        trainingOfficerId: validBody.trainingOfficerId,
+        assignedById: "admin-1",
+        validFrom: new Date("2026-01-01"),
+        validUntil: new Date("2026-12-31"),
       },
-      create: { traineeId: validBody.traineeId, trainingOfficerId: validBody.trainingOfficerId, trainerId: "admin-1" },
-      update: {},
       include: {
         trainee: { select: { id: true, name: true, email: true } },
         trainingOfficer: { select: { id: true, name: true, email: true } },
@@ -289,30 +309,32 @@ describe("POST /api/officer-assignments", () => {
     });
   });
 
-  it("creates assignment successfully as trainer with ownership", async () => {
+  it("creates assignment successfully as trainer with profession assignment", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockUserFindUnique.mockImplementation((args: { where: { id: string } }) => {
-      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee" };
+      if (args.where.id === validBody.traineeId) return { id: validBody.traineeId, role: "trainee", professionId: "prof-1" };
       return { id: validBody.trainingOfficerId, role: "training_officer" };
     });
-    mockFindFirst.mockResolvedValue({ id: "tta-1", traineeId: validBody.traineeId, trainerId: "trainer-1" });
+    mockProfessionFindFirst.mockResolvedValue({ id: "tpa-1", trainerId: "trainer-1", professionId: "prof-1" });
     const created = {
       id: "oa-new",
       traineeId: validBody.traineeId,
       trainingOfficerId: validBody.trainingOfficerId,
-      trainerId: "trainer-1",
+      assignedById: "trainer-1",
+      validFrom: "2026-01-01T00:00:00.000Z",
+      validUntil: "2026-12-31T00:00:00.000Z",
       createdAt: "2026-05-07T00:00:00.000Z",
       updatedAt: "2026-05-07T00:00:00.000Z",
       trainee: { id: validBody.traineeId, name: "Trainee", email: "t@test.de" },
       trainingOfficer: { id: validBody.trainingOfficerId, name: "Officer", email: "o@test.de" },
     };
-    mockUpsert.mockResolvedValue(created);
+    mockCreate.mockResolvedValue(created);
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(201);
     const json = await res.json();
     expect(json).toEqual(created);
-    expect(mockFindFirst).toHaveBeenCalledWith({
-      where: { traineeId: validBody.traineeId, trainerId: "trainer-1" },
+    expect(mockProfessionFindFirst).toHaveBeenCalledWith({
+      where: { trainerId: "trainer-1", professionId: "prof-1" },
     });
   });
 });
@@ -367,7 +389,7 @@ describe("DELETE /api/officer-assignments", () => {
 
   it("deletes assignment successfully as trainer with ownership", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockFindUnique.mockResolvedValue({ id: "oa-1", trainerId: "trainer-1" });
+    mockFindUnique.mockResolvedValue({ id: "oa-1", assignedById: "trainer-1" });
     mockDelete.mockResolvedValue(undefined);
     const res = await DELETE(makeDeleteRequest("oa-1"));
     expect(res.status).toBe(200);
@@ -387,7 +409,7 @@ describe("DELETE /api/officer-assignments", () => {
 
   it("returns 403 for trainer without ownership (different trainer)", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockFindUnique.mockResolvedValue({ id: "oa-1", trainerId: "other-trainer" });
+    mockFindUnique.mockResolvedValue({ id: "oa-1", assignedById: "other-trainer" });
     const res = await DELETE(makeDeleteRequest("oa-1"));
     expect(res.status).toBe(403);
     const json = await res.json();

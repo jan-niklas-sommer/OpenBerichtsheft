@@ -83,8 +83,6 @@ export default function TraineeDashboard() {
         year={viewYear}
         reports={reportSummaries}
         trainingStartDate={trainingStartDate}
-        onPrevYear={() => setViewYear((y) => y - 1)}
-        onNextYear={() => setViewYear((y) => y + 1)}
       />
 
       <ReportCalendar

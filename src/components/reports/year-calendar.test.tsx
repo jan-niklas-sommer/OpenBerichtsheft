@@ -47,84 +47,15 @@ describe("YearCalendar", () => {
     setupIsoWeekMock();
   });
 
-  it("renders the year heading", () => {
+  it("renders month labels", () => {
     render(
       <YearCalendar
         year={2026}
         reports={[]}
         trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
       />
     );
-    expect(screen.getByText("2026")).toBeInTheDocument();
-  });
-
-  it("renders legend toggle button", () => {
-    render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
-      />
-    );
-    expect(screen.getByText("Legende")).toBeInTheDocument();
-  });
-
-  it("shows legend items when toggle clicked", async () => {
-    const user = userEvent.setup();
-    render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
-      />
-    );
-    await user.click(screen.getByText("Legende"));
-    expect(screen.getByText("Entwurf")).toBeInTheDocument();
-    expect(screen.getByText("Genehmigt")).toBeInTheDocument();
-    expect(screen.getByText("Abgelehnt")).toBeInTheDocument();
-    expect(screen.getByText("Eingereicht")).toBeInTheDocument();
-    expect(screen.getByText("Überarbeitung")).toBeInTheDocument();
-    expect(screen.getByText("Fehlt")).toBeInTheDocument();
-  });
-
-  it("calls onPrevYear when prev button clicked", async () => {
-    const onPrev = vi.fn();
-    const user = userEvent.setup();
-    render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-        onPrevYear={onPrev}
-        onNextYear={vi.fn()}
-      />
-    );
-    const buttons = screen.getAllByRole("button");
-    await user.click(buttons[0]);
-    expect(onPrev).toHaveBeenCalled();
-  });
-
-  it("calls onNextYear when next button clicked", async () => {
-    const onNext = vi.fn();
-    const user = userEvent.setup();
-    render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={onNext}
-      />
-    );
-    const buttons = screen.getAllByRole("button");
-    await user.click(buttons[1]);
-    expect(onNext).toHaveBeenCalled();
+    expect(screen.getByText("Jan")).toBeInTheDocument();
   });
 
   it("renders links to report editor", () => {
@@ -133,8 +64,6 @@ describe("YearCalendar", () => {
         year={2026}
         reports={reports}
         trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
       />
     );
     const links = screen.getAllByRole("link");
@@ -149,8 +78,6 @@ describe("YearCalendar", () => {
         year={2026}
         reports={reports}
         trainingStartDate="2026-03-01"
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
       />
     );
     const links = screen.getAllByRole("link");
@@ -164,8 +91,6 @@ describe("YearCalendar", () => {
         year={2026}
         reports={reports}
         trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
       />
     );
     const tooltips = screen.getAllByTitle(/KW \d+/);
@@ -174,27 +99,12 @@ describe("YearCalendar", () => {
     expect(approvedTooltips.length).toBeGreaterThan(0);
   });
 
-  it("renders month labels", () => {
-    render(
-      <YearCalendar
-        year={2026}
-        reports={[]}
-        trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
-      />
-    );
-    expect(screen.getByText("Jan")).toBeInTheDocument();
-  });
-
   it("renders with no reports", () => {
     const { container } = render(
       <YearCalendar
         year={2026}
         reports={[]}
         trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
       />
     );
     expect(container.querySelectorAll("a").length).toBeGreaterThan(0);
@@ -206,10 +116,38 @@ describe("YearCalendar", () => {
         year={2024}
         reports={[]}
         trainingStartDate={null}
-        onPrevYear={vi.fn()}
-        onNextYear={vi.fn()}
       />
     );
     expect(container.querySelectorAll("a").length).toBeGreaterThan(0);
+  });
+
+  it("shows legend on hover", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <YearCalendar
+        year={2026}
+        reports={[]}
+        trainingStartDate={null}
+      />
+    );
+    await user.hover(container.firstElementChild!);
+    expect(screen.getByText("Entwurf")).toBeInTheDocument();
+    expect(screen.getByText("Genehmigt")).toBeInTheDocument();
+    expect(screen.getByText("Fehlt")).toBeInTheDocument();
+  });
+
+  it("renders responsive flex cells", () => {
+    const { container } = render(
+      <YearCalendar
+        year={2026}
+        reports={[]}
+        trainingStartDate={null}
+      />
+    );
+    const cells = container.querySelectorAll("a");
+    expect(cells.length).toBeGreaterThan(0);
+    cells.forEach((cell) => {
+      expect(cell.className).toContain("flex-1");
+    });
   });
 });

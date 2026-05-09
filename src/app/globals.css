@@ -39,6 +39,7 @@
   --color-cat-other-fg: #be185d;
   --color-cat-other-bg: #fce7f3;
 
+  --ds-overlay-backdrop: rgba(0, 0, 0, 0.5);
   --ds-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
   --ds-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
@@ -81,6 +82,7 @@
   --color-cat-other-fg: #f9a8d4;
   --color-cat-other-bg: rgba(236, 72, 153, 0.20);
 
+  --ds-overlay-backdrop: rgba(0, 0, 0, 0.5);
   --ds-shadow-sm: none;
   --ds-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --ds-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
@@ -129,6 +131,8 @@
   --color-cat-vacation-soft: var(--color-cat-vacation-bg);
   --color-cat-other: var(--color-cat-other-fg);
   --color-cat-other-soft: var(--color-cat-other-bg);
+
+  --color-overlay-backdrop: var(--ds-overlay-backdrop);
 
   --shadow-sm: var(--ds-shadow-sm);
   --shadow-md: var(--ds-shadow-md);

@@ -256,7 +256,7 @@ export default function SchedulePage() {
 
       {editItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-backdrop"
           onClick={() => setEditItem(null)}
         >
           <div

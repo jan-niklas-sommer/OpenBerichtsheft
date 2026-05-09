@@ -273,24 +273,62 @@ Statusübergänge müssen berechtigungsabhängig geprüft werden.
 <!-- END:domain-rules -->
 
 
-<!-- BEGIN:ui-rules -->
-# UI/UX-Regeln
+<!-- BEGIN:design-system-rules -->
+# Design-System-Regeln
 
-Die Anwendung soll eine moderne, reduzierte, hochwertige Oberfläche erhalten.
+Verbindliche Referenz: **`DESIGN_SYSTEM.md`**
 
-Designreferenz:
-- minimalistisch
-- hoher Weißraum
-- klare Typografie
+Jede UI-Änderung MUSS den dort definierten Token-Schichten folgen. Die folgenden Regeln sind nicht verhandelbar:
+
+## Token-Pflicht
+
+- Alle Farben, Abstände, Radien, Schriften und Schatten werden ausschließlich über CSS-Variablen referenziert.
+- Keine direkten Tailwind-Color-Klassen mit konkreten Farben (z. B. `bg-emerald-500`, `text-blue-600`).
+- Keine Hex-Werte in Komponenten-Code. Einzige Ausnahme: `pdf-document.tsx` (`@react-pdf/renderer` unterstützt keine Tailwind-Klassen).
+
+## Farbschichten
+
+Die vier Schichten aus `DESIGN_SYSTEM.md` MÜSSEN strikt getrennt werden:
+
+1. **Neutral** — Layout, Hintergründe, Texte, Borders
+2. **Akzent (Inversion)** — Primary-Buttons (Schwarz/Weiß-Inversion)
+3. **Semantisch** — Status-Farben (Success/Warning/Danger/Info) für Bericht-Status, Feedback, Fehler
+4. **Kategorial** — Lernort-Farben (Teal/Indigo/Yellow/Pink) für Einsatzplanung
+
+Status-Farben dürfen NIEMALS für Kategorien verwendet werden und umgekehrt.
+
+## Komponenten-Spezifikation
+
+Neue und geänderte Komponenten MÜSSEN der Spezifikation in `DESIGN_SYSTEM.md` entsprechen:
+- Buttons: Primary (Inversion), Secondary, Ghost, Destructive (Pastell-Hintergrund, nicht vollflächig rot)
+- Inputs: Token-basierte Borders, Focus-States
+- Cards: `bg-elevated`, `border-subtle`, `radius-md`
+- Badges/Pills: Status-Mapping über semantische Token
+- Modals: `bg-elevated`, `radius-md`, Footer mit Trennlinie
+- Navigation: Header 4rem, Tab-Group, Trennlinie vor Theme/Logout
+
+## Anti-Patterns
+
+- Keine vollflächig gefüllten Status-Buttons
+- Kein Bold (700) außer für Page-Headings
+- Keine Opacity unter 0.4 für Text
+- Keine Schatten mit farbigem Tint
+- Keine mehr als zwei Akzentfarben pro Bildschirm
+- Keine Animationen außer für State-Übergänge
+
+## Migration
+
+Das bestehende Codebase enthält noch hardcoded Tailwind-Color-Klassen. Diese werden schrittweise in separaten Arbeitspaketen migriert (AP2–AP7). Bis zur Migration einer Komponente gilt: keine neuen Hardcodes hinzufügen.
+
+## UI/UX-Grundregeln
+
+- minimalistisch, hoher Weißraum, klare Typografie
 - starke Schwarz-Weiß-Kontraste
 - Light Mode und Dark Mode
 - mobil und Desktop nutzbar
 - keine überladenen Admin-Oberflächen
-
-Die UI darf sich an der Anmutung moderner Fintech-Apps orientieren, aber keine geschützten Markenbestandteile, Logos oder exakte Kopien übernehmen.
-
-Alle zentralen Workflows müssen mobil bedienbar sein.
-<!-- END:ui-rules -->
+- Alle zentralen Workflows müssen mobil bedienbar sein.
+<!-- END:design-system-rules -->
 
 <!-- BEGIN:git-workflow-rules -->
 # Git-Workflow

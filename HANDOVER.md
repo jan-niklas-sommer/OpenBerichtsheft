@@ -817,3 +817,32 @@ npm run dev
 
 - `navbar.test.tsx` hat pre-existing parse error (oxc) — muss separat gefixt werden.
 - Coverage-Drop von 100% auf 95% stmts durch nicht ausführbaren navbar-Test.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Page- und Layout-Tests ergänzen (#11)
+
+### Planner
+
+- **Ziel**: Alle API-Routen und Komponenten ohne Tests absichern. Fehlerhaften navbar-Test fixen.
+- **Umfang**: 4 neue Testdateien, 1 gefixter Test, 1 aktualisierter Test.
+- **Akzeptanzkriterien**: Alle Tests bestanden, 0 Lint-Errors, Coverage ≥95%.
+
+### Implementierte Änderungen
+
+- **Neu**: `src/app/api/reports/[id]/review/route.test.ts` — 11 Tests (Auth, Permission, Statusübergänge, Transaktion).
+- **Neu**: `src/app/api/users/[id]/route.test.ts` — 7 Tests (Auth, Validierung, Update, Passwort-Hashing).
+- **Neu**: `src/app/api/users/[id]/anonymize/route.test.ts` — 6 Tests (Auth, Validierung, DSGVO-Anonymisierung).
+- **Neu**: `src/app/api/notifications/[id]/route.test.ts` — 4 Tests (PUT mark-read, DELETE).
+- **Fix**: `src/components/layout/navbar.test.tsx` — Verwaistes Code-Fragment entfernt (Zeile 34-37), Parse Error behoben, "Einstellungen" in Admin-Nav-Test ergänzt.
+
+### Verifier
+
+- **Tests**: 617 Tests (36 Dateien), alle bestanden. +51 Tests (29 neu + 22 wiederhergestellt durch navbar-Fix).
+- **Coverage**: 99.26% stmts, 97.48% branches, 96.85% fns, 99.15% lines.
+- **Lint**: 0 Errors, 4 Warnings (vorbestehend).
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Keine.

@@ -22,13 +22,13 @@ export function Button({
 
   const variants: Record<string, string> = {
     primary:
-      "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+      "bg-accent text-accent-fg hover:bg-accent-hover",
     secondary:
-      "border border-neutral-300 bg-transparent text-neutral-900 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800",
+      "border border-stroke-base bg-transparent text-content-base hover:bg-surface-overlay",
     danger:
-      "bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800",
+      "bg-danger-soft text-danger hover:opacity-80",
     ghost:
-      "bg-transparent text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800",
+      "bg-transparent text-content-muted hover:bg-surface-overlay",
   };
 
   const sizes: Record<string, string> = {

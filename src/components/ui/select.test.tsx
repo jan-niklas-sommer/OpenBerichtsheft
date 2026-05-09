@@ -35,7 +35,7 @@ describe("Select", () => {
 
   it("applies error styles when error is present", () => {
     render(<Select options={options} error="Error" />);
-    expect(screen.getByRole("combobox").className).toContain("border-red-500");
+    expect(screen.getByRole("combobox").className).toContain("border-danger");
   });
 
   it("generates id from label", () => {

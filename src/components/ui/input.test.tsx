@@ -37,7 +37,7 @@ describe("Input", () => {
 
   it("applies error styles when error is present", () => {
     render(<Input error="Error" />);
-    expect(screen.getByRole("textbox").className).toContain("border-red-500");
+    expect(screen.getByRole("textbox").className).toContain("border-danger");
   });
 
   it("forwards ref", () => {

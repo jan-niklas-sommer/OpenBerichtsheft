@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { statusColor, STATUS_LABELS, statusVariant } from "@/lib/utils";
+import { statusDotColor, STATUS_LABELS, statusVariant } from "@/lib/utils";
 import { FileText, ChevronDown, ChevronUp, Filter } from "lucide-react";
-import type { ReportStatus } from "@/types";
 
 interface TraineeWithReports {
   id: string;
@@ -69,7 +68,7 @@ export function ReviewerDashboardClient({
 
   const recentWeeks = useMemo(() => {
     const weeks: { year: number; week: number }[] = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 8; i++) {
       let w = currentWeek - i;
       let y = currentYear;
       while (w < 1) { w += 52; y--; }
@@ -77,6 +76,24 @@ export function ReviewerDashboardClient({
     }
     return weeks;
   }, [currentYear, currentWeek]);
+
+  const [dotTooltip, setDotTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
+  const dotContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleDotEnter = useCallback((text: string, e: React.MouseEvent) => {
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    const containerRect = dotContainerRef.current?.getBoundingClientRect();
+    if (!containerRect) return;
+    setDotTooltip({
+      text,
+      x: rect.left + rect.width / 2 - containerRect.left,
+      y: rect.top - containerRect.top - 4,
+    });
+  }, []);
+
+  const handleDotLeave = useCallback(() => {
+    setDotTooltip(null);
+  }, []);
 
   return (
     <div>
@@ -146,19 +163,39 @@ export function ReviewerDashboardClient({
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Mini week overview */}
-                    <div className="hidden sm:flex items-center gap-0.5">
+                    <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1">
                       {recentWeeks.map((w) => {
                         const report = trainee.reports.find(
                           (r) => r.calendarYear === w.year && r.calendarWeek === w.week
                         );
+                        const tooltipText = report
+                          ? `KW ${w.week}: ${STATUS_LABELS[report.status]}`
+                          : `KW ${w.week}: Kein Bericht`;
+                        const href = report
+                          ? `${basePath}/report/${report.id}`
+                          : "#";
                         return (
-                          <div
+                          <Link
                             key={`${w.year}-${w.week}`}
-                            className={`h-3 w-3 rounded-sm ${report ? statusColor(report.status) : "bg-surface-overlay"}`}
-                            title={report ? `KW ${w.week}: ${STATUS_LABELS[report.status]}` : `KW ${w.week}: Kein Bericht`}
+                            href={href}
+                            className={`h-4 w-4 rounded-sm ${report ? statusDotColor(report.status) : "bg-surface-overlay border border-stroke-subtle"}`}
+                            onMouseEnter={(e) => handleDotEnter(tooltipText, e)}
+                            onMouseLeave={handleDotLeave}
                           />
                         );
                       })}
+                      {dotTooltip && (
+                        <div
+                          className="pointer-events-none absolute z-30 whitespace-nowrap rounded-md border border-stroke-subtle bg-surface-elevated px-2 py-1 text-[10px] shadow-md text-content-base"
+                          style={{
+                            left: dotTooltip.x,
+                            top: dotTooltip.y,
+                            transform: "translate(-50%, -100%)",
+                          }}
+                        >
+                          {dotTooltip.text}
+                        </div>
+                      )}
                     </div>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4 text-content-subtle" />

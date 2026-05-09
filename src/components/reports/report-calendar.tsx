@@ -63,7 +63,7 @@ export function ReportCalendar({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 mt-6 flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={onPrevMonth}>
           <ChevronLeft className="h-4 w-4" />
         </Button>

@@ -13,7 +13,7 @@ export default async function DashboardLayout({
   const role = session.user.role;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-surface-base">
       <Navbar role={role} userName={session.user.name || ""} />
       <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
     </div>

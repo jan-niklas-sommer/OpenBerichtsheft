@@ -1261,3 +1261,34 @@ npm run dev
 - AP5 (Pages): Alle Dashboard-Pages
 - AP6 (Schedule): Gantt-Timeline, Assignment-Modal
 - AP7 (Reports): PDF, Report-Komponenten
+
+---
+
+## 2026-05-09 – Arbeitspaket: Layout + Navigation auf Design-Token (AP4)
+
+### Planner
+
+- **Ziel:** Navbar, Theme-Toggle, Dashboard-Layout, Auth-Layout von hardcoded Farben auf Token umstellen.
+
+### Reviewer
+
+- Freigabe. Trennlinie zwischen Theme-Toggle und Logout als `bg-stroke-subtle` statt leerem div.
+
+### Implementierte Änderungen
+
+- `src/components/layout/navbar.tsx` — Header `bg-surface-base`, Nav-Token, Avatar, Notification-Dropdown, Trennlinie `bg-stroke-subtle`
+- `src/components/ui/theme-toggle.tsx` — Token-basierte Hover-Farben
+- `src/app/(dashboard)/layout.tsx` — `bg-surface-base`
+- `src/app/(auth)/layout.tsx` — `bg-surface-base`
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings.
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- AP5 (Pages): Alle Dashboard-Pages
+- AP6 (Schedule): Gantt-Timeline, Assignment-Modal
+- AP7 (Reports): PDF, Report-Komponenten

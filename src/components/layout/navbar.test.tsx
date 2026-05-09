@@ -31,10 +31,6 @@ describe("Navbar", () => {
     render(<Navbar role="trainee" userName="Test" />);
     expect(screen.getByText("Übersicht")).toBeInTheDocument();
   });
-    render(<Navbar role="trainee" userName="Test" />);
-    expect(screen.getByText("Übersicht")).toBeInTheDocument();
-    expect(screen.getByText("Berichte")).toBeInTheDocument();
-  });
 
   it("renders admin navigation items", () => {
     global.fetch = vi.fn().mockResolvedValue({
@@ -44,6 +40,7 @@ describe("Navbar", () => {
     expect(screen.getByText("Benutzer")).toBeInTheDocument();
     expect(screen.getByText("Zuordnungen")).toBeInTheDocument();
     expect(screen.getByText("Berufe")).toBeInTheDocument();
+    expect(screen.getByText("Einstellungen")).toBeInTheDocument();
     expect(screen.getByText("Fortschritt")).toBeInTheDocument();
   });
 

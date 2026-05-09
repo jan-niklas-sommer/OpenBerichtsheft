@@ -16,6 +16,9 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    trainerProfessionAssignment: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -35,6 +38,7 @@ const mockCreate = prisma.user.create as ReturnType<typeof vi.fn>;
 const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
 const mockHash = bcrypt.hash as ReturnType<typeof vi.fn>;
+const mockTrainerProfessions = prisma.trainerProfessionAssignment.findMany as ReturnType<typeof vi.fn>;
 
 const adminSession = {
   user: { id: "admin-1", role: "admin", email: "admin@test.de", name: "Admin" },
@@ -43,6 +47,18 @@ const adminSession = {
 const traineeSession = {
   user: { id: "trainee-1", role: "trainee", email: "trainee@test.de", name: "Trainee" },
 };
+
+const trainerSession = {
+  user: { id: "trainer-1", role: "trainer", email: "trainer@test.de", name: "Trainer" },
+};
+
+function makeGetRequest(params: Record<string, string> = {}): NextRequest {
+  const url = new URL("http://localhost:3000/api/users");
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+  return new NextRequest(url.toString());
+}
 
 function makePostRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost:3000/api/users", {
@@ -59,15 +75,15 @@ describe("GET /api/users", () => {
 
   it("returns 401 without session", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await GET();
+    const res = await GET(makeGetRequest());
     expect(res.status).toBe(401);
     const json = await res.json();
     expect(json.error).toBe("Unauthorized");
   });
 
-  it("returns 403 for non-admin", async () => {
+  it("returns 403 for trainee", async () => {
     mockAuth.mockResolvedValue(traineeSession);
-    const res = await GET();
+    const res = await GET(makeGetRequest());
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.error).toBe("Forbidden");
@@ -79,11 +95,12 @@ describe("GET /api/users", () => {
       { id: "user-1", email: "a@b.com", name: "User 1", role: "trainee", professionId: null, profession: null, trainingStartDate: null, createdAt: "2025-01-01", deactivatedAt: null },
     ];
     mockFindMany.mockResolvedValue(users);
-    const res = await GET();
+    const res = await GET(makeGetRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toEqual(users);
     expect(mockFindMany).toHaveBeenCalledWith({
+      where: {},
       select: {
         id: true,
         email: true,
@@ -97,6 +114,41 @@ describe("GET /api/users", () => {
       },
       orderBy: { createdAt: "desc" },
     });
+  });
+
+  it("filters by role as admin", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    mockFindMany.mockResolvedValue([]);
+    const res = await GET(makeGetRequest({ role: "trainee" }));
+    expect(res.status).toBe(200);
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { role: "trainee" },
+      }),
+    );
+  });
+
+  it("returns trainees for trainer by profession", async () => {
+    mockAuth.mockResolvedValue(trainerSession);
+    mockTrainerProfessions.mockResolvedValue([{ professionId: "prof-1" }]);
+    mockFindMany.mockResolvedValue([{ id: "t-1", name: "Trainee", email: "t@test.de" }]);
+    const res = await GET(makeGetRequest({ role: "trainee" }));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toEqual([{ id: "t-1", name: "Trainee", email: "t@test.de" }]);
+  });
+
+  it("returns officers for trainer", async () => {
+    mockAuth.mockResolvedValue(trainerSession);
+    mockFindMany.mockResolvedValue([{ id: "o-1", name: "Officer", email: "o@test.de" }]);
+    const res = await GET(makeGetRequest({ role: "training_officer" }));
+    expect(res.status).toBe(200);
+  });
+
+  it("returns 403 for trainer without role filter", async () => {
+    mockAuth.mockResolvedValue(trainerSession);
+    const res = await GET(makeGetRequest());
+    expect(res.status).toBe(403);
   });
 });
 

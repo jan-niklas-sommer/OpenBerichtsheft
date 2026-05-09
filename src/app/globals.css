@@ -2,13 +2,137 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --color-bg-base: #ffffff;
+  --color-bg-elevated: #fafafa;
+  --color-bg-overlay: #f4f4f5;
+  --color-bg-sunken: #e4e4e7;
+
+  --color-fg-base: #18181b;
+  --color-fg-muted: #52525b;
+  --color-fg-subtle: #a1a1aa;
+  --color-fg-on-inverted: #fafafa;
+
+  --color-border-subtle: #e4e4e7;
+  --color-border-base: #d4d4d8;
+  --color-border-strong: #71717a;
+
+  --color-action-primary-bg: #18181b;
+  --color-action-primary-fg: #ffffff;
+  --color-action-primary-bg-hover: #52525b;
+
+  --color-success-fg: #15803d;
+  --color-success-bg: #dcfce7;
+  --color-warning-fg: #b45309;
+  --color-warning-bg: #fef3c7;
+  --color-danger-fg: #b91c1c;
+  --color-danger-bg: #fee2e2;
+  --color-info-fg: #1d4ed8;
+  --color-info-bg: #dbeafe;
+
+  --color-cat-department-fg: #0f766e;
+  --color-cat-department-bg: #ccfbf1;
+  --color-cat-school-fg: #4338ca;
+  --color-cat-school-bg: #e0e7ff;
+  --color-cat-vacation-fg: #a16207;
+  --color-cat-vacation-bg: #fef9c3;
+  --color-cat-other-fg: #be185d;
+  --color-cat-other-bg: #fce7f3;
+
+  --ds-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --ds-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --color-bg-base: #09090b;
+  --color-bg-elevated: #18181b;
+  --color-bg-overlay: #27272a;
+  --color-bg-sunken: #000000;
+
+  --color-fg-base: #fafafa;
+  --color-fg-muted: #a1a1aa;
+  --color-fg-subtle: #52525b;
+  --color-fg-on-inverted: #18181b;
+
+  --color-border-subtle: #27272a;
+  --color-border-base: #3f3f46;
+  --color-border-strong: #71717a;
+
+  --color-action-primary-bg: #fafafa;
+  --color-action-primary-fg: #18181b;
+  --color-action-primary-bg-hover: #a1a1aa;
+
+  --color-success-fg: #4ade80;
+  --color-success-bg: rgba(34, 197, 94, 0.15);
+  --color-warning-fg: #fbbf24;
+  --color-warning-bg: rgba(245, 158, 11, 0.15);
+  --color-danger-fg: #f87171;
+  --color-danger-bg: rgba(239, 68, 68, 0.15);
+  --color-info-fg: #60a5fa;
+  --color-info-bg: rgba(59, 130, 246, 0.15);
+
+  --color-cat-department-fg: #5eead4;
+  --color-cat-department-bg: rgba(20, 184, 166, 0.20);
+  --color-cat-school-fg: #a5b4fc;
+  --color-cat-school-bg: rgba(99, 102, 241, 0.20);
+  --color-cat-vacation-fg: #fde047;
+  --color-cat-vacation-bg: rgba(234, 179, 8, 0.18);
+  --color-cat-other-fg: #f9a8d4;
+  --color-cat-other-bg: rgba(236, 72, 153, 0.20);
+
+  --ds-shadow-sm: none;
+  --ds-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --ds-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
 @theme inline {
   --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
   --radius-full: 9999px;
+
+  --color-surface-base: var(--color-bg-base);
+  --color-surface-elevated: var(--color-bg-elevated);
+  --color-surface-overlay: var(--color-bg-overlay);
+  --color-surface-sunken: var(--color-bg-sunken);
+
+  --color-content-base: var(--color-fg-base);
+  --color-content-muted: var(--color-fg-muted);
+  --color-content-subtle: var(--color-fg-subtle);
+  --color-content-on-accent: var(--color-fg-on-inverted);
+
+  --color-stroke-subtle: var(--color-border-subtle);
+  --color-stroke-base: var(--color-border-base);
+  --color-stroke-strong: var(--color-border-strong);
+
+  --color-accent: var(--color-action-primary-bg);
+  --color-accent-fg: var(--color-action-primary-fg);
+  --color-accent-hover: var(--color-action-primary-bg-hover);
+
+  --color-success: var(--color-success-fg);
+  --color-success-soft: var(--color-success-bg);
+  --color-warning: var(--color-warning-fg);
+  --color-warning-soft: var(--color-warning-bg);
+  --color-danger: var(--color-danger-fg);
+  --color-danger-soft: var(--color-danger-bg);
+  --color-info: var(--color-info-fg);
+  --color-info-soft: var(--color-info-bg);
+
+  --color-cat-department: var(--color-cat-department-fg);
+  --color-cat-department-soft: var(--color-cat-department-bg);
+  --color-cat-school: var(--color-cat-school-fg);
+  --color-cat-school-soft: var(--color-cat-school-bg);
+  --color-cat-vacation: var(--color-cat-vacation-fg);
+  --color-cat-vacation-soft: var(--color-cat-vacation-bg);
+  --color-cat-other: var(--color-cat-other-fg);
+  --color-cat-other-soft: var(--color-cat-other-bg);
+
+  --shadow-sm: var(--ds-shadow-sm);
+  --shadow-md: var(--ds-shadow-md);
+  --shadow-lg: var(--ds-shadow-lg);
 }
 
 html {
@@ -20,10 +144,11 @@ html.dark {
 }
 
 body {
-  @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
+  background-color: var(--color-bg-base);
+  color: var(--color-fg-base);
   font-family: var(--font-sans);
 }
 
 * {
-  @apply border-neutral-200 dark:border-neutral-800;
+  border-color: var(--color-border-subtle);
 }

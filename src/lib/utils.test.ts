@@ -288,32 +288,32 @@ describe("getTrainingStartWeek", () => {
 });
 
 describe("statusColor", () => {
-  it("returns emerald for approved", () => {
-    expect(statusColor("approved")).toContain("emerald");
+  it("returns success-soft for approved", () => {
+    expect(statusColor("approved")).toContain("success");
   });
 
-  it("returns amber for submitted", () => {
-    expect(statusColor("submitted")).toContain("amber");
+  it("returns warning-soft for submitted", () => {
+    expect(statusColor("submitted")).toContain("warning");
   });
 
-  it("returns red for rejected", () => {
-    expect(statusColor("rejected")).toContain("red");
+  it("returns danger-soft for rejected", () => {
+    expect(statusColor("rejected")).toContain("danger");
   });
 
-  it("returns blue for needs_revision", () => {
-    expect(statusColor("needs_revision")).toContain("blue");
+  it("returns info-soft for needs_revision", () => {
+    expect(statusColor("needs_revision")).toContain("info");
   });
 
-  it("returns neutral for draft", () => {
-    expect(statusColor("draft")).toContain("neutral");
+  it("returns surface-overlay for draft", () => {
+    expect(statusColor("draft")).toContain("surface-overlay");
   });
 
-  it("returns red for missing", () => {
-    expect(statusColor("missing")).toContain("red");
+  it("returns danger-soft for missing", () => {
+    expect(statusColor("missing")).toContain("danger");
   });
 
-  it("returns neutral for unknown status", () => {
-    expect(statusColor("unknown_status" as never)).toContain("neutral");
+  it("returns surface-overlay for unknown status", () => {
+    expect(statusColor("unknown_status" as never)).toContain("surface");
   });
 });
 

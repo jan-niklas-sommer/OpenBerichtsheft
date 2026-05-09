@@ -1,8 +1,15 @@
 export const TYPE_COLORS: Record<string, string> = {
-  school: "#3b82f6",
-  vacation: "#f59e0b",
-  department: "#10b981",
-  other: "#8b5cf6",
+  school: "var(--color-cat-school-bg)",
+  vacation: "var(--color-cat-vacation-bg)",
+  department: "var(--color-cat-department-bg)",
+  other: "var(--color-cat-other-bg)",
+};
+
+export const TYPE_BORDER_COLORS: Record<string, string> = {
+  school: "var(--color-cat-school-fg)",
+  vacation: "var(--color-cat-vacation-fg)",
+  department: "var(--color-cat-department-fg)",
+  other: "var(--color-cat-other-fg)",
 };
 
 export const TYPE_LABELS: Record<string, string> = {

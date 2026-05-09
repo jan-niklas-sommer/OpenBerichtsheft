@@ -131,7 +131,11 @@ export function GanttTimeline({
     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
     const dn = new Date(date);
     dn.setHours(0, 0, 0, 0);
-    const isToday = dn.getTime() === today;
+
+    const prevDay = new Date(date);
+    prevDay.setDate(prevDay.getDate() - 1);
+    const prevTop = getTopAssignmentForDay(traineeId, prevDay, assignments);
+    const isBlockStart = !prevTop || prevTop.id !== top?.id;
 
     return (
       <div
@@ -141,14 +145,14 @@ export function GanttTimeline({
       >
         {top ? (
           <div
-            className={`h-full rounded-[1px] border-l-2 ${
+            className={`h-full ${isBlockStart ? "border-l-2" : ""} ${
               showConflicts && getConflictsForDay(traineeId, date, assignments).length > 1
                 ? "ring-1 ring-danger ring-inset"
                 : ""
             } ${mode === "edit" && onCellClick ? "cursor-pointer" : ""}`}
             style={{
               backgroundColor: TYPE_COLORS[top.scheduleType],
-              borderLeftColor: TYPE_BORDER_COLORS[top.scheduleType],
+              borderLeftColor: isBlockStart ? TYPE_BORDER_COLORS[top.scheduleType] : undefined,
               opacity: isWeekend ? 0.6 : 1,
             }}
             title={`${TYPE_LABELS[top.scheduleType]}${top.department ? ` — ${top.department}` : ""}${top.supervisor ? ` — ${top.supervisor.name}` : ""}`}

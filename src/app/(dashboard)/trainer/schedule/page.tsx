@@ -328,10 +328,7 @@ export default function SchedulePage() {
                   </option>
                 ))}
               </select>
-              <div className="flex justify-end gap-2 border-t border-stroke-subtle pt-3">
-                <Button size="sm" onClick={handleUpdate}>
-                  Speichern
-                </Button>
+              <div className="flex items-center justify-between border-t border-stroke-subtle pt-3">
                 <Button
                   variant="danger"
                   size="sm"
@@ -339,13 +336,18 @@ export default function SchedulePage() {
                 >
                   Löschen
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditItem(null)}
-                >
-                  Abbrechen
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditItem(null)}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button size="sm" onClick={handleUpdate}>
+                    Speichern
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

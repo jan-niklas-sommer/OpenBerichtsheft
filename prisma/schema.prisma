@@ -78,6 +78,10 @@ model User {
   scheduleTrainee              ScheduleAssignment[]          @relation("ScheduleTrainee")
   scheduleSupervisor           ScheduleAssignment[]          @relation("ScheduleSupervisor")
   scheduleCreator              ScheduleAssignment[]          @relation("ScheduleCreator")
+  recurrenceTrainee            RecurrenceRule[]              @relation("RecurrenceTrainee")
+  recurrenceCreator            RecurrenceRule[]              @relation("RecurrenceCreator")
+  recurrenceUpdater            RecurrenceRule[]              @relation("RecurrenceUpdater")
+  recurrenceSupervisor         RecurrenceRule[]              @relation("RecurrenceSupervisor")
   weeklyReports                WeeklyReport[]                @relation("ReportAuthor")
   reviewedReports              WeeklyReport[]                @relation("ReportReviewer")
   reviewEvents                 ReviewEvent[]                 @relation("ReviewActor")
@@ -231,4 +235,47 @@ model ScheduleAssignment {
   @@index([traineeId])
   @@index([startDate, endDate])
   @@map("schedule_assignments")
+}
+
+model RecurrenceRule {
+  id           String       @id @default(uuid())
+  traineeId    String
+  scheduleType ScheduleType
+  startDate    DateTime
+  endDate      DateTime
+  weekDays     Int
+  displayLabel String?
+  department   String?
+  supervisorId String?
+  color        String?
+  priority     Int          @default(0)
+  createdById  String
+  updatedById  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  trainee   User              @relation("RecurrenceTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
+  createdBy User              @relation("RecurrenceCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy User?             @relation("RecurrenceUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  supervisor User?            @relation("RecurrenceSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  exceptions RecurrenceException[]
+
+  @@index([traineeId])
+  @@index([startDate, endDate])
+  @@map("recurrence_rules")
+}
+
+model RecurrenceException {
+  id        String   @id @default(uuid())
+  ruleId    String
+  date      DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rule RecurrenceRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, date])
+  @@index([ruleId, date])
+  @@map("recurrence_exceptions")
 }

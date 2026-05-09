@@ -1,0 +1,175 @@
+import { getWeekDates } from "./utils";
+
+export type ScheduleType = "department" | "school" | "vacation" | "other";
+
+export interface ResolvedEntry {
+  date: Date;
+  scheduleType: ScheduleType;
+  department?: string;
+  displayLabel?: string;
+  supervisorId?: string;
+  color?: string;
+}
+
+export interface SingleAssignment {
+  id: string;
+  traineeId: string;
+  scheduleType: ScheduleType;
+  startDate: Date;
+  endDate: Date;
+  department?: string;
+  supervisorId?: string;
+  color?: string;
+}
+
+export interface RecurrenceRule {
+  id: string;
+  traineeId: string;
+  scheduleType: ScheduleType;
+  startDate: Date;
+  endDate: Date;
+  weekDays: number;
+  displayLabel?: string;
+  department?: string;
+  supervisorId?: string;
+  color?: string;
+  priority: number;
+  createdAt: Date;
+}
+
+export interface RecurrenceException {
+  id: string;
+  ruleId: string;
+  date: Date;
+  reason?: string;
+}
+
+const SCHEDULE_TYPE_LAYER: Record<ScheduleType, number> = {
+  school: 4,
+  vacation: 3,
+  other: 2,
+  department: 1,
+};
+
+export function weekdayToBit(weekday: number): number {
+  if (weekday < 1 || weekday > 7) {
+    throw new RangeError(`weekday must be 1-7 (ISO), got ${weekday}`);
+  }
+  return 1 << (weekday - 1);
+}
+
+export function bitfieldContainsWeekday(bits: number, weekday: number): boolean {
+  if (weekday < 1 || weekday > 7) {
+    throw new RangeError(`weekday must be 1-7 (ISO), got ${weekday}`);
+  }
+  return (bits & (1 << (weekday - 1))) !== 0;
+}
+
+function normalizeDate(d: Date): Date {
+  const normalized = new Date(d);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+}
+
+function isInRange(date: Date, start: Date, end: Date): boolean {
+  const d = normalizeDate(date);
+  const s = normalizeDate(start);
+  const e = normalizeDate(end);
+  return d >= s && d <= e;
+}
+
+function getIsoDayOfWeek(date: Date): number {
+  const jsDay = date.getDay();
+  return jsDay === 0 ? 7 : jsDay;
+}
+
+interface Candidate {
+  scheduleType: ScheduleType;
+  department?: string;
+  displayLabel?: string;
+  supervisorId?: string;
+  color?: string;
+  layer: number;
+  priority: number;
+  createdAt: Date;
+}
+
+export function resolveDay(
+  date: Date,
+  singleAssignments: SingleAssignment[],
+  recurrenceRules: RecurrenceRule[],
+  exceptions: RecurrenceException[],
+): ResolvedEntry {
+  const candidates: Candidate[] = [];
+  const exceptionRuleIds = new Set(
+    exceptions
+      .filter((ex) => normalizeDate(ex.date).getTime() === normalizeDate(date).getTime())
+      .map((ex) => ex.ruleId),
+  );
+
+  for (const assignment of singleAssignments) {
+    if (isInRange(date, assignment.startDate, assignment.endDate)) {
+      candidates.push({
+        scheduleType: assignment.scheduleType,
+        department: assignment.department,
+        supervisorId: assignment.supervisorId,
+        color: assignment.color,
+        layer: SCHEDULE_TYPE_LAYER[assignment.scheduleType],
+        priority: 1000,
+        createdAt: new Date(0),
+      });
+    }
+  }
+
+  for (const rule of recurrenceRules) {
+    if (exceptionRuleIds.has(rule.id)) continue;
+    if (!isInRange(date, rule.startDate, rule.endDate)) continue;
+    const isoDay = getIsoDayOfWeek(date);
+    if (!bitfieldContainsWeekday(rule.weekDays, isoDay)) continue;
+
+    candidates.push({
+      scheduleType: rule.scheduleType,
+      department: rule.department,
+      displayLabel: rule.displayLabel,
+      supervisorId: rule.supervisorId,
+      color: rule.color,
+      layer: SCHEDULE_TYPE_LAYER[rule.scheduleType],
+      priority: rule.priority,
+      createdAt: rule.createdAt,
+    });
+  }
+
+  if (candidates.length === 0) {
+    return {
+      date: normalizeDate(date),
+      scheduleType: "department",
+    };
+  }
+
+  candidates.sort((a, b) => {
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    if (a.layer !== b.layer) return b.layer - a.layer;
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
+
+  const winner = candidates[0];
+  return {
+    date: normalizeDate(date),
+    scheduleType: winner.scheduleType,
+    department: winner.department,
+    displayLabel: winner.displayLabel,
+    supervisorId: winner.supervisorId,
+    color: winner.color,
+  };
+}
+
+export function resolveWeek(
+  year: number,
+  week: number,
+  singleAssignments: SingleAssignment[],
+  recurrenceRules: RecurrenceRule[],
+  exceptions: RecurrenceException[],
+): ResolvedEntry[] {
+  const dates = getWeekDates(year, week);
+  return dates.map((date) => resolveDay(date, singleAssignments, recurrenceRules, exceptions));
+}

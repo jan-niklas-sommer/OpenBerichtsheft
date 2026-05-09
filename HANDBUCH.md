@@ -83,12 +83,12 @@ Nach der Anmeldung sehen Sie Ihre **Berichtsübersicht** mit einer **Jahreskalen
 
 **Jahreskalender:**
 
-- Tägliches Raster (Mo–So × KW 1–53) im GitHub-Contributions-Stil
-- Farbcodierung: Grau = Entwurf, Gelb = Eingereicht, Grün = Genehmigt, Rot = Abgelehnt, Blau = Überarbeitung, Hellrot = Fehlt
-- Aktuelle Woche ist hervorgehoben
-- Wochen vor Ausbildungsbeginn sind ausgegraut
+- Wochenleiste (1 Zeile, 52 Wochen pro Jahr), jede Zelle stellt eine Woche dar
+- Farbcodierung nach Status, Wochen vor Ausbildungsbeginn ausgegraut
+- Aktuelle Woche mit Rahmen hervorgehoben
+- Bewegen Sie die Maus über eine Zelle, um Datumsbereich und Status zu sehen (Tooltip)
 - Klicken Sie auf eine Woche, um den Bericht zu öffnen
-- Navigieren Sie zwischen Jahren mit den Pfeiltasten
+- Die Statuslegende wird über das Info-Icon eingeblendet
 
 **Monatsansicht:**
 
@@ -136,6 +136,8 @@ Für jeden der sieben Tage (Montag bis Sonntag) erfassen Sie:
 | **Stunden** | Gearbeitete Stunden (0–24) |
 | **Minuten** | Zusätzliche Minuten (0–59) |
 
+Die **Wochensumme** der Stunden wird rechts oben in der Tageseinträge-Karte angezeigt (z.B. "40h 0min").
+
 **Tagestypen:**
 
 | Typ | Wann wählen? |
@@ -157,7 +159,7 @@ Für jeden der sieben Tage (Montag bis Sonntag) erfassen Sie:
 - Jede Änderung wird nach 20 Sekunden automatisch gespeichert.
 - Der Speicherstatus wird oben rechts angezeigt:
   - **Speichert...** = Daten werden übertragen
-  - **Gespeichert** = Erfolgreich gespeichert
+  - **Zuletzt gespeichert vor X Sekunden** = Erfolgreich gespeichert, mit relativer Zeitangabe
   - **Fehler** = Speichern fehlgeschlagen (bitte manuell speichern)
 
 **Manuell speichern:**

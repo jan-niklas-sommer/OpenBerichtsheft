@@ -190,10 +190,11 @@ export function Navbar({ role, userName }: NavbarProps) {
 
           <div className="flex items-center gap-2">
             <NotificationBell />
-            <span className="hidden text-sm text-neutral-500 dark:text-neutral-400 sm:inline">
-              {userName}
-            </span>
+            <div className="hidden sm:flex items-center justify-center h-7 w-7 rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300" aria-label={userName}>
+              {userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+            </div>
             <ThemeToggle />
+            <div className="w-1" />
             <Button
               variant="ghost"
               size="sm"

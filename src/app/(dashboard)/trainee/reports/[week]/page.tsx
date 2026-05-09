@@ -19,7 +19,7 @@ import {
   DAY_TYPES,
 } from "@/lib/utils";
 import type { DailyEntryData, DayType, WeeklyReportData, ReportStatus, ReportType } from "@/types";
-import { Save, Send, Check, Download, CalendarDays, Undo2, FileText, FileSpreadsheet } from "lucide-react";
+import { Save, Send, Check, Download, CalendarDays, Undo2, FileText, FileSpreadsheet, Clock } from "lucide-react";
 
 export default function ReportEditorPage() {
   const params = useParams();
@@ -55,6 +55,27 @@ export default function ReportEditorPage() {
   );
 
   const isEditable = report?.status === "draft" || report?.status === "needs_revision" || !report || isNewFromSlug;
+
+  const totalMinutes = useMemo(() => {
+    return dailyEntries.reduce((sum, e) => sum + e.hours * 60 + e.minutes, 0);
+  }, [dailyEntries]);
+
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [relativeSaveText, setRelativeSaveText] = useState<string>("");
+
+  useEffect(() => {
+    if (!savedAt) return;
+    const update = () => {
+      const diff = Math.floor((Date.now() - savedAt.getTime()) / 1000);
+      if (diff < 5) setRelativeSaveText("Gerade eben");
+      else if (diff < 60) setRelativeSaveText(`vor ${diff} Sekunden`);
+      else if (diff < 3600) setRelativeSaveText(`vor ${Math.floor(diff / 60)} Minuten`);
+      else setRelativeSaveText(`vor ${Math.floor(diff / 3600)} Stunden`);
+    };
+    update();
+    const interval = setInterval(update, 10000);
+    return () => clearInterval(interval);
+  }, [savedAt]);
 
   const autosaveData = useMemo(() => {
     if (!isEditable) return null;
@@ -145,7 +166,9 @@ export default function ReportEditorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      return res.json();
+      const data = await res.json();
+      if (res.ok) setSavedAt(new Date());
+      return data;
     } else {
       const res = await fetch("/api/reports", {
         method: "POST",
@@ -155,6 +178,7 @@ export default function ReportEditorPage() {
       const data = await res.json();
       if (data.id) {
         setReport(data);
+        setSavedAt(new Date());
       }
       return data;
     }
@@ -272,7 +296,12 @@ export default function ReportEditorPage() {
         <div className="flex items-center gap-3">
           <div className="text-sm text-neutral-500">
             {saveStatus === "saving" && "Speichert…"}
-            {saveStatus === "saved" && (
+            {saveStatus === "saved" && savedAt && (
+              <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                <Check className="h-3 w-3" /> Zuletzt gespeichert {relativeSaveText}
+              </span>
+            )}
+            {saveStatus === "saved" && !savedAt && (
               <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
                 <Check className="h-3 w-3" /> Gespeichert
               </span>
@@ -396,7 +425,13 @@ export default function ReportEditorPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Tageseinträge</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Tageseinträge</CardTitle>
+            <span className="flex items-center gap-1.5 text-sm text-neutral-500">
+              <Clock className="h-3.5 w-3.5" />
+              {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min
+            </span>
+          </div>
         </CardHeader>
         <div className="space-y-4">
           {dailyEntries.map((entry, index) => {

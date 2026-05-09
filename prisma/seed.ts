@@ -123,6 +123,118 @@ async function main() {
     },
   });
 
+  const existingScheduleForAnna = await prisma.scheduleAssignment.findFirst({
+    where: { traineeId: trainee.id },
+  });
+  if (!existingScheduleForAnna) {
+    await prisma.scheduleAssignment.createMany({
+      data: [
+        {
+          traineeId: trainee.id,
+          scheduleType: "department",
+          startDate: new Date("2026-01-05"),
+          endDate: new Date("2026-02-13"),
+          department: "IT-Entwicklung",
+          color: "#10b981",
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "school",
+          startDate: new Date("2026-02-16"),
+          endDate: new Date("2026-02-27"),
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "department",
+          startDate: new Date("2026-03-02"),
+          endDate: new Date("2026-04-10"),
+          department: "IT-Support",
+          color: "#6366f1",
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "vacation",
+          startDate: new Date("2026-04-13"),
+          endDate: new Date("2026-04-24"),
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "department",
+          startDate: new Date("2026-04-27"),
+          endDate: new Date("2026-06-05"),
+          department: "IT-Entwicklung",
+          supervisorId: officer.id,
+          color: "#10b981",
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "school",
+          startDate: new Date("2026-06-08"),
+          endDate: new Date("2026-06-19"),
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "other",
+          startDate: new Date("2026-06-22"),
+          endDate: new Date("2026-06-26"),
+          color: "#8b5cf6",
+          createdBy: trainer.id,
+        },
+        {
+          traineeId: trainee.id,
+          scheduleType: "department",
+          startDate: new Date("2026-06-29"),
+          endDate: new Date("2026-09-30"),
+          department: "IT-Entwicklung",
+          color: "#10b981",
+          createdBy: trainer.id,
+        },
+      ],
+    });
+
+    const existingScheduleForBen = await prisma.scheduleAssignment.findFirst({
+      where: { traineeId: trainee2.id },
+    });
+    if (!existingScheduleForBen) {
+      await prisma.scheduleAssignment.createMany({
+        data: [
+          {
+            traineeId: trainee2.id,
+            scheduleType: "department",
+            startDate: new Date("2026-03-01"),
+            endDate: new Date("2026-04-17"),
+            department: "Netzwerktechnik",
+            color: "#f97316",
+            createdBy: trainer.id,
+          },
+          {
+            traineeId: trainee2.id,
+            scheduleType: "school",
+            startDate: new Date("2026-04-20"),
+            endDate: new Date("2026-05-01"),
+            createdBy: trainer.id,
+          },
+          {
+            traineeId: trainee2.id,
+            scheduleType: "department",
+            startDate: new Date("2026-05-04"),
+            endDate: new Date("2026-07-31"),
+            department: "Systemadministration",
+            supervisorId: officer.id,
+            color: "#0ea5e9",
+            createdBy: trainer.id,
+          },
+        ],
+      });
+    }
+  }
+
   console.log("Seed data created:");
   console.log("  Admin:    admin@example.com / password123");
   console.log("  Ausbilder: trainer@example.com / password123");

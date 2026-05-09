@@ -100,6 +100,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(assignments);
   }
 
+  if (role === "trainee") {
+    const where: Record<string, unknown> = { traineeId: userId };
+    if (start && end) {
+      where.startDate = { lte: new Date(end) };
+      where.endDate = { gte: new Date(start) };
+    }
+    const assignments = await prisma.scheduleAssignment.findMany({
+      where,
+      include: {
+        trainee: { select: { id: true, name: true, email: true, profession: { select: { id: true, name: true } } } },
+        supervisor: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ startDate: "asc" }],
+    });
+    return NextResponse.json(assignments);
+  }
+
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 

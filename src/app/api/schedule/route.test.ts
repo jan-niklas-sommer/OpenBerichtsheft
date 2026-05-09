@@ -93,10 +93,16 @@ describe("GET /api/schedule", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 for trainee", async () => {
+  it("returns schedule for trainee (own)", async () => {
     mockAuth.mockResolvedValue(traineeSession);
+    mockScheduleFindMany.mockResolvedValue([]);
     const res = await GET(makeGetRequest());
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+    expect(mockScheduleFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ traineeId: traineeSession.user.id }),
+      })
+    );
   });
 
   it("returns schedule as admin", async () => {

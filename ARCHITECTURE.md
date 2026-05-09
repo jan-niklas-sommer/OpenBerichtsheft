@@ -344,9 +344,128 @@ draft → submitted → approved
 
 ---
 
+## Wiederholungsregeln und Einsatzplanung (Recurrence & Schedule)
+
+### Überblick
+
+Die Einsatzplanung ist die **single source of truth** für alle zeitlichen Zuweisungen eines Auszubildenden. Wochenberichte werden beim Erstellen aus der Planung vorausgefüllt, danach sind sie unabhängig.
+
+### Abgrenzung: Berichtsheft ≠ Zeiterfassung
+
+Die Anwendung ist ein **Berichtsheft**, keine Zeiterfassung. Stunden in DailyEntry sind geplante/erwartete Stunden, nicht erfasste Arbeitszeit. Es gibt keine Stempeluhr, keine Pausenvalidierung und keine Überstundenberechnung.
+
+### Datenmodell-Erweiterung
+
+#### RecurrenceRule
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| id | String (UUID) | Primärschlüssel |
+| traineeId | String (FK → User) | Auszubildender |
+| scheduleType | Enum | `department`, `school`, `vacation`, `other` |
+| startDate | DateTime | Beginn der Regel |
+| endDate | DateTime | Ende der Regel |
+| weekDays | Int | Bitfeld für Wochentage (siehe Bitfeld-Konvention) |
+| displayLabel | String? | Anzeigename (z.B. "IT-Abteilung") |
+| department | String? | Abteilungsname (bei scheduleType=department) |
+| supervisorId | String? (FK → User) | Ausbildungsbeauftragter |
+| color | String? | Benutzerdefinierte Farbe |
+| priority | Int | Priorität bei Konflikten (höher = wichtiger) |
+| createdById | String (FK → User) | Ersteller |
+| updatedById | String? (FK → User) | Letzter Bearbeiter |
+| createdAt | DateTime | Erstellungszeitpunkt |
+| updatedAt | DateTime | Letzte Änderung |
+
+**Bitfeld-Konvention für `weekDays`:**
+
+Bitposition 0 = Montag (Wert 1), Bitposition 1 = Dienstag (Wert 2), …, Bitposition 6 = Sonntag (Wert 64). ISO 8601 Reihenfolge. Beispiel: Mo+Mi+Fr = 1 + 4 + 16 = 21.
+
+Helferfunktionen in `src/lib/schedule-resolver.ts`:
+- `weekdayToBit(weekday: 1-7): number` — konvertiert ISO-Wochentag zu Bitwert
+- `bitfieldContainsWeekday(bits: number, weekday: 1-7): boolean` — prüft ob Wochentag im Bitfeld enthalten ist
+
+Diese Helfer verhindern Off-by-one-Bugs bei der Bitmanipulation.
+
+#### RecurrenceException
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| id | String (UUID) | Primärschlüssel |
+| ruleId | String (FK → RecurrenceRule) | Zugehörige Regel |
+| date | DateTime | Ausnahmedatum |
+| reason | String? | Grund (Phase 1: Freitext, Migration zu Enum möglich) |
+| createdAt | DateTime | Erstellungszeitpunkt |
+| updatedAt | DateTime | Letzte Änderung |
+
+Unique Constraint: `(ruleId, date)` — ein Datum kann pro Regel nur eine Ausnahme haben.
+
+Index auf `(ruleId, date)` für performante Abfragen.
+
+### Lazy-Create-Lifecycle für Wochenberichte
+
+1. Ein Wochenbericht **existiert nicht**, bevor der Auszubildende ihn zum ersten Mal öffnet.
+2. Beim Öffnen einer Woche wird geprüft, ob ein Bericht existiert.
+3. Falls nicht: Bericht wird erstellt, DailyEntry-Zeilen werden aus der Einsatzplanung vorausgefüllt (**Prefill**).
+4. Nach dem Erstellen ist der Bericht unabhängig von der Planung — Änderungen an der Planung wirken sich nicht auf bereits erstellte Berichte aus.
+
+**Kein Fremdschlüssel zwischen Bericht und Einsatzplanung.** Der Bericht kopiert die Default-Werte beim Erstellen. Das Schema dokumentiert diese Entscheidung mit einem Kommentar.
+
+### Soft-Prefill-Prinzip
+
+- Kein Logging des Prefill-Vorgangs.
+- Kein Diff zwischen Planung und manuellen Änderungen.
+- Kein Lock der vorausgefüllten Felder — der Auszubildende kann alles frei bearbeiten.
+
+### Resolver-Semantik
+
+Der Auflösungsalgorithmus (`src/lib/schedule-resolver.ts`) bestimmt, welche Zuweisung für ein gegebenes Datum gilt.
+
+**Regel:** Der Resolver wird mit einem Datum aufgerufen und verwendet die **aktuell gültige** Planung, auch für historische Daten.
+
+**Begründung:** Wenn die Planung korrigiert wird (z.B. nachträglich eingetragene Berufsschultage), soll diese Korrektur auch bei nachträglich erstellten Berichten wirksam werden. Andernfalls entstünde eine stille Inkonsistenz zwischen Planung und Bericht.
+
+**Konfliktauflösung (Priorität, höchste zuerst):**
+1. Einzeleinsatz (ScheduleAssignment ohne Wiederholung)
+2. Jüngere RecurrenceRule (später erstellte Regel gewinnt)
+3. Ältere RecurrenceRule
+4. Default (leerer Eintrag)
+
+### Phase-1-Rollenrechte: Officer
+
+In Phase 1 haben Ausbildungsbeauftragte (Officer) **volle Edit-Rechte** für die Einsatzplanung, identisch zu Ausbildern (Trainer). Rollenspezifische Einschränkungen (z.B. nur eigene zugeordnete Auszubildende) werden in Phase 2 eingeführt.
+
+Die aktuelle Berechtigungsübersicht oben dokumentiert das finale Zielmodell. Phase-1-Abweichungen sind hier explizit markiert.
+
+### ISO-Wochen-Konvention
+
+Durchgehend wird ISO 8601 (DIN 1355) verwendet: Montag = erster Tag der Woche, KW 1 = Woche mit dem ersten Donnerstag des Jahres. Alle Berechnungen in `src/lib/date-utils.ts` nutzen diese Konvention konsistent.
+
+### Komponentenarchitektur Schedule
+
+```text
+src/
+  lib/
+    schedule-resolver.ts     # Auflösungsalgorithmus + Bitfeld-Helfer
+    report-builder.ts        # Prefill-Logik (buildDefaultEntries)
+  components/
+    schedule/
+      types.ts               # Zentrale Typen für Schedule-Komponenten
+      gantt-timeline.tsx     # Gemeinsame Timeline-Komponente (mode: edit|readonly)
+      assignment-modal.tsx   # Container-Modal für Zuweisungserstellung
+      single-range-form.tsx  # Einzeleinsatz-Formular
+      recurring-form.tsx     # Wiederholungsregel-Formular
+      day-composition-form.tsx # Tageszusammensetzung-Formular
+```
+
+**Virtualisierungs-TODO:** Die Timeline-Komponente muss bei >1 Jahr Ansicht virtualisiert werden. Die Komponentengrenze ist so geschnitten, dass nachträgliche Virtualisierung kein Refactoring der Aufrufer erfordert.
+
+---
+
 ## Bekannte technische Schulden
 
-- Keine Tests vorhanden (wird in AP11 adressiert).
 - ReviewEvent-Schema wird für MVP nur vorbereitet, nicht vollständig genutzt.
 - Keine E-Mail-Verifikation bei Registrierung (admin-gesteuerte Benutzeranlage).
 - Kein Rate-Limiting für API-Routes (für Produktivbetrieb nötig).
+- Kein Drag-Resize in der Gantt-Timeline (bewusst excluded, Phase 2+).
+- Kein Schulferien-Import (bewusst excluded).
+- Keine vollständige RRULE-Komplexität (bewusst auf eigene RecurrenceRule-Tabelle begrenzt).

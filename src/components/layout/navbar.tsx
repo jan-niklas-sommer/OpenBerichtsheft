@@ -92,33 +92,33 @@ function NotificationBell() {
       <Button variant="ghost" size="sm" onClick={() => setOpen(!open)} className="relative">
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-medium text-content-on-accent">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="border-b border-neutral-200 p-3 dark:border-neutral-800">
-            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+        <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-stroke-subtle bg-surface-elevated shadow-lg">
+          <div className="border-b border-stroke-subtle p-3">
+            <p className="text-sm font-medium text-content-base">
               Benachrichtigungen
             </p>
           </div>
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 && (
-              <p className="p-3 text-sm text-neutral-500">Keine Benachrichtigungen</p>
+              <p className="p-3 text-sm text-content-muted">Keine Benachrichtigungen</p>
             )}
             {notifications.map((n) => (
               <div
                 key={n.id}
-                className={`flex items-start gap-2 border-b border-neutral-100 p-3 last:border-0 dark:border-neutral-900 ${
-                  !n.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
+                className={`flex items-start gap-2 border-b border-stroke-subtle p-3 last:border-0 ${
+                  !n.read ? "bg-info-soft" : ""
                 }`}
               >
                 <div className="flex-1">
-                  <p className="text-sm text-neutral-900 dark:text-neutral-100">{n.message}</p>
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="text-sm text-content-base">{n.message}</p>
+                  <p className="mt-1 text-xs text-content-muted">
                     {new Date(n.createdAt).toLocaleDateString("de-DE", {
                       day: "2-digit",
                       month: "2-digit",
@@ -130,7 +130,7 @@ function NotificationBell() {
                 {!n.read && (
                   <button
                     onClick={() => markRead(n.id)}
-                    className="shrink-0 rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800"
+                    className="shrink-0 rounded p-1 text-content-subtle hover:bg-surface-overlay hover:text-content-muted"
                   >
                     <Check className="h-3 w-3" />
                   </button>
@@ -156,17 +156,17 @@ export function Navbar({ role, userName }: NavbarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/80 backdrop-blur-lg dark:border-neutral-800 dark:bg-neutral-950/80">
+      <header className="sticky top-0 z-50 border-b border-stroke-subtle bg-surface-base backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <button
-              className="lg:hidden rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="lg:hidden rounded-lg p-2 text-content-muted hover:bg-surface-overlay"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Menü"
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            <Link href="/" className="flex items-center gap-2 font-semibold text-neutral-900 dark:text-neutral-100">
+            <Link href="/" className="flex items-center gap-2 font-semibold text-content-base">
               <Shield className="h-5 w-5" />
               <span className="hidden sm:inline">OpenBerichtsheft</span>
             </Link>
@@ -179,8 +179,8 @@ export function Navbar({ role, userName }: NavbarProps) {
                 href={item.href}
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
                   pathname === item.href || pathname.startsWith(item.href + "/")
-                    ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+                    ? "bg-surface-overlay text-content-base"
+                    : "text-content-muted hover:bg-surface-overlay hover:text-content-base"
                 }`}
               >
                 {item.icon}
@@ -191,11 +191,11 @@ export function Navbar({ role, userName }: NavbarProps) {
 
           <div className="flex items-center gap-2">
             <NotificationBell />
-            <div className="hidden sm:flex items-center justify-center h-7 w-7 rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300" aria-label={userName}>
+            <div className="hidden sm:flex items-center justify-center h-7 w-7 rounded-full bg-surface-overlay text-xs font-semibold text-content-muted" aria-label={userName}>
               {userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
             </div>
             <ThemeToggle />
-            <div className="w-1" />
+            <div className="mx-2 h-4 w-px bg-stroke-subtle" />
             <Button
               variant="ghost"
               size="sm"
@@ -210,7 +210,7 @@ export function Navbar({ role, userName }: NavbarProps) {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="fixed inset-0 bg-black/20" onClick={() => setMobileOpen(false)} />
-          <nav className="fixed left-0 top-14 bottom-0 w-64 bg-white p-4 shadow-lg dark:bg-neutral-950">
+          <nav className="fixed left-0 top-14 bottom-0 w-64 bg-surface-elevated p-4 shadow-lg">
             {items.map((item) => (
               <Link
                 key={item.href}
@@ -218,8 +218,8 @@ export function Navbar({ role, userName }: NavbarProps) {
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                   pathname === item.href || pathname.startsWith(item.href + "/")
-                    ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+                    ? "bg-surface-overlay text-content-base"
+                    : "text-content-muted hover:bg-surface-overlay hover:text-content-base"
                 }`}
               >
                 {item.icon}

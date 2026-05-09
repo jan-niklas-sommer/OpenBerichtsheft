@@ -9,7 +9,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+      className="rounded-lg p-2 text-content-muted transition-colors hover:bg-surface-overlay hover:text-content-base"
       aria-label={theme === "light" ? "Dark Mode aktivieren" : "Light Mode aktivieren"}
     >
       {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

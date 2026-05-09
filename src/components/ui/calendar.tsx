@@ -25,7 +25,8 @@ const calendarClassNames = {
   range_end: "day-range-end",
   selected:
     "bg-accent text-accent-fg hover:bg-accent hover:text-accent-fg focus:bg-accent focus:text-accent-fg rounded-md",
-  today: "text-accent font-semibold",
+  today:
+    "bg-surface-overlay text-content-base font-semibold rounded-md",
   outside:
     "text-content-subtle opacity-50",
   disabled: "text-content-subtle opacity-50",

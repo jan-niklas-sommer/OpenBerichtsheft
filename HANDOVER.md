@@ -1586,3 +1586,39 @@ npm run dev
 - Bestehende Tests mocken keine Date-Picker-Interaktionen — E2E-Tests für Kalender-Auswahl empfohlen.
 - DatePicker hat noch keinen `label`-Prop — Labels werden extern als `<label>` gerendert (wie bei assignment-modal und trainer-schedule).
 - Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.
+
+---
+
+## 2026-05-09 – Arbeitspaket: UI-Korrekturen Phase 2
+
+### Planner
+
+- **Ziel:** 4 gezielte visuelle Korrekturen basierend auf UI-Review-Feedback.
+- **Umfang:** Gantt-Streifen-Fix, Calendar-Heute-Indikator, Popover-z-index, Edit-Dialog-Footer.
+- **Nicht-Ziele:** Header-Trennlinie (bereits OK), Badge-Glow (kein Bug), Heading-Gewicht (bereits semibold), Empty-State-Overhaul, Konflikt-Pattern-Neudesign.
+- **Akzeptanzkriterien:** Keine Streifen in Gantt-Balken, Heute subtil, DatePicker über Modal, Footer aufgeräumt. 659 Tests grün.
+
+### Reviewer
+
+- Freigabe. Analyse des Claude-Feedbacks ergab: Header-Trennlinie, Badge-Glow, Heading-Bold und Modal-Backdrop waren bereits korrekt. Nur 4 echte Fixes nötig.
+
+### Implementierte Änderungen
+
+1. **Gantt-Streifen-Fix** (`gantt-timeline.tsx`): `border-l-2` wird jetzt nur noch auf der ersten Zelle eines zusammenhängenden Assignment-Blocks gerendert. Prüfung: Vortag hat denselben Assignment (`prevTop.id === top.id`)? Nein → Border. Ja → kein Border. Entfernt die vertikalen Streifen-Artefakte.
+
+2. **Calendar Heute-Indikator** (`calendar.tsx`): `today` von `text-accent font-semibold` → `bg-surface-overlay text-content-base font-semibold rounded-md`. Im Dark Mode war `text-accent` (= weißer Text auf weißem Hintergrund) unsichtbar.
+
+3. **Popover z-index** (`popover.tsx`): `z-50` → `z-[60]`. DatePicker-Popover lag auf gleicher Ebene wie Edit-Modal (z-50), wurde verdeckt. Jetzt korrekt darüber.
+
+4. **Edit-Dialog Footer** (`trainer/schedule/page.tsx`): Button-Reihenfolge von [Speichern|Löschen|Abbrechen] rechts → [Löschen] links (Destructive), [Abbrechen|Speichern] rechts. Layout: `justify-between` mit Trennlinie.
+
+### Verifikation
+
+- **Lint:** 0 Errors, 4 Warnings (1 weniger — `isToday` entfernt).
+- **Tests:** 659 Tests, alle bestanden (39 Dateien).
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Gantt-Block-Erkennung nutzt `prevTop.id` — funktioniert nur wenn dieselbe Assignment-Instanz an aufeinanderfolgenden Tagen vorliegt. Bei manuell erstellten Einzel-Zuweisungen mit identischem Typ an aufeinanderfolgenden Tagen (aber unterschiedlicher ID) wird jeder Tag einen Border zeigen. Akzeptables Verhalten.
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.

@@ -18,7 +18,7 @@ export function PopoverContent({
       <PopoverPrimitive.Content
         align={align}
         sideOffset={sideOffset}
-        className={`z-50 rounded-lg border border-stroke-subtle bg-surface-elevated p-4 shadow-lg animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 ${className}`}
+        className={`z-[60] rounded-lg border border-stroke-subtle bg-surface-elevated p-4 shadow-lg animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 ${className}`}
         {...props}
       />
     </PopoverPrimitive.Portal>

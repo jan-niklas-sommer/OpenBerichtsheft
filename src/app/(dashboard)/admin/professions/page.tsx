@@ -75,13 +75,13 @@ export default function ProfessionsPage() {
   };
 
   if (loading) {
-    return <div className="text-neutral-500">Laden...</div>;
+    return <div className="text-content-muted">Laden...</div>;
   }
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           Ausbildungsberufe
         </h1>
         <Button onClick={() => setShowForm(!showForm)}>
@@ -99,7 +99,7 @@ export default function ProfessionsPage() {
               placeholder="z.B. Fachinformatiker für Anwendungsentwicklung"
               required
             />
-            {formError && <p className="text-sm text-red-500">{formError}</p>}
+            {formError && <p className="text-sm text-danger">{formError}</p>}
             <Button type="submit">Anlegen</Button>
           </form>
         </Card>
@@ -107,7 +107,7 @@ export default function ProfessionsPage() {
 
       <div className="space-y-3">
         {professions.length === 0 && (
-          <p className="text-neutral-500">Noch keine Ausbildungsberufe angelegt.</p>
+          <p className="text-content-muted">Noch keine Ausbildungsberufe angelegt.</p>
         )}
         {professions.map((profession) => (
           <Card key={profession.id} className="flex items-center justify-between">
@@ -139,10 +139,10 @@ export default function ProfessionsPage() {
             ) : (
               <>
                 <div>
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                  <p className="font-medium text-content-base">
                     {profession.name}
                   </p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="text-sm text-content-muted">
                     {profession._count.users}{" "}
                     {profession._count.users === 1 ? "Auszubildende(r)" : "Auszubildende"}
                   </p>
@@ -164,7 +164,7 @@ export default function ProfessionsPage() {
                     size="sm"
                     onClick={() => handleDelete(profession.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
+                    <Trash2 className="h-4 w-4 text-danger" />
                   </Button>
                 </div>
               </>

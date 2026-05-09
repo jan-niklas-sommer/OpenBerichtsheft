@@ -1289,6 +1289,32 @@ npm run dev
 
 ### Offene Risiken / Folgeaufgaben
 
-- AP5 (Pages): Alle Dashboard-Pages
-- AP6 (Schedule): Gantt-Timeline, Assignment-Modal
-- AP7 (Reports): PDF, Report-Komponenten
+- AP6: Schedule-Pages (trainer/trainee/officer), Gantt-Timeline, Assignment-Modal
+- AP7: Report-Editor, PDF, Report-Komponenten
+
+---
+
+## 2026-05-09 – Arbeitspaket: Dashboard-Pages auf Design-Token (AP5)
+
+### Planner
+
+- **Ziel:** Alle einfachen Dashboard-Pages von hardcoded Farben auf Token umstellen. 9 Dateien.
+
+### Reviewer
+
+- Freigabe.
+
+### Implementierte Änderungen
+
+- Login, Admin (6 Seiten), Trainee-Übersicht, Trainer-Officers — alle hardcoded Farbklassen ersetzt durch Design-Token.
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings.
+- **Tests**: 659 Tests, alle bestanden.
+- **Build**: erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- AP6: Schedule-Pages, Gantt-Timeline, Assignment-Modal
+- AP7: Report-Editor, PDF, Report-Komponenten

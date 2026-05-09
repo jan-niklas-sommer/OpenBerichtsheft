@@ -18,7 +18,7 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+      <h1 className="mb-6 text-2xl font-semibold text-content-base">
         Admin-Dashboard
       </h1>
 
@@ -26,11 +26,11 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-neutral-500" />
+              <Users className="h-5 w-5 text-content-muted" />
               <CardTitle>Benutzer</CardTitle>
             </div>
           </CardHeader>
-          <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+          <p className="text-3xl font-bold text-content-base">
             {userCount}
           </p>
         </Card>
@@ -38,11 +38,11 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <FileText className="h-5 w-5 text-neutral-500" />
+              <FileText className="h-5 w-5 text-content-muted" />
               <CardTitle>Berichte</CardTitle>
             </div>
           </CardHeader>
-          <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+          <p className="text-3xl font-bold text-content-base">
             {reportCount}
           </p>
         </Card>
@@ -50,11 +50,11 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <UserCheck className="h-5 w-5 text-neutral-500" />
+              <UserCheck className="h-5 w-5 text-content-muted" />
               <CardTitle>Zuordnungen</CardTitle>
             </div>
           </CardHeader>
-          <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+          <p className="text-3xl font-bold text-content-base">
             {assignmentCount}
           </p>
         </Card>

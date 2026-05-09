@@ -34,11 +34,11 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <Shield className="mx-auto mb-4 h-10 w-10 text-neutral-900 dark:text-neutral-100" />
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <Shield className="mx-auto mb-4 h-10 w-10 text-content-base" />
+        <h1 className="text-2xl font-semibold text-content-base">
           OpenBerichtsheft
         </h1>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2 text-sm text-content-muted">
           Melden Sie sich an, um fortzufahren
         </p>
       </div>
@@ -64,7 +64,7 @@ export default function LoginPage() {
         />
 
         {error && (
-          <p className="text-sm text-red-500">{error}</p>
+          <p className="text-sm text-danger">{error}</p>
         )}
 
         <Button type="submit" className="w-full" loading={loading}>

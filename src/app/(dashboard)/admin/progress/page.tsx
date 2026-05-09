@@ -31,15 +31,15 @@ export default function ProgressPage() {
       });
   }, []);
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
 
   if (data.length === 0) {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="mb-6 text-2xl font-semibold text-content-base">
           Ausbildungsfortschritt
         </h1>
-        <p className="text-neutral-500">Keine Auszubildenden zugeordnet.</p>
+        <p className="text-content-muted">Keine Auszubildenden zugeordnet.</p>
       </div>
     );
   }
@@ -56,33 +56,33 @@ export default function ProgressPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+      <h1 className="mb-6 text-2xl font-semibold text-content-base">
         Ausbildungsfortschritt
       </h1>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <Card>
           <div className="p-4">
-            <p className="text-sm text-neutral-500">Auszubildende</p>
-            <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">{data.length}</p>
+            <p className="text-sm text-content-muted">Auszubildende</p>
+            <p className="text-2xl font-semibold text-content-base">{data.length}</p>
           </div>
         </Card>
         <Card>
           <div className="p-4">
-            <p className="text-sm text-neutral-500">Berichte gesamt</p>
-            <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">{totals.total}</p>
+            <p className="text-sm text-content-muted">Berichte gesamt</p>
+            <p className="text-2xl font-semibold text-content-base">{totals.total}</p>
           </div>
         </Card>
         <Card>
           <div className="p-4">
-            <p className="text-sm text-neutral-500">Genehmigt</p>
-            <p className="text-2xl font-semibold text-green-600 dark:text-green-400">{totals.approved}</p>
+            <p className="text-sm text-content-muted">Genehmigt</p>
+            <p className="text-2xl font-semibold text-success">{totals.approved}</p>
           </div>
         </Card>
         <Card>
           <div className="p-4">
-            <p className="text-sm text-neutral-500">Fehlende Wochen</p>
-            <p className="text-2xl font-semibold text-red-600 dark:text-red-400">{totals.missing}</p>
+            <p className="text-sm text-content-muted">Fehlende Wochen</p>
+            <p className="text-2xl font-semibold text-danger">{totals.missing}</p>
           </div>
         </Card>
       </div>
@@ -93,21 +93,21 @@ export default function ProgressPage() {
             <div className="p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                  <p className="font-medium text-content-base">
                     {trainee.traineeName}
                   </p>
                   {trainee.profession && (
-                    <p className="text-sm text-neutral-500">{trainee.profession}</p>
+                    <p className="text-sm text-content-muted">{trainee.profession}</p>
                   )}
                 </div>
-                <span className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                <span className="text-lg font-semibold text-content-base">
                   {trainee.completionPercent}%
                 </span>
               </div>
 
-              <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-surface-overlay">
                 <div
-                  className="h-full rounded-full bg-green-500 transition-all"
+                  className="h-full rounded-full bg-success transition-all"
                   style={{ width: `${trainee.completionPercent}%` }}
                 />
               </div>
@@ -126,14 +126,14 @@ export default function ProgressPage() {
 
               {trainee.missingWeeks.length > 0 && (
                 <div>
-                  <p className="mb-1 text-sm font-medium text-red-600 dark:text-red-400">
+                  <p className="mb-1 text-sm font-medium text-danger">
                     Fehlende Wochen (letzte 12):
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {trainee.missingWeeks.map((w) => (
                       <span
                         key={`${w.year}-${w.week}`}
-                        className="rounded bg-red-50 px-2 py-0.5 text-xs text-red-700 dark:bg-red-950 dark:text-red-400"
+                        className="rounded bg-danger-soft px-2 py-0.5 text-xs text-danger"
                       >
                         KW {w.week}/{w.year}
                       </span>

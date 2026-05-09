@@ -34,6 +34,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
   ],
   trainer: [
     { href: "/trainer", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: "/trainer/officers", label: "Beauftragte", icon: <UserCheck className="h-4 w-4" /> },
   ],
   training_officer: [
     { href: "/officer", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },

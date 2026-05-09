@@ -4,29 +4,56 @@ import { createUserSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const role = session.user.role;
-  if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const url = new URL(req.url);
+  const roleFilter = url.searchParams.get("role");
 
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      professionId: true,
-      profession: { select: { id: true, name: true } },
-      trainingStartDate: true,
-      createdAt: true,
-      deactivatedAt: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  if (role === "admin") {
+    const where: Record<string, unknown> = {};
+    if (roleFilter) where.role = roleFilter;
+    const users = await prisma.user.findMany({
+      where,
+      select: {
+        id: true, email: true, name: true, role: true, professionId: true,
+        profession: { select: { id: true, name: true } },
+        trainingStartDate: true, createdAt: true, deactivatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(users);
+  }
 
-  return NextResponse.json(users);
+  if (role === "trainer") {
+    const professionAssignments = await prisma.trainerProfessionAssignment.findMany({
+      where: { trainerId: session.user.id },
+      select: { professionId: true },
+    });
+    const professionIds = professionAssignments.map((a) => a.professionId);
+
+    if (roleFilter === "trainee") {
+      const trainees = await prisma.user.findMany({
+        where: { role: "trainee", professionId: { in: professionIds }, deactivatedAt: null },
+        select: { id: true, name: true, email: true },
+      });
+      return NextResponse.json(trainees);
+    }
+
+    if (roleFilter === "training_officer") {
+      const officers = await prisma.user.findMany({
+        where: { role: "training_officer", deactivatedAt: null },
+        select: { id: true, name: true, email: true },
+      });
+      return NextResponse.json(officers);
+    }
+
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
 export async function POST(req: NextRequest) {

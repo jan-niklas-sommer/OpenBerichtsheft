@@ -33,12 +33,12 @@ export default function TraineeSchedulePage() {
       });
   }, [viewStart, daysVisible]);
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           Meine Einsatzplanung
         </h1>
         <div className="flex gap-2">
@@ -53,7 +53,7 @@ export default function TraineeSchedulePage() {
           >
             ←
           </Button>
-          <span className="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
+          <span className="flex items-center text-sm text-content-muted">
             {viewStart.toLocaleDateString("de-DE", {
               month: "long",
               year: "numeric",
@@ -85,7 +85,7 @@ export default function TraineeSchedulePage() {
       <ScheduleLegend />
 
       {assignments.length === 0 && (
-        <p className="mt-6 text-sm text-neutral-400">
+        <p className="mt-6 text-sm text-content-subtle">
           Noch keine Einsatzplanung vorhanden.
         </p>
       )}

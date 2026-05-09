@@ -75,6 +75,9 @@ model User {
   officerAssignments           TraineeOfficerAssignment[]    @relation("OfficerAssignments")
   managedOfficerAssignments    TraineeOfficerAssignment[]    @relation("OfficerManager")
   assignedOfficerAssignments   TraineeOfficerAssignment[]    @relation("OfficerAssignedBy")
+  scheduleTrainee              ScheduleAssignment[]          @relation("ScheduleTrainee")
+  scheduleSupervisor           ScheduleAssignment[]          @relation("ScheduleSupervisor")
+  scheduleCreator              ScheduleAssignment[]          @relation("ScheduleCreator")
   weeklyReports                WeeklyReport[]                @relation("ReportAuthor")
   reviewedReports              WeeklyReport[]                @relation("ReportReviewer")
   reviewEvents                 ReviewEvent[]                 @relation("ReviewActor")
@@ -199,4 +202,33 @@ model AppSetting {
   updatedAt DateTime @updatedAt
 
   @@map("app_settings")
+}
+
+enum ScheduleType {
+  department
+  school
+  vacation
+  other
+}
+
+model ScheduleAssignment {
+  id              String       @id @default(uuid())
+  traineeId       String
+  scheduleType    ScheduleType
+  startDate       DateTime
+  endDate         DateTime
+  department      String?
+  supervisorId    String?
+  color           String?
+  createdBy       String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  trainee    User  @relation("ScheduleTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
+  supervisor User? @relation("ScheduleSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  creator    User  @relation("ScheduleCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([traineeId])
+  @@index([startDate, endDate])
+  @@map("schedule_assignments")
 }

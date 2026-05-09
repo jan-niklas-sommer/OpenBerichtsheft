@@ -1175,3 +1175,48 @@ npm run dev
 - AP2–AP7 stehen aus: Token-Foundation in `globals.css`, UI-Primitives, Layout, Pages, Schedule, Reports/PDF.
 - Bestehende 693 Hardcoded-Color-Referenzen (38 Dateien) müssen schrittweise migriert werden.
 - `pdf-document.tsx` behält Hex-Werte (zulässig laut Design-System, da `@react-pdf/renderer` keine Tailwind-Klassen unterstützt).
+
+---
+
+## 2026-05-09 – Arbeitspaket: Design-Token-Foundation (AP2)
+
+### Planner
+
+- **Ziel:** CSS-Variablen als Design-Token in `globals.css` definieren, Tailwind v4 `@theme inline` erweitern, zentrale Farb-Mappings auf Token umstellen.
+- **Umfang:**
+  - `globals.css`: `:root` (Light) + `.dark` (Dark) CSS-Variablen für alle 4 Farbschichten + Schatten
+  - `@theme inline`: Token-Klassen registrieren (`surface-*`, `content-*`, `stroke-*`, `accent-*`, `success-*`, `warning-*`, `danger-*`, `info-*`, `cat-*`)
+  - `types.ts`: `TYPE_COLORS` von Hex auf `var()` CSS-Variablen umgestellt, `TYPE_BORDER_COLORS` ergänzt
+  - `utils.ts`: `statusColor()` + `statusCellColor()` von hardcoded Tailwind-Klassen auf Token-basierte Klassen umgestellt
+  - `body` + `*` Basis-Styles auf CSS-Variablen umgestellt (keine `@apply` mehr)
+- **Nicht-Ziele:** Keine Komponenten-Migration (AP3–AP7), kein Radius-Change (bleibt kompatibel).
+- **Akzeptanzkriterien:** Alle Token definiert, `statusColor`/`statusCellColor` nutzen Token, 659 Tests grün, Build OK.
+
+### Reviewer
+
+- Freigabe. Token-Naming (`surface-*`, `content-*`, `stroke-*`) ist konsistent und generiert saubere Tailwind-Klassen (`bg-surface-base`, `text-content-muted`, `border-stroke-subtle`).
+
+### Implementierte Änderungen
+
+- `src/app/globals.css` — Komplett-rewrite:
+  - `:root` + `.dark`: 30+ CSS-Variablen für Neutralfarben, Akzent, Semantisch, Kategorial, Schatten
+  - `@theme inline`: Token-Klassen registriert (`surface-base`, `surface-elevated`, `surface-overlay`, `surface-sunken`, `content-base`, `content-muted`, `content-subtle`, `content-on-accent`, `stroke-subtle`, `stroke-base`, `stroke-strong`, `accent`, `accent-fg`, `accent-hover`, `success`, `success-soft`, `warning`, `warning-soft`, `danger`, `danger-soft`, `info`, `info-soft`, `cat-department`, `cat-department-soft`, `cat-school`, `cat-school-soft`, `cat-vacation`, `cat-vacation-soft`, `cat-other`, `cat-other-soft`)
+  - `body`/`*`: Statt `@apply` jetzt direkte CSS-Variable-Referenzen
+- `src/components/schedule/types.ts` — `TYPE_COLORS` auf `var()` umgestellt, `TYPE_BORDER_COLORS` ergänzt
+- `src/lib/utils.ts` — `statusColor()` + `statusCellColor()` auf Token-Klassen (`bg-success-soft`, `bg-warning-soft`, etc.)
+- `src/lib/utils.test.ts` — Test-Assertions an neue Token-Namen angepasst
+
+### Verifikation
+
+- **Lint**: 0 Errors, 5 Warnings (vorbestehend).
+- **Tests**: 659 Tests (39 Dateien), alle bestanden.
+- **Build**: `npm run build` erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- AP3 (UI-Primitives): Button, Badge, Input, Select, Card auf Token migrieren
+- AP4 (Layout): Navbar, Layouts, Theme-Toggle
+- AP5 (Pages): Alle Dashboard-Pages
+- AP6 (Schedule): Gantt-Timeline, Assignment-Modal
+- AP7 (Reports): PDF, Report-Komponenten
+- `--radius-sm` wurde von 4px auf 6px (0.375rem) geändert — bestehende `rounded-sm`-Nutzungen werden bei Komponenten-Migration in AP3 angepasst.

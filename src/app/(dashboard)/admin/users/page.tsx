@@ -80,13 +80,13 @@ export default function UsersPage() {
   };
 
   if (loading) {
-    return <div className="text-neutral-500">Laden...</div>;
+    return <div className="text-content-muted">Laden...</div>;
   }
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           Benutzerverwaltung
         </h1>
         <Button onClick={() => setShowForm(!showForm)}>
@@ -148,7 +148,7 @@ export default function UsersPage() {
                 </>
               )}
             </div>
-            {formError && <p className="text-sm text-red-500">{formError}</p>}
+            {formError && <p className="text-sm text-danger">{formError}</p>}
             <Button type="submit">Erstellen</Button>
           </form>
         </Card>
@@ -158,10 +158,10 @@ export default function UsersPage() {
         {users.map((user) => (
           <Card key={user.id} className="flex items-center justify-between">
             <div>
-               <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                 {user.name}
-               </p>
-               <p className="text-sm text-neutral-500">
+               <p className="font-medium text-content-base">
+                  {user.name}
+                </p>
+                <p className="text-sm text-content-muted">
                  {user.email}
                  {user.profession?.name && (
                    <> &middot; {user.profession.name}</>
@@ -191,7 +191,7 @@ export default function UsersPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleAnonymize(user)}
-                      className="text-red-600 hover:text-red-700 dark:text-red-400"
+                      className="text-danger"
                     >
                       Anonymisieren
                     </Button>

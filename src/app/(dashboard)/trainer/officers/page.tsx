@@ -88,12 +88,12 @@ export default function TrainerOfficersPage() {
     return new Date(a.validFrom) <= now && new Date(a.validUntil) >= now;
   };
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold text-content-base">
           Ausbildungsbeauftragte
         </h1>
         <Button onClick={() => setShowForm(!showForm)}>
@@ -108,14 +108,14 @@ export default function TrainerOfficersPage() {
           </CardHeader>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <label className="mb-1 block text-sm font-medium text-content-muted">
                 Auszubildende(r)
               </label>
               <select
                 value={form.traineeId}
                 onChange={(e) => setForm({ ...form, traineeId: e.target.value })}
                 required
-                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
               >
                 <option value="">Auswählen...</option>
                 {trainees.map((t) => (
@@ -125,14 +125,14 @@ export default function TrainerOfficersPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <label className="mb-1 block text-sm font-medium text-content-muted">
                 Ausbildungsbeauftragte(r)
               </label>
               <select
                 value={form.trainingOfficerId}
                 onChange={(e) => setForm({ ...form, trainingOfficerId: e.target.value })}
                 required
-                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
               >
                 <option value="">Auswählen...</option>
                 {officers.map((o) => (
@@ -143,7 +143,7 @@ export default function TrainerOfficersPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label className="mb-1 block text-sm font-medium text-content-muted">
                   Gültig von
                 </label>
                 <input
@@ -151,11 +151,11 @@ export default function TrainerOfficersPage() {
                   value={form.validFrom}
                   onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
                   required
-                  className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <label className="mb-1 block text-sm font-medium text-content-muted">
                   Gültig bis
                 </label>
                 <input
@@ -163,12 +163,12 @@ export default function TrainerOfficersPage() {
                   value={form.validUntil}
                   onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
                   required
-                  className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
                 />
               </div>
             </div>
 
-            {formError && <p className="text-sm text-red-500">{formError}</p>}
+            {formError && <p className="text-sm text-danger">{formError}</p>}
 
             <Button type="submit">Zuordnung erstellen</Button>
           </form>
@@ -177,7 +177,7 @@ export default function TrainerOfficersPage() {
 
       {assignments.length === 0 ? (
         <Card>
-          <p className="py-8 text-center text-sm text-neutral-500">
+          <p className="py-8 text-center text-sm text-content-muted">
             Keine Zuordnungen vorhanden. Erstellen Sie eine neue Zuordnung.
           </p>
         </Card>
@@ -186,16 +186,16 @@ export default function TrainerOfficersPage() {
           {assignments.map((a) => (
             <div
               key={a.id}
-              className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-lg border border-stroke-subtle p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                <p className="font-medium text-content-base">
                   {a.trainee.name}
                 </p>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-content-muted">
                   Beauftragte(r): {a.trainingOfficer.name}
                 </p>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-content-muted">
                   {formatDate(a.validFrom)} – {formatDate(a.validUntil)}
                 </p>
               </div>

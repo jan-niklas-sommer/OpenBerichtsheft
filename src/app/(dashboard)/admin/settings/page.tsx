@@ -43,11 +43,11 @@ export default function AdminSettingsPage() {
     setSaving(false);
   };
 
-  if (loading) return <div className="text-neutral-500">Laden...</div>;
+  if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+      <h1 className="mb-6 text-2xl font-semibold text-content-base">
         Einstellungen
       </h1>
 
@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
         <CardHeader>
           <CardTitle>Arbeitstage</CardTitle>
         </CardHeader>
-        <p className="mb-4 text-sm text-neutral-500">
+        <p className="mb-4 text-sm text-content-muted">
           Wählen Sie die Standard-Arbeitstage. Nicht-Arbeitstage werden beim Anlegen eines
           Wochenberichts automatisch mit 0 Stunden und als freier Tag (&bdquo;&ndash;&ldquo;) vorbelegt.
         </p>
@@ -67,8 +67,8 @@ export default function AdminSettingsPage() {
               onClick={() => toggleDay(index)}
               className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
                 workingDays.includes(index)
-                  ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                  : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:border-neutral-700"
+                  ? "border-accent bg-accent text-accent-fg"
+                  : "border-stroke-subtle bg-surface-base text-content-muted hover:border-stroke-base"
               }`}
             >
               {name}
@@ -81,7 +81,7 @@ export default function AdminSettingsPage() {
             Speichern
           </Button>
           {saved && (
-            <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+            <span className="flex items-center gap-1 text-sm text-success">
               <Check className="h-3 w-3" /> Gespeichert
             </span>
           )}

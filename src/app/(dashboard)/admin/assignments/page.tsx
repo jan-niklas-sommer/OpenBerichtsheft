@@ -55,12 +55,12 @@ export default function AssignmentsPage() {
   };
 
   if (loading) {
-    return <div className="text-neutral-500">Laden...</div>;
+    return <div className="text-content-muted">Laden...</div>;
   }
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+      <h1 className="mb-6 text-2xl font-semibold text-content-base">
         Zuordnungen
       </h1>
 
@@ -86,7 +86,7 @@ export default function AssignmentsPage() {
               ]}
             />
           </div>
-          {formError && <p className="text-sm text-red-500">{formError}</p>}
+          {formError && <p className="text-sm text-danger">{formError}</p>}
           <Button type="submit">Zuordnung erstellen</Button>
         </form>
       </Card>
@@ -95,10 +95,10 @@ export default function AssignmentsPage() {
         {assignments.map((a) => (
           <Card key={a.id} className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-neutral-900 dark:text-neutral-100">
+              <p className="font-medium text-content-base">
                 {a.trainer?.name} → {a.profession?.name}
               </p>
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-content-muted">
                 Ausbilder: {a.trainer?.email}
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function AssignmentsPage() {
           </Card>
         ))}
         {assignments.length === 0 && (
-          <p className="text-neutral-500">Keine Zuordnungen vorhanden.</p>
+          <p className="text-content-muted">Keine Zuordnungen vorhanden.</p>
         )}
       </div>
     </div>

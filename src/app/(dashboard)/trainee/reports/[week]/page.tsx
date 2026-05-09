@@ -116,6 +116,21 @@ export default function ReportEditorPage() {
           if (found.dailyEntries.length > 0) {
             setDailyEntries(found.dailyEntries);
           }
+        } else {
+          fetch(`/api/reports/prefill?year=${currentYear}&week=${currentWeek}`)
+            .then((r) => r.json())
+            .then((prefill) => {
+              if (Array.isArray(prefill) && prefill.length === 7) {
+                setDailyEntries(prefill.map((e: { date: string; dayType: string; hours: number; minutes: number; reportText: string }) => ({
+                  date: e.date,
+                  dayType: e.dayType as DayType,
+                  hours: e.hours,
+                  minutes: e.minutes,
+                  reportText: e.reportText,
+                })));
+              }
+            })
+            .catch(() => {});
         }
         setDataFetched(true);
       });
@@ -254,6 +269,21 @@ export default function ReportEditorPage() {
     setDailyEntries(buildDefaultEntries(dates, workingDays));
     setReportText("");
     router.push(`/trainee/reports/${newYear}-${newWeek}`);
+
+    fetch(`/api/reports/prefill?year=${newYear}&week=${newWeek}`)
+      .then((r) => r.json())
+      .then((prefill) => {
+        if (Array.isArray(prefill) && prefill.length === 7) {
+          setDailyEntries(prefill.map((e: { date: string; dayType: string; hours: number; minutes: number; reportText: string }) => ({
+            date: e.date,
+            dayType: e.dayType as DayType,
+            hours: e.hours,
+            minutes: e.minutes,
+            reportText: e.reportText,
+          })));
+        }
+      })
+      .catch(() => {});
   };
 
   const prevDisabled = (() => {

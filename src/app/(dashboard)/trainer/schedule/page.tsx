@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   TYPE_COLORS,
   TYPE_LABELS,
@@ -10,6 +9,7 @@ import {
   type ScheduleType,
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
+import { AssignmentModal } from "@/components/schedule/assignment-modal";
 
 interface Trainee {
   id: string;
@@ -36,7 +36,7 @@ export default function SchedulePage() {
     d.setHours(0, 0, 0, 0);
     return d;
   });
-  const [showAdd, setShowAdd] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<ScheduleAssignmentView | null>(null);
   const [form, setForm] = useState({
     traineeId: "",
@@ -47,7 +47,6 @@ export default function SchedulePage() {
     supervisorId: "",
     color: "",
   });
-  const [formError, setFormError] = useState("");
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const daysVisible = Math.min(
@@ -138,32 +137,13 @@ export default function SchedulePage() {
     return false;
   }, [traineeRows, filteredAssignments]);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    const res = await fetch("/api/schedule", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+  const refreshData = useCallback(() => {
+    Promise.all([
+      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${new Date(viewStart.getTime() + daysVisible * 86400000).toISOString()}`).then((r) => r.json()),
+    ]).then(([sched]) => {
+      setAssignments(Array.isArray(sched) ? sched : []);
     });
-    if (res.ok) {
-      const newItem = await res.json();
-      setAssignments((prev) => [...prev, newItem]);
-      setShowAdd(false);
-      setForm({
-        traineeId: "",
-        scheduleType: "department",
-        startDate: "",
-        endDate: "",
-        department: "",
-        supervisorId: "",
-        color: "",
-      });
-    } else {
-      const data = await res.json();
-      setFormError(data.error || "Fehler");
-    }
-  };
+  }, [viewStart, daysVisible]);
 
   const handleUpdate = async () => {
     if (!editItem) return;
@@ -237,8 +217,8 @@ export default function SchedulePage() {
           <Button variant="secondary" size="sm" onClick={() => navigateMonths(1)}>
             →
           </Button>
-          <Button size="sm" onClick={() => setShowAdd(!showAdd)}>
-            {showAdd ? "Abbrechen" : "Eintrag hinzufügen"}
+          <Button size="sm" onClick={() => setShowModal(true)}>
+            Eintrag hinzufügen
           </Button>
         </div>
       </div>
@@ -267,88 +247,16 @@ export default function SchedulePage() {
         )}
       </div>
 
-      {showAdd && (
-        <Card className="mb-4 p-4">
-          <form onSubmit={handleCreate} className="flex flex-wrap gap-3">
-            <select
-              value={form.traineeId}
-              onChange={(e) => setForm({ ...form, traineeId: e.target.value })}
-              required
-              className="h-9 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-            >
-              <option value="">Azubi...</option>
-              {trainees.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={form.scheduleType}
-              onChange={(e) =>
-                setForm({ ...form, scheduleType: e.target.value as ScheduleType })
-              }
-              className="h-9 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-            >
-              {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
-                </option>
-              ))}
-            </select>
-            <input
-              type="date"
-              value={form.startDate}
-              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              required
-              className="h-9 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-            />
-            <input
-              type="date"
-              value={form.endDate}
-              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              required
-              className="h-9 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-            />
-            {form.scheduleType === "department" && (
-              <input
-                type="text"
-                placeholder="Abteilung"
-                value={form.department}
-                onChange={(e) => setForm({ ...form, department: e.target.value })}
-                className="h-9 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              />
-            )}
-            <select
-              value={form.supervisorId}
-              onChange={(e) => setForm({ ...form, supervisorId: e.target.value })}
-              className="h-9 rounded-lg border border-neutral-300 bg-white px-2 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-            >
-              <option value="">Betreuer...</option>
-              {officers.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
-            {(form.scheduleType === "department" ||
-              form.scheduleType === "other") && (
-              <input
-                type="color"
-                value={form.color || TYPE_COLORS[form.scheduleType]}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
-                className="h-9 w-12 cursor-pointer rounded-lg border border-neutral-300 dark:border-neutral-700"
-              />
-            )}
-            {formError && (
-              <span className="text-sm text-red-500">{formError}</span>
-            )}
-            <Button type="submit" size="sm">
-              Erstellen
-            </Button>
-          </form>
-        </Card>
-      )}
+      <AssignmentModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onCreated={() => {
+          setShowModal(false);
+          refreshData();
+        }}
+        trainees={trainees.map((t) => ({ id: t.id, name: t.name }))}
+        officers={officers.map((o) => ({ id: o.id, name: o.name }))}
+      />
 
       {editItem && (
         <div

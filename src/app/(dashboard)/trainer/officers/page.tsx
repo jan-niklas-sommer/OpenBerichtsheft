@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface OfficerAssignment {
   id: string;
@@ -146,24 +147,20 @@ export default function TrainerOfficersPage() {
                 <label className="mb-1 block text-sm font-medium text-content-muted">
                   Gültig von
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={form.validFrom}
-                  onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
-                  required
-                  className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
+                  onChange={(v) => setForm({ ...form, validFrom: v })}
+                  placeholder="Startdatum"
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-content-muted">
                   Gültig bis
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={form.validUntil}
-                  onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
-                  required
-                  className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
+                  onChange={(v) => setForm({ ...form, validUntil: v })}
+                  placeholder="Enddatum"
                 />
               </div>
             </div>

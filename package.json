@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@radix-ui/react-popover": "^1.1.15",
     "@react-pdf/renderer": "^4.5.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
@@ -30,6 +31,7 @@
     "next": "16.2.5",
     "next-auth": "^5.0.0-beta.31",
     "react": "19.2.4",
+    "react-day-picker": "^10.0.0",
     "react-dom": "19.2.4",
     "zod": "^4.4.3"
   },

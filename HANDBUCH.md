@@ -260,7 +260,7 @@ Unterhalb der Berichtsdetails sehen Sie den Bereich **Prüfung**:
 
 ### 5.4 Ausbildungsbeauftragte zuordnen
 
-Unter **Officer** (Navigation) können Sie Ausbildungsbeauftragte Ihren Auszubildenden zuordnen. Wählen Sie den Auszubildenden, den Ausbildungsbeauftragten und den Zeitraum (von/bis).
+Unter **Officer** (Navigation) können Sie Ausbildungsbeauftragte Ihren Auszubildenden zuordnen. Wählen Sie den Auszubildenden, den Ausbildungsbeauftragten und den Zeitraum (von/bis) über die Kalender-Picker.
 
 ### 5.5 Einsatzplanung
 
@@ -288,7 +288,7 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
    - **Schule**: Berufsschule (Orange)
    - **Urlaub**: Urlaub (Gelb)
    - **Sonstiges**: Feiertag, Krankheit, etc. (Lila)
-5. Setzen Sie Start- und Enddatum.
+5. Setzen Sie Start- und Enddatum über den Kalender-Picker (Klick öffnet den Kalender, deutsches Format `dd.MM.yyyy`).
 6. Optional: Wählen Sie einen Ausbildungsbeauftragten als Betreuer.
 7. Bei **Wiederholung**: Wählen Sie die Wochentage. Das System zeigt eine Vorschau der nächsten 12 Termine.
 8. Klicken Sie auf **Erstellen** bzw. **Regel erstellen**.
@@ -352,6 +352,7 @@ Unter **Benutzer** (Navigation) können Sie:
    - **Rolle**: Administrator, Ausbilder, Ausbildungsbeauftragter oder Auszubildende(r)
    - **Passwort**: Mindestens 8 Zeichen
    - **Ausbildungsberuf** (nur bei Rolle Auszubildende(r)): Wählen Sie den Beruf aus dem Dropdown
+   - **Eintrittsdatum** (nur bei Rolle Auszubildende(r)): Wählen Sie das Datum über den Kalender-Picker
 3. Klicken Sie auf **Erstellen**.
 
 #### Benutzer deaktivieren/aktivieren

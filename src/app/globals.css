@@ -74,13 +74,13 @@
   --color-info-bg: rgba(59, 130, 246, 0.15);
 
   --color-cat-department-fg: #5eead4;
-  --color-cat-department-bg: rgba(20, 184, 166, 0.20);
+  --color-cat-department-bg: rgba(20, 184, 166, 0.35);
   --color-cat-school-fg: #a5b4fc;
-  --color-cat-school-bg: rgba(99, 102, 241, 0.20);
+  --color-cat-school-bg: rgba(99, 102, 241, 0.35);
   --color-cat-vacation-fg: #fde047;
-  --color-cat-vacation-bg: rgba(234, 179, 8, 0.18);
+  --color-cat-vacation-bg: rgba(234, 179, 8, 0.30);
   --color-cat-other-fg: #f9a8d4;
-  --color-cat-other-bg: rgba(236, 72, 153, 0.20);
+  --color-cat-other-bg: rgba(236, 72, 153, 0.35);
 
   --ds-overlay-backdrop: rgba(0, 0, 0, 0.5);
   --ds-shadow-sm: none;

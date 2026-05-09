@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   TYPE_LABELS,
   type ScheduleAssignmentView,
@@ -284,20 +285,18 @@ export default function SchedulePage() {
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="mb-1 block text-xs text-content-muted">Von</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={form.startDate}
-                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                    className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
+                    onChange={(v) => setForm({ ...form, startDate: v })}
+                    placeholder="Startdatum"
                   />
                 </div>
                 <div className="flex-1">
                   <label className="mb-1 block text-xs text-content-muted">Bis</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={form.endDate}
-                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                    className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
+                    onChange={(v) => setForm({ ...form, endDate: v })}
+                    placeholder="Enddatum"
                   />
                 </div>
               </div>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
 import { ROLE_LABELS } from "@/lib/utils";
 import type { UserData, ProfessionData } from "@/types";
 
@@ -139,12 +140,16 @@ export default function UsersPage() {
                       ...professions.map((p) => ({ value: p.id, label: p.name })),
                     ]}
                   />
-                  <Input
-                    label="Eintrittsdatum"
-                    type="date"
-                    value={form.trainingStartDate}
-                    onChange={(e) => setForm({ ...form, trainingStartDate: e.target.value })}
-                  />
+                  <div className="w-full">
+                    <label className="mb-1.5 block text-sm font-medium text-content-muted">
+                      Eintrittsdatum
+                    </label>
+                    <DatePicker
+                      value={form.trainingStartDate}
+                      onChange={(v) => setForm({ ...form, trainingStartDate: v })}
+                      placeholder="Datum wählen"
+                    />
+                  </div>
                 </>
               )}
             </div>

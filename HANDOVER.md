@@ -1538,3 +1538,51 @@ npm run dev
 - Navbar-Test (`navbar.test.tsx:197`) referenziert `.bg-black\\/20` — bei späterer Navbar-Migration muss Test angepasst werden.
 - Low-Findings aus Audit bleiben offen (optional): opacity-40, hover:opacity-80, ring-offset, backdrop-blur.
 - Nächste Arbeitspakete: shadcn Calendar+Popover, Frequenz-Intervall, RecurrenceException UI.
+
+---
+
+## 2026-05-09 – Arbeitspaket: Calendar+Popover DatePicker
+
+### Planner
+
+- **Ziel:** Native `<input type="date">` durch Calendar+Popover DatePicker ersetzen. Bessere UX mit visuellem Kalender, deutsche Locale, ISO-Wochen (Montag erster Tag).
+- **Umfang:** 3 neue UI-Komponenten (Popover, Calendar, DatePicker), 4 Dateien mit 7 Date-Eingaben migriert.
+- **Nicht-Ziele:** date-fns Migration der bestehenden Datumsfunktionen, serverseitige Validierung.
+- **Akzeptanzkriterien:** 0 `type="date"` in `src/`, 659 Tests grün, Build OK, Design-Token-konform.
+
+### Reviewer
+
+- Freigabe. react-day-picker v10 + @radix-ui/react-popover als Abhängigkeiten. date-fns `de` Locale für Wochentage/Monatsnamen. `weekStartsOn: 1` für ISO-Konformität.
+
+### Implementierte Änderungen
+
+**Neue Komponenten:**
+
+- `src/components/ui/popover.tsx` — Radix Popover Wrapper (Popover, PopoverTrigger, PopoverContent). Content: `bg-surface-elevated`, `border-stroke-subtle`, `shadow-lg`, rounded-lg.
+- `src/components/ui/calendar.tsx` — react-day-picker v10 Wrapper. Design-Token-Klassen für alle Elemente (selected: `bg-accent text-accent-fg`, today: `text-accent font-semibold`, outside/disabled: `text-content-subtle opacity-50`). Deutsche Locale (`date-fns/locale/de`), `weekStartsOn: 1`.
+- `src/components/ui/date-picker.tsx` — Komposit-Komponente: Button-Trigger mit Kalender-Icon (lucide CalendarIcon), formatiert als `dd.MM.yyyy`,Popover mit Calendar. String-Interface (`YYYY-MM-DD`).
+
+**Migrationen (7 Instanzen in 4 Dateien):**
+
+- `assignment-modal.tsx` — 2x `<input type="date">` (Von/Bis) → `DatePicker`
+- `trainer/schedule/page.tsx` — 2x `<input type="date">` (Von/Bis Edit-Popover) → `DatePicker`
+- `trainer/officers/page.tsx` — 2x `<input type="date">` (Gültig von/bis) → `DatePicker`
+- `admin/users/page.tsx` — 1x `<Input type="date">` (Eintrittsdatum) → `DatePicker`
+
+**Neue Abhängigkeiten:**
+
+- `react-day-picker@10.0.0`
+- `@radix-ui/react-popover@1.1.15`
+
+### Verifikation
+
+- **Lint:** 0 Errors, 5 Warnings (unverändert).
+- **Tests:** 659 Tests, alle bestanden (39 Dateien).
+- **Build:** erfolgreich.
+- **type="date" Audit:** 0 Vorkommen in `src/**/*.tsx`.
+
+### Offene Risiken / Folgeaufgaben
+
+- Bestehende Tests mocken keine Date-Picker-Interaktionen — E2E-Tests für Kalender-Auswahl empfohlen.
+- DatePicker hat noch keinen `label`-Prop — Labels werden extern als `<label>` gerendert (wie bei assignment-modal und trainer-schedule).
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.

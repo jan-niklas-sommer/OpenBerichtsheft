@@ -13,6 +13,7 @@ import {
   updateProfessionSchema,
   updateScheduleSchema,
   updateRecurrenceRuleSchema,
+  changePasswordSchema,
 } from "./validations";
 
 describe("loginSchema", () => {
@@ -778,6 +779,68 @@ describe("updateRecurrenceRuleSchema", () => {
   it("rejects empty weekDays array", () => {
     expect(() =>
       updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: [] })
+    ).toThrow();
+  });
+});
+
+describe("changePasswordSchema", () => {
+  const valid = {
+    currentPassword: "oldpassword123",
+    newPassword: "newpassword456",
+    confirmPassword: "newpassword456",
+  };
+
+  it("accepts valid input", () => {
+    expect(changePasswordSchema.parse(valid)).toEqual(valid);
+  });
+
+  it("rejects missing currentPassword", () => {
+    expect(() =>
+      changePasswordSchema.parse({ newPassword: "newpassword456", confirmPassword: "newpassword456" })
+    ).toThrow();
+  });
+
+  it("rejects empty currentPassword", () => {
+    expect(() =>
+      changePasswordSchema.parse({ ...valid, currentPassword: "" })
+    ).toThrow();
+  });
+
+  it("rejects missing newPassword", () => {
+    expect(() =>
+      changePasswordSchema.parse({ currentPassword: "oldpassword123", confirmPassword: "newpassword456" })
+    ).toThrow();
+  });
+
+  it("rejects newPassword shorter than 8 chars", () => {
+    expect(() =>
+      changePasswordSchema.parse({ ...valid, newPassword: "short7", confirmPassword: "short7" })
+    ).toThrow();
+  });
+
+  it("accepts newPassword with exactly 8 chars", () => {
+    expect(changePasswordSchema.parse({ ...valid, newPassword: "12345678", confirmPassword: "12345678" })).toBeDefined();
+  });
+
+  it("rejects missing confirmPassword", () => {
+    expect(() =>
+      changePasswordSchema.parse({ currentPassword: "oldpassword123", newPassword: "newpassword456" })
+    ).toThrow();
+  });
+
+  it("rejects when newPassword !== confirmPassword", () => {
+    expect(() =>
+      changePasswordSchema.parse({ ...valid, confirmPassword: "different789" })
+    ).toThrow();
+  });
+
+  it("rejects when newPassword equals currentPassword", () => {
+    expect(() =>
+      changePasswordSchema.parse({
+        currentPassword: "samepassword",
+        newPassword: "samepassword",
+        confirmPassword: "samepassword",
+      })
     ).toThrow();
   });
 });

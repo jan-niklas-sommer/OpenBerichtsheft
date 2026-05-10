@@ -2316,3 +2316,54 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 
 - Today-Dot sollte manuell im Light/Dark Mode visuell geprüft werden.
 - Seed-Import relativ (`../src/lib/utils`) — bei Verzeichnisumstrukturierung anzupassen.
+
+---
+
+## 2026-05-10 – Issue #84: Passwort-Änderung durch User (Self-Service)
+
+### Planner
+
+**Ziel:** User können ihr Passwort selbstständig ändern. Neue Route `/einstellungen`, API `PUT /api/users/me/password`, Navbar-Link für alle Rollen.
+
+**Betroffene Dateien:**
+- `src/lib/validations.ts` — Neues `changePasswordSchema`
+- `src/app/api/users/me/password/route.ts` — Neue API-Route
+- `src/app/(dashboard)/einstellungen/page.tsx` — Neue Seite
+- `src/components/layout/navbar.tsx` — Einstellungen-Link (Desktop + Mobile)
+
+**Akzeptanzkriterien:**
+- User kann eigenes Passwort ändern (altes + neues + Bestätigung)
+- Altes Passwort wird via bcrypt verifiziert
+- Validierung: min 8 Zeichen, ≠ altes Passwort, Bestätigung muss übereinstimmen
+- UI über Navbar erreichbar (alle Rollen)
+- Admin-Passwort-Reset bleibt bestehen
+- Alle Tests + Build bestanden
+
+### Reviewer
+
+- Plan deckt alle Akzeptanzkriterien ab.
+- Keine Rollen-Einschränkung nötig (jeder eingeloggte User darf sein eigenes Passwort ändern).
+- Session wird nicht invalidiert (JWT bleibt gültig) — Issue fordert das explizit nicht.
+- Keine Architekturänderung, reine Feature-Erweiterung.
+
+### Implementierte Änderungen
+
+1. **`src/lib/validations.ts`** — `changePasswordSchema` mit `currentPassword`, `newPassword` (min 8), `confirmPassword`, zwei `.refine()`: newPassword ≠ currentPassword, confirmPassword === newPassword.
+2. **`src/app/api/users/me/password/route.ts`** — `PUT`-Handler: auth(), Zod-Validierung, `bcrypt.compare` für altes PW, `bcrypt.hash` für neues PW, `prisma.user.update`.
+3. **`src/app/(dashboard)/einstellungen/page.tsx`** — Client-Komponente mit Formular (aktuelles PW, neues PW, Bestätigung), Eye/EyeOff-Toggle, clientseitige + serverseitige Validierung, Success/Error-Feedback.
+4. **`src/components/layout/navbar.tsx`** — `KeyRound`-Icon-Link (Desktop: zwischen ThemeToggle und Trennstrich, Mobile: am Ende der Nav-Items).
+5. **Tests:**
+   - `src/app/api/users/me/password/route.test.ts` — 8 Tests: 401, 200 success, 400 wrong PW, 400 validation, 400 mismatch, 400 same PW, 404 user missing, 400 missing field.
+   - `src/lib/validations.test.ts` — 9 Tests für `changePasswordSchema`.
+
+### Verifikation
+
+- **Tests:** 820 Tests, 49 Dateien, alle bestanden (+17 neu).
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Build:** Erfolgreich (inkl. neuer Route `/einstellungen`).
+- **Typecheck:** Pre-existing Fehler in Test-Dateien — nicht durch dieses AP verursacht.
+
+### Offene Risiken / Folgeaufgaben
+
+- JWT wird nicht invalidiert bei Passwort-Änderung — bei Bedarf extra Feature.
+- Keine Passwort-Stärke-Anzeige (z.B. zxcvbn) — mögliche Erweiterung.

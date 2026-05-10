@@ -75,6 +75,10 @@ Oben sehen Sie die Navigationsleiste mit den für Ihre Rolle verfügbaren Menüp
 
 Klicken Sie auf das Logout-Symbol (Pfeil aus dem Kasten) oben rechts in der Navigationsleiste.
 
+### Passwort ändern
+
+Klicken Sie auf das Schlüssel-Symbol oben rechts in der Navigationsleiste (neben dem Theme-Umschalter). Geben Sie Ihr aktuelles Passwort, das neue Passwort (mindestens 8 Zeichen) und die Bestätigung ein. Das neue Passwort muss sich vom aktuellen unterscheiden.
+
 ---
 
 ## 4. Rolle: Auszubildende(r)

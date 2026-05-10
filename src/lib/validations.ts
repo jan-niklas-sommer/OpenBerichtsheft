@@ -105,3 +105,15 @@ export const updateRecurrenceRuleSchema = z.object({
 export const updateSettingsSchema = z.object({
   workingDays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
 });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Aktuelles Passwort erforderlich"),
+  newPassword: z.string().min(8, "Mindestens 8 Zeichen"),
+  confirmPassword: z.string().min(1, "Passwortbestätigung erforderlich"),
+}).refine(
+  (data) => data.newPassword !== data.currentPassword,
+  { message: "Neues Passwort muss sich vom aktuellen unterscheiden", path: ["newPassword"] }
+).refine(
+  (data) => data.newPassword === data.confirmPassword,
+  { message: "Passwörter stimmen nicht überein", path: ["confirmPassword"] }
+);

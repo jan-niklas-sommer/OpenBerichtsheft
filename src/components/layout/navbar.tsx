@@ -19,6 +19,7 @@ import {
   Settings,
   CalendarDays,
   Check,
+  KeyRound,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import type { NotificationData } from "@/types";
@@ -196,6 +197,13 @@ export function Navbar({ role, userName }: NavbarProps) {
               {userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
             </div>
             <ThemeToggle />
+            <Link
+              href="/einstellungen"
+              className="inline-flex items-center justify-center rounded-md size-7 bg-transparent p-0 text-content-muted hover:bg-surface-overlay hover:text-content-base transition-colors"
+              aria-label="Einstellungen"
+            >
+              <KeyRound className="h-4 w-4" />
+            </Link>
             <div className="mx-2 h-4 w-px bg-stroke-subtle" />
             <Button
               variant="ghost"
@@ -228,6 +236,18 @@ export function Navbar({ role, userName }: NavbarProps) {
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/einstellungen"
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                pathname === "/einstellungen"
+                  ? "bg-surface-overlay text-content-base"
+                  : "text-content-muted hover:bg-surface-overlay hover:text-content-base"
+              }`}
+            >
+              <KeyRound className="h-4 w-4" />
+              Passwort ändern
+            </Link>
           </nav>
         </div>
       )}

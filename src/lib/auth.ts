@@ -29,6 +29,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!user || user.deactivatedAt || user.anonymizedAt) return null;
 
+        if (!user.emailVerified) {
+          const err = new Error("EMAIL_NOT_VERIFIED");
+          err.name = "EmailNotVerified";
+          throw err;
+        }
+
         const valid = await bcrypt.compare(
           credentials.password as string,
           user.passwordHash

@@ -13,7 +13,7 @@ function upsertUser(email: string, name: string, role: Role, passwordHash: strin
   return prisma.user.upsert({
     where: { email },
     update: {},
-    create: { email, name, role, passwordHash, ...extra },
+    create: { email, name, role, passwordHash, emailVerified: new Date(), ...extra },
   });
 }
 

@@ -117,3 +117,13 @@ export const changePasswordSchema = z.object({
   (data) => data.newPassword === data.confirmPassword,
   { message: "Passwörter stimmen nicht überein", path: ["confirmPassword"] }
 );
+
+export const registerSchema = z.object({
+  name: z.string().min(1, "Name erforderlich"),
+  email: z.string().email("Ungültige E-Mail-Adresse"),
+  password: z.string().min(8, "Mindestens 8 Zeichen"),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email("Ungültige E-Mail-Adresse"),
+});

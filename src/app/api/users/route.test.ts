@@ -247,6 +247,7 @@ describe("POST /api/users", () => {
         name: "New User",
         role: "trainer",
         passwordHash: "hashed-password",
+        emailVerified: expect.any(Date),
       },
       select: {
         id: true,

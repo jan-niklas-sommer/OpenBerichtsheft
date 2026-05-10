@@ -76,8 +76,9 @@ export function GanttTimeline({
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
+  const isPointerDownRef = useRef(false);
   const dragMovedRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
   const lastPosRef = useRef({ x: 0, time: 0 });
   const velocityRef = useRef(0);
   const animFrameRef = useRef<number>(0);
@@ -168,6 +169,7 @@ export function GanttTimeline({
       const el = containerRef.current;
       if (!el) return;
 
+      isPointerDownRef.current = true;
       isDraggingRef.current = false;
       dragMovedRef.current = false;
       dragConsumedRef.current = false;
@@ -186,11 +188,13 @@ export function GanttTimeline({
   );
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isPointerDownRef.current) return;
     const el = containerRef.current;
     if (!el) return;
 
     const dx = e.clientX - dragStartRef.current.x;
-    if (Math.abs(dx) > DRAG_THRESHOLD) {
+
+    if (!isDraggingRef.current && Math.abs(dx) > DRAG_THRESHOLD) {
       isDraggingRef.current = true;
       dragMovedRef.current = true;
     }
@@ -199,17 +203,18 @@ export function GanttTimeline({
       el.scrollLeft = dragStartRef.current.scrollLeft - dx;
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
       setTooltip(null);
-    }
 
-    const now = Date.now();
-    const dt = now - lastPosRef.current.time;
-    if (dt > 0) {
-      velocityRef.current = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, (e.clientX - lastPosRef.current.x) / dt * 8));
+      const now = Date.now();
+      const dt = now - lastPosRef.current.time;
+      if (dt > 0) {
+        velocityRef.current = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, (e.clientX - lastPosRef.current.x) / dt * 8));
+      }
+      lastPosRef.current = { x: e.clientX, time: now };
     }
-    lastPosRef.current = { x: e.clientX, time: now };
   }, []);
 
   const handleMouseUp = useCallback(() => {
+    isPointerDownRef.current = false;
     if (isDraggingRef.current && Math.abs(velocityRef.current) > MIN_VELOCITY) {
       animFrameRef.current = requestAnimationFrame(momentumLoopRef.current);
     }

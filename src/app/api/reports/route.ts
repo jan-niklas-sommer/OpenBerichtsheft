@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       const professionIds = professionAssignments.map((a) => a.professionId);
       if (professionIds.length > 0) {
         const trainees = await prisma.user.findMany({
-          where: { role: "trainee", professionId: { in: professionIds } },
+          where: { role: "trainee", professionId: { in: professionIds }, deactivatedAt: null },
           select: { id: true },
         });
         traineeIds = trainees.map((t) => t.id);
@@ -112,6 +112,24 @@ export async function POST(req: NextRequest) {
   }
 
   const weekDates = getWeekDates(calendarYear, calendarWeek);
+
+  const existing = await prisma.weeklyReport.findUnique({
+    where: {
+      traineeId_calendarYear_calendarWeek: {
+        traineeId,
+        calendarYear,
+        calendarWeek,
+      },
+    },
+    select: { status: true },
+  });
+
+  if (existing && !["draft", "needs_revision"].includes(existing.status)) {
+    return NextResponse.json(
+      { error: "Bericht kann nur im Entwurf- oder Überarbeitungsstatus bearbeitet werden" },
+      { status: 400 },
+    );
+  }
 
   const report = await prisma.weeklyReport.upsert({
     where: {

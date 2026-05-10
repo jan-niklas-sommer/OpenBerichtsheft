@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, memo } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { statusDotColor, STATUS_LABELS, statusVariant } from "@/lib/utils";
+import { statusDotColor, STATUS_LABELS, statusVariant, getIsoWeeksInYear } from "@/lib/utils";
 import { FileText, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import type { TraineeWithReports } from "@/types";
 
@@ -28,7 +28,7 @@ const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "draft", label: "Entwurf" },
 ];
 
-function TraineeCard({
+const TraineeCard = memo(function TraineeCard({
   trainee,
   basePath,
   recentWeeks,
@@ -177,7 +177,7 @@ function TraineeCard({
       )}
     </Card>
   );
-}
+});
 
 export function ReviewerDashboardClient({
   title,
@@ -209,7 +209,7 @@ export function ReviewerDashboardClient({
     for (let i = 0; i < 8; i++) {
       let w = currentWeek - i;
       let y = currentYear;
-      while (w < 1) { w += 52; y--; }
+      while (w < 1) { w += getIsoWeeksInYear(y - 1); y--; }
       weeks.push({ year: y, week: w });
     }
     return weeks;

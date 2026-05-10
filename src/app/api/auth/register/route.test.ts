@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: vi.fn().mockReturnValue({ success: true }),
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
@@ -32,12 +36,12 @@ describe("POST /api/auth/register", () => {
   });
 
   it("returns 400 for invalid input", async () => {
-    const res = await POST({ json: async () => ({}) } as any);
+    const res = await POST({ json: async () => ({}), headers: { get: () => "127.0.0.1" } } as any);
     expect(res.status).toBe(400);
   });
 
   it("returns 400 for short password", async () => {
-    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "123" }) } as any);
+    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "123" }), headers: { get: () => "127.0.0.1" } } as any);
     expect(res.status).toBe(400);
   });
 
@@ -46,11 +50,11 @@ describe("POST /api/auth/register", () => {
     (prisma.user.create as any).mockResolvedValue({ id: "u1", email: "a@b.de", name: "Test" });
     (prisma.verificationToken.create as any).mockResolvedValue({});
 
-    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }) } as any);
+    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }), headers: { get: () => "127.0.0.1" } } as any);
     const data = await res.json();
 
     expect(res.status).toBe(201);
-    expect(data.message).toContain("Registrierung erfolgreich");
+    expect(data.message).toContain("Verifizierungs-E-Mail");
     expect(prisma.user.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ email: "a@b.de", role: "trainee" }),
@@ -59,13 +63,13 @@ describe("POST /api/auth/register", () => {
     expect(sendVerificationEmail).toHaveBeenCalledWith("a@b.de", expect.any(String), "Test");
   });
 
-  it("returns 409 for already verified existing user", async () => {
+  it("returns generic message for already verified existing user", async () => {
     (prisma.user.findUnique as any).mockResolvedValue({ id: "u1", emailVerified: new Date() });
 
-    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }) } as any);
-    expect(res.status).toBe(409);
+    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }), headers: { get: () => "127.0.0.1" } } as any);
+    expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.error).toContain("bereits registriert");
+    expect(data.message).toContain("Verifizierungs-E-Mail");
   });
 
   it("resends verification for unverified existing user", async () => {
@@ -73,7 +77,7 @@ describe("POST /api/auth/register", () => {
     (prisma.verificationToken.deleteMany as any).mockResolvedValue({});
     (prisma.verificationToken.create as any).mockResolvedValue({});
 
-    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }) } as any);
+    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }), headers: { get: () => "127.0.0.1" } } as any);
     expect(res.status).toBe(200);
     expect(sendVerificationEmail).toHaveBeenCalled();
   });
@@ -84,7 +88,7 @@ describe("POST /api/auth/register", () => {
     (prisma.verificationToken.create as any).mockResolvedValue({});
     (sendVerificationEmail as any).mockRejectedValue(new Error("SMTP error"));
 
-    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }) } as any);
+    const res = await POST({ json: async () => ({ email: "a@b.de", name: "Test", password: "password123" }), headers: { get: () => "127.0.0.1" } } as any);
     expect(res.status).toBe(500);
   });
 });

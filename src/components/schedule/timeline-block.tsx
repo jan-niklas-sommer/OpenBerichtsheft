@@ -7,14 +7,10 @@ import {
   type AssignmentBlock,
 } from "./types";
 import { getConflictsForDay } from "./types";
+import { getIsoWeek as getIsoWeekFull } from "@/lib/utils";
 
-function getIsoWeek(date: Date): number {
-  const d = new Date(date.getTime());
-  d.setHours(12, 0, 0, 0);
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+function getWeekNumber(date: Date): number {
+  return getIsoWeekFull(date).week;
 }
 
 interface TimelineBlockProps {
@@ -56,8 +52,8 @@ export function TimelineBlock({
   })();
 
   const showLabel = block.width > 80;
-  const startKW = getIsoWeek(workDays[block.startIndex]);
-  const endKW = block.endIndex < workDays.length ? getIsoWeek(workDays[block.endIndex]) : startKW;
+  const startKW = getWeekNumber(workDays[block.startIndex]);
+  const endKW = block.endIndex < workDays.length ? getWeekNumber(workDays[block.endIndex]) : startKW;
   const label = startKW === endKW ? `KW ${startKW}` : `KW ${startKW}–${endKW}`;
 
   const barTop = (rowHeight - barHeight) / 2;

@@ -13,6 +13,15 @@ import {
 import { useDragScroll } from "./use-drag-scroll";
 import { TimelineTooltip, type TooltipState } from "./timeline-tooltip";
 import { TimelineBlock } from "./timeline-block";
+import { getIsoWeek as getIsoWeekFull } from "@/lib/utils";
+
+const TOOLTIP_WIDTH = 320;
+const TOOLTIP_HEIGHT = 120;
+const TOOLTIP_DELAY_MS = 200;
+
+function getWeekNumber(date: Date): number {
+  return getIsoWeekFull(date).week;
+}
 
 interface GanttRow {
   traineeId: string;
@@ -32,15 +41,6 @@ interface GanttTimelineProps {
   showConflicts?: boolean;
   onCellClick?: (assignment: ScheduleAssignmentView) => void;
   onScrollNearEdge?: (direction: "start" | "end") => void;
-}
-
-function getIsoWeek(date: Date): number {
-  const d = new Date(date.getTime());
-  d.setHours(12, 0, 0, 0);
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 export function GanttTimeline({
@@ -119,7 +119,7 @@ export function GanttTimeline({
   const weekHeaders = useMemo(() => {
     const seen = new Map<string, { kw: number; startIdx: number; count: number }>();
     for (let i = 0; i < workDays.length; i++) {
-      const kw = getIsoWeek(workDays[i]);
+      const kw = getWeekNumber(workDays[i]);
       const key = `${workDays[i].getFullYear()}-${kw}`;
       if (!seen.has(key)) {
         seen.set(key, { kw, startIdx: i, count: 0 });
@@ -144,8 +144,8 @@ export function GanttTimeline({
       const clientY = e.clientY;
       hoverTimerRef.current = setTimeout(() => {
         const vw = window.innerWidth;
-        const tooltipWidth = 320;
-        const tooltipHeight = 120;
+        const tooltipWidth = TOOLTIP_WIDTH;
+        const tooltipHeight = TOOLTIP_HEIGHT;
         const x = Math.min(
           Math.max(clientX + 12, 8),
           vw - tooltipWidth - 8,
@@ -155,7 +155,7 @@ export function GanttTimeline({
           ? clientY - 12
           : clientY + 20;
         setTooltip({ assignment, x, y, flip: !fitsAbove });
-      }, 200);
+      }, TOOLTIP_DELAY_MS);
     },
     [],
   );

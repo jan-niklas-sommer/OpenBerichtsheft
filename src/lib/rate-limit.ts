@@ -24,6 +24,23 @@ export function clearAttempts(key: string): void {
   attempts.delete(key);
 }
 
-export function _reset() {
+const genericAttempts = new Map<string, { count: number; resetAt: number }>();
+
+export function rateLimit(key: string, maxAttempts: number, windowMs: number): { success: boolean } {
+  const now = Date.now();
+  const entry = genericAttempts.get(key);
+  if (!entry || now > entry.resetAt) {
+    genericAttempts.set(key, { count: 1, resetAt: now + windowMs });
+    return { success: true };
+  }
+  entry.count += 1;
+  if (entry.count > maxAttempts) {
+    return { success: false };
+  }
+  return { success: true };
+}
+
+export function _resetAll() {
   attempts.clear();
+  genericAttempts.clear();
 }

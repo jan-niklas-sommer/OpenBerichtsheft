@@ -189,7 +189,7 @@ describe("ReviewerReportPage", () => {
   it("does not redirect when review API fails", async () => {
     fetchMock
       .mockResolvedValueOnce({ json: () => Promise.resolve(mockReport) })
-      .mockResolvedValueOnce({ ok: false });
+      .mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({ error: "Fehler" }) });
     render(<ReviewerReportPage basePath="/trainer" />);
     await waitFor(() => {
       expect(screen.getByText("Genehmigen")).toBeInTheDocument();

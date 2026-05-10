@@ -8,13 +8,17 @@ export function useSession() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auth/session")
+    const controller = new AbortController();
+    fetch("/api/auth/session", { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((s) => {
         setSession(s);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
 
   return { data: session, status: loading ? "loading" : session ? "authenticated" : "unauthenticated" };

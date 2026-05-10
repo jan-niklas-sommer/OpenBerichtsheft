@@ -302,7 +302,7 @@ async function main() {
 
       reportCount++;
       week++;
-      if (week > 52) { week = 1; year++; }
+      if (week > getIsoWeeksInYear(year)) { week = 1; year++; }
     }
   }
 

@@ -53,7 +53,7 @@ export async function GET() {
     const professionIds = professionAssignments.map((a) => a.professionId);
     if (professionIds.length > 0) {
       const trainees = await prisma.user.findMany({
-        where: { role: "trainee", professionId: { in: professionIds } },
+        where: { role: "trainee", professionId: { in: professionIds }, deactivatedAt: null },
         select: { id: true },
       });
       traineeIds = trainees.map((t) => t.id);

@@ -18,7 +18,10 @@ const createRuleSchema = z.object({
   displayLabel: z.string().optional(),
   department: z.string().optional(),
   supervisorId: z.string().uuid().optional(),
-});
+}).refine(
+  (data) => new Date(data.startDate) <= new Date(data.endDate),
+  { message: "Startdatum muss vor oder gleich Enddatum sein", path: ["endDate"] },
+);
 
 export async function GET(req: NextRequest) {
   const session = await auth();

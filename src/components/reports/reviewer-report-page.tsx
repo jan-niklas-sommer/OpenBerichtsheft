@@ -21,6 +21,7 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [reviewError, setReviewError] = useState("");
 
   useEffect(() => {
     fetch(`/api/reports/${params.id}`)
@@ -28,11 +29,13 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
       .then((data) => {
         setReport(data);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [params.id]);
 
   const handleReview = async (action: string) => {
     setActionLoading(true);
+    setReviewError("");
     const res = await fetch(`/api/reports/${params.id}/review`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -40,6 +43,9 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
     });
     if (res.ok) {
       router.push(basePath);
+    } else {
+      const data = await res.json();
+      setReviewError(data.error || "Fehler bei der Prüfung");
     }
     setActionLoading(false);
   };
@@ -153,6 +159,7 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
             <CardTitle>Prüfung</CardTitle>
           </CardHeader>
           <div className="space-y-4">
+            {reviewError && <p className="text-sm text-danger">{reviewError}</p>}
             <TextArea
               label="Kommentar (optional)"
               value={comment}

@@ -133,6 +133,39 @@ describe("GanttTimeline", () => {
     expect(pill).not.toBeTruthy();
   });
 
+  it("renders sublabel when provided", () => {
+    render(
+      <GanttTimeline
+        rows={[
+          { traineeId: "t1", label: "Alice", sublabel: "JG 2024" },
+          { traineeId: "t2", label: "Bob" },
+        ]}
+        assignments={[]}
+        viewStart={mockViewStart}
+        daysVisible={mockDaysVisible}
+        mode="readonly"
+      />,
+    );
+    expect(screen.getByText("Alice")).toBeInTheDocument();
+    expect(screen.getByText("JG 2024")).toBeInTheDocument();
+    expect(screen.getByText("Bob")).toBeInTheDocument();
+  });
+
+  it("does not render sublabel element when sublabel is null", () => {
+    const { container } = render(
+      <GanttTimeline
+        rows={[{ traineeId: "t1", label: "Alice", sublabel: null }]}
+        assignments={[]}
+        viewStart={mockViewStart}
+        daysVisible={mockDaysVisible}
+        mode="readonly"
+      />,
+    );
+    expect(screen.getByText("Alice")).toBeInTheDocument();
+    const rowLabels = container.querySelectorAll(".sticky.left-0 .text-\\[10px\\]");
+    expect(rowLabels.length).toBe(0);
+  });
+
   it("renders month headers", () => {
     const { container } = render(
       <GanttTimeline

@@ -1766,3 +1766,43 @@ npm run dev
 
 - PUT-Handler hat keine Role-Validierung — nachziehen in Folge-AP.
 - Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI.
+
+---
+
+## 2026-05-10 – Arbeitspaket: Jahrgang (JG) Anzeige in Dashboard + Planung
+
+### Planner
+
+- **Ziel:** Jahrgang (JG = Ausbildungseintrittsjahr) sichtbar machen: im Prüfer-Dashboard in der Info-Zeile, in der Einsatzplanung als Sublabel unter dem Azubi-Namen.
+- **Umfang:**
+  1. `/api/users` Trainer-Branch: `trainingStartDate` ins `select` aufnehmen
+  2. Schedule Page: `Trainee`-Interface erweitern, JG an Gantt weiterreichen
+  3. Gantt Timeline: `sublabel` prop auf `GanttRow`, zweite Zeile in klein/grau
+  4. Dashboard: „FiAE · JG 2024 · 3 Berichte" in der Info-Zeile (Daten bereits verfügbar)
+- **Nicht-Ziele:** Keine Datenmodell-Änderungen, keine neuen API-Routen.
+- **Betroffene Dateien:** `src/app/api/users/route.ts`, `src/app/(dashboard)/trainer/schedule/page.tsx`, `src/components/schedule/gantt-timeline.tsx`, `src/components/reports/reviewer-dashboard-client.tsx`, Test-Dateien.
+- **Akzeptanzkriterien:** Dashboard zeigt „JG XXXX" in Trainee-Info-Zeile, Planung zeigt „JG XXXX" unter Azubi-Namen, wenn kein `trainingStartDate` gesetzt wird JG nicht angezeigt, alle Tests bestanden.
+
+### Reviewer
+
+- Freigabe. Minimaler Eingriff: 1 bestehendes Feld (`trainingStartDate`) wird in einer weiteren API-Response und in 2 UI-Komponenten sichtbar gemacht. Keine Breaking Changes.
+
+### Implementierte Änderungen
+
+1. **`src/app/api/users/route.ts`**: Trainer-Branch `select` um `trainingStartDate: true` erweitert.
+2. **`src/app/(dashboard)/trainer/schedule/page.tsx`**: `Trainee`-Interface um `trainingStartDate` erweitert. `traineeRows` extrahiert JG aus `trainingStartDate` und reicht es als `sublabel` weiter.
+3. **`src/components/schedule/gantt-timeline.tsx`**: `GanttRow` Interface um optionalen `sublabel` erweitert. Zeilen-Rendering: Name + optionale zweite Zeile `text-[10px] text-content-subtle`. `min-w` von 140px auf 160px erhöht.
+4. **`src/components/reports/reviewer-dashboard-client.tsx`**: `trainingStartDate` (bereits im Interface) wird gerendert: „FiAE · JG 2024 · 3 Berichte".
+5. **Tests**: API-Test für Trainer-Branch aktualisiert (`trainingStartDate` in Response). 2 neue Gantt-Tests (sublabel gerendert / null-safety).
+
+### Verifikation
+
+- **Lint:** 0 Errors, 3 Warnings (unverändert).
+- **Tests:** 698 Tests, 41 Dateien, alle bestanden (+2 neue).
+- **Build:** erfolgreich.
+- **Typecheck:** `npm run typecheck` nicht verfügbar, pre-existing TS-Fehler unverändert.
+
+### Offene Risiken / Folgeaufgaben
+
+- Keine neuen Risiken.
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI, Issue #67 (Calendar-Today-Indikator).

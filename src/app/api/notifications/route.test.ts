@@ -20,6 +20,7 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       delete: vi.fn(),
       create: vi.fn(),
+      createMany: vi.fn(),
     },
     user: {
       findMany: vi.fn(),
@@ -41,6 +42,7 @@ const mockNotifCount = prisma.notification.count as ReturnType<typeof vi.fn>;
 const mockNotifUpdate = prisma.notification.update as ReturnType<typeof vi.fn>;
 const mockNotifDelete = prisma.notification.delete as ReturnType<typeof vi.fn>;
 const mockNotifCreate = prisma.notification.create as ReturnType<typeof vi.fn>;
+const mockNotifCreateMany = prisma.notification.createMany as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockReportFindMany = prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>;
 
@@ -202,7 +204,7 @@ describe("POST /api/notifications/check", () => {
     const json = await res.json();
     expect(json.traineesChecked).toBe(1);
     expect(json.created).toBeGreaterThan(0);
-    expect(mockNotifCreate).toHaveBeenCalled();
+    expect(mockNotifCreateMany).toHaveBeenCalled();
     delete process.env.CRON_SECRET;
   });
 

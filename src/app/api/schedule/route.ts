@@ -59,28 +59,34 @@ export async function GET(req: NextRequest) {
       select: { traineeId: true, validFrom: true, validUntil: true },
     });
 
-    const allAssignments = [];
-    for (const oa of officerAssignments) {
-      const where: Record<string, unknown> = {
-        traineeId: oa.traineeId,
-        startDate: { lte: oa.validUntil },
-        endDate: { gte: oa.validFrom },
-      };
-      if (start && end) {
-        where.startDate = { lte: new Date(end), gte: oa.validFrom };
-        where.endDate = { gte: new Date(start), lte: oa.validUntil };
-      }
-      const items = await prisma.scheduleAssignment.findMany({
-        where,
-        include: {
-          trainee: { select: { id: true, name: true, email: true, profession: { select: { id: true, name: true } } } },
-          supervisor: { select: { id: true, name: true, email: true } },
-        },
-        orderBy: [{ startDate: "asc" }],
-      });
-      allAssignments.push(...items);
+    const traineeIds = [...new Set(officerAssignments.map((oa) => oa.traineeId))];
+
+    const where: Record<string, unknown> = {
+      traineeId: { in: traineeIds },
+    };
+    if (start && end) {
+      where.startDate = { lte: new Date(end) };
+      where.endDate = { gte: new Date(start) };
     }
-    return NextResponse.json(allAssignments);
+
+    const allAssignments = await prisma.scheduleAssignment.findMany({
+      where,
+      include: {
+        trainee: { select: { id: true, name: true, email: true, profession: { select: { id: true, name: true } } } },
+        supervisor: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ traineeId: "asc" }, { startDate: "asc" }],
+    });
+
+    const filtered = allAssignments.filter((a) =>
+      officerAssignments.some((oa) =>
+        oa.traineeId === a.traineeId &&
+        new Date(a.startDate) <= oa.validUntil &&
+        new Date(a.endDate) >= oa.validFrom
+      )
+    );
+
+    return NextResponse.json(filtered);
   }
 
   if (role === "admin") {
@@ -269,6 +275,10 @@ export async function DELETE(req: NextRequest) {
     }
   }
 
-  await prisma.scheduleAssignment.delete({ where: { id } });
+  try {
+    await prisma.scheduleAssignment.delete({ where: { id } });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   return NextResponse.json({ success: true });
 }

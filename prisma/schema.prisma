@@ -120,6 +120,7 @@ model TraineeOfficerAssignment {
 
   @@index([traineeId])
   @@index([trainingOfficerId])
+  @@index([traineeId, validFrom, validUntil])
   @@map("trainee_officer_assignments")
 }
 
@@ -148,6 +149,7 @@ model WeeklyReport {
   @@unique([traineeId, calendarYear, calendarWeek])
   @@index([traineeId])
   @@index([status])
+  @@index([reviewedById])
   @@index([calendarYear, calendarWeek])
   @@index([weekStartDate])
   @@map("weekly_reports")
@@ -166,6 +168,7 @@ model DailyEntry {
 
   weeklyReport WeeklyReport @relation(fields: [weeklyReportId], references: [id], onDelete: Cascade)
 
+  @@unique([weeklyReportId, date])
   @@index([weeklyReportId])
   @@map("daily_entries")
 }
@@ -182,6 +185,7 @@ model ReviewEvent {
   actor        User?        @relation("ReviewActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([weeklyReportId])
+  @@index([actorId])
   @@map("review_events")
 }
 
@@ -224,13 +228,13 @@ model ScheduleAssignment {
   department      String?
   supervisorId    String?
   color           String?
-  createdBy       String
+  createdBy       String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
   trainee    User  @relation("ScheduleTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
   supervisor User? @relation("ScheduleSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
-  creator    User  @relation("ScheduleCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  creator    User? @relation("ScheduleCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([traineeId])
   @@index([startDate, endDate])
@@ -249,13 +253,13 @@ model RecurrenceRule {
   supervisorId String?
   color        String?
   priority     Int          @default(0)
-  createdById  String
+  createdById  String?
   updatedById  String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
   trainee   User              @relation("RecurrenceTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
-  createdBy User              @relation("RecurrenceCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy User?             @relation("RecurrenceCreator", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User?             @relation("RecurrenceUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
   supervisor User?            @relation("RecurrenceSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
   exceptions RecurrenceException[]
@@ -276,6 +280,5 @@ model RecurrenceException {
   rule RecurrenceRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
 
   @@unique([ruleId, date])
-  @@index([ruleId, date])
   @@map("recurrence_exceptions")
 }

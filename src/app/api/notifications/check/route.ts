@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   const notifiedSet = new Set(recentNotifications.map((n) => `${n.userId}-${n.message}`));
 
-  let created = 0;
+  const toCreate: { userId: string; type: string; message: string }[] = [];
   for (const trainee of trainees) {
     const startWeek = trainee.trainingStartDate
       ? getIsoWeek(trainee.trainingStartDate)
@@ -56,18 +56,19 @@ export async function POST(req: NextRequest) {
       if (!existingSet.has(`${trainee.id}-${w}`)) {
         const msg = `KW ${w}/${currentYear}`;
         if (!notifiedSet.has(`${trainee.id}-${msg}`)) {
-          await prisma.notification.create({
-            data: {
-              userId: trainee.id,
-              type: "missing_report",
-              message: `Fehlender Wochenbericht für ${msg}`,
-            },
+          toCreate.push({
+            userId: trainee.id,
+            type: "missing_report",
+            message: `Fehlender Wochenbericht für ${msg}`,
           });
-          created++;
         }
       }
     }
   }
 
-  return NextResponse.json({ created, traineesChecked: trainees.length });
+  if (toCreate.length > 0) {
+    await prisma.notification.createMany({ data: toCreate });
+  }
+
+  return NextResponse.json({ created: toCreate.length, traineesChecked: trainees.length });
 }

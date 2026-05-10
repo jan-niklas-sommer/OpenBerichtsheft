@@ -74,6 +74,10 @@ export async function DELETE(req: NextRequest) {
   const id = url.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  await prisma.trainerProfessionAssignment.delete({ where: { id } });
+  try {
+    await prisma.trainerProfessionAssignment.delete({ where: { id } });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   return NextResponse.json({ success: true });
 }

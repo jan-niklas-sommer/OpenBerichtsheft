@@ -36,7 +36,11 @@ export async function DELETE(
 
   const { id } = await params;
 
-  await prisma.trainingProfession.delete({ where: { id } });
+  try {
+    await prisma.trainingProfession.delete({ where: { id } });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ success: true });
 }

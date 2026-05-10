@@ -1949,3 +1949,54 @@ Plan deckt ausschliesslich Phase 1 ab. Keine UI-Beruehrung, keine Schema-Migrati
 - Rate Limiting ist In-Memory – bei Multi-Instance-Deployment nicht instanzuebergreifend. Fuer Production auf Redis-basierte Loesung migrieren.
 - `typecheck`-Script nicht in `package.json` (AGENTS.md fordert es).
 - Phase 2-7 der Qualitaetsoffensive ausstehend.
+
+---
+
+## AP: Phase 2 – Performance & Stabilitaet (Qualitaetsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** Performance- und Stabilitaets-Fixes aus der Qualitaetsoffensive.
+
+**Umfang:**
+1. QO-H6: JWT-Refresh Cache (DB-Query nur alle 5 Min)
+2. QO-M8: N+1 Query schedule GET training_officer
+3. QO-M9: N+1 Query notification createMany statt Loop
+4. QO-M1/M2: try/catch auf 6 DELETE-Handlern + notifications PUT/DELETE
+5. QO-M10/M11/L13: Fehlende DB-Indizes (reviewedById, actorId, composite)
+6. QO-M12/M13: Cascade-Delete ScheduleAssignment/RecurrenceRule → SetNull
+7. QO-M14: Unique-Constraint auf DailyEntry[weeklyReportId, date]
+8. QO-L14: Redundanter Index auf RecurrenceException entfernt
+
+### Reviewer
+
+Schema-Aenderungen sind rueckwaertskompatibel (neue Indizes, Unique, FK-Aenderung von Cascade→SetNull mit nullable FK). Migration erstellt. Freigabe erteilt.
+
+### Implementierte Aenderungen
+
+- **QO-H6:** `auth.ts` – Role-Cache (5 Min TTL) als In-Memory Map. DB-Query nur bei Cache-Miss.
+- **QO-M8:** `schedule/route.ts` GET training_officer – Single Query statt N Queries. Filterung in-memory nach Officer-Zeitraum.
+- **QO-M9:** `notifications/check/route.ts` – `createMany` statt Loop mit einzelnen `create`.
+- **QO-M1/M2:** try/catch auf DELETE: schedule, recurrence-rules, officer-assignments, assignments, professions/[id], notifications/[id]. PUT: notifications/[id]. Bei Prisma-Fehler → 404.
+- **Migration:** `20260510120000_phase2_indexes_constraints_cascade`
+  - `@@index([reviewedById])` auf WeeklyReport
+  - `@@index([actorId])` auf ReviewEvent
+  - `@@index([traineeId, validFrom, validUntil])` auf TraineeOfficerAssignment
+  - `@@unique([weeklyReportId, date])` auf DailyEntry
+  - ScheduleAssignment.createdBy: Cascade → SetNull (nullable)
+  - RecurrenceRule.createdById: Cascade → SetNull (nullable)
+  - Redundant Index auf RecurrenceException entfernt
+
+### Verifikation
+
+- **Tests:** 726 Tests, 42 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Build:** erfolgreich.
+- **Migration:** lokal angewendet.
+
+### Offene Risiken / Folgeaufgaben
+
+- DailyEntry Unique-Constraint kann bei bestehenden Duplikaten in Production zu Fehlern fuehren. Vor Migration Duplikate pruefen.
+- Phase 3-7 der Qualitaetsoffensive ausstehend.

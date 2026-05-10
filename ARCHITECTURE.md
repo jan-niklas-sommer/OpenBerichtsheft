@@ -337,6 +337,8 @@ draft → submitted → approved
 | POST | `/api/reports` | Bericht erstellen/upserten | trainee |
 | GET | `/api/reports/[id]` | Bericht-Details | Besitzer oder zugeordneter Prüfer |
 | GET | `/api/reports/[id]/pdf` | Bericht als PDF-Download | Besitzer oder zugeordneter Prüfer |
+| GET | `/api/reports/export` | Batch-PDF-Export (Zeitraum) | alle Rollen (Berechtigungsprüfung) |
+| GET | `/api/reports/count` | Berichtsanzahl im Zeitraum | alle Rollen (für Vorschau) |
 | PUT | `/api/reports/[id]` | Bericht aktualisieren (Autosave) | trainee (nur draft/needs_revision) |
 | POST | `/api/reports/[id]/submit` | Bericht einreichen | trainee (nur draft) |
 | PUT | `/api/reports/[id]/submit` | Bericht zurückziehen (withdraw → draft) | trainee (nur submitted) |

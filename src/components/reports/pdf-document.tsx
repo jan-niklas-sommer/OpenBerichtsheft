@@ -161,6 +161,92 @@ function formatDayName(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("de-DE", { weekday: "long" });
 }
 
+export function PdfBatchDocument({ reports, traineeName }: { reports: ReportData[]; traineeName: string }) {
+  return (
+    <Document>
+      {reports.map((report, idx) => (
+        <Page key={idx} size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <Text style={styles.title}>
+              {report.reportType === "daily" ? "Tagesbericht" : "Wochenbericht"}
+            </Text>
+            <Text style={styles.subtitle}>
+              KW {report.calendarWeek}/{report.calendarYear}
+            </Text>
+            <Text style={styles.subtitle}>
+              {formatDate(report.weekStartDate)} – {formatDate(report.weekEndDate)}
+            </Text>
+            <Text style={styles.subtitle}>
+              {traineeName}
+              {report.trainee?.profession?.name ? ` | ${report.trainee.profession.name}` : ""}
+            </Text>
+          </View>
+
+          <Text style={styles.sectionTitle}>Tageseinträge</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderCell, styles.colDate]}>Tag</Text>
+              <Text style={[styles.tableHeaderCell, styles.colType]}>Tagestyp</Text>
+              <Text style={[styles.tableHeaderCell, styles.colHours]}>Stunden</Text>
+            </View>
+            {report.dailyEntries.map((entry, i) => (
+              <View key={entry.id || i} style={styles.tableRow}>
+                <Text style={[styles.tableCell, styles.colDate]}>
+                  {formatDayName(entry.date)}, {formatDate(entry.date)}
+                </Text>
+                <Text style={[styles.tableCell, styles.colType]}>
+                  {DAY_TYPE_LABELS[entry.dayType] || entry.dayType}
+                </Text>
+                <Text style={[styles.tableCell, styles.colHours]}>
+                  {entry.hours}h {entry.minutes > 0 ? `${entry.minutes}min` : ""}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>Berichtstext</Text>
+          <Text style={styles.reportText}>
+            {report.reportText || "Kein Berichtstext vorhanden."}
+          </Text>
+
+          {report.reviewComment && (
+            <View style={styles.commentBox}>
+              <Text style={styles.commentTitle}>Kommentar des Prüfers</Text>
+              <Text style={styles.commentText}>{report.reviewComment}</Text>
+            </View>
+          )}
+
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Status</Text>
+            <Text style={styles.statusValue}>{STATUS_LABELS[report.status] || report.status}</Text>
+          </View>
+
+          {report.submittedAt && (
+            <View style={styles.statusRow}>
+              <Text style={styles.statusLabel}>Eingereicht am</Text>
+              <Text style={styles.statusValue}>{formatDate(report.submittedAt)}</Text>
+            </View>
+          )}
+
+          {report.reviewedAt && (
+            <View style={styles.statusRow}>
+              <Text style={styles.statusLabel}>Geprüft am</Text>
+              <Text style={styles.statusValue}>{formatDate(report.reviewedAt)}</Text>
+            </View>
+          )}
+
+          {report.reviewedBy && (
+            <View style={styles.statusRow}>
+              <Text style={styles.statusLabel}>Geprüft von</Text>
+              <Text style={styles.statusValue}>{report.reviewedBy.name}</Text>
+            </View>
+          )}
+        </Page>
+      ))}
+    </Document>
+  );
+}
+
 export function PdfDocument({ report }: { report: ReportData }) {
   const traineeName = report.trainee?.name || "Unbekannt";
   const profession = report.trainee?.profession?.name;

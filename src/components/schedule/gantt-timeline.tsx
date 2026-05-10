@@ -270,7 +270,7 @@ export function GanttTimeline({
 
   return (
     <>
-      <div className="flex">
+      <div className="flex select-none">
         <div className="flex-shrink-0 w-[160px] border-r border-stroke-subtle bg-surface-base">
           <div
             style={{ height: headerHeight }}

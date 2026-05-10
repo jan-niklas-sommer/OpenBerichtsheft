@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, vi } from "vitest";
+import { render } from "@testing-library/react";
 import { Calendar } from "./calendar";
 
 describe("Calendar", () => {

@@ -240,7 +240,7 @@ export function ReviewerDashboardClient({
               {submittedCount} offen
             </Badge>
           )}
-          <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)}>
+          <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)} aria-label="Filter ein-/ausblenden">
             <Filter className="h-4 w-4" />
           </Button>
         </div>

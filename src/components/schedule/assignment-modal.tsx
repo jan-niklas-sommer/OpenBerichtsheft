@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -67,6 +67,43 @@ export function AssignmentModal({
     }
     return dates.slice(0, 12);
   }, [mode, startDate, endDate, selectedDays]);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      onClose();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    const container = dialogRef.current;
+    if (!container) return;
+    const focusable = container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        const first = dialogRef.current?.querySelector<HTMLElement>(
+          'button:not([disabled]), select, input',
+        );
+        first?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -162,10 +199,15 @@ export function AssignmentModal({
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="assignment-modal-title"
         className="w-full max-w-lg rounded-lg border border-stroke-subtle bg-surface-elevated p-6 shadow-lg"
         onMouseDown={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
       >
-        <h3 className="mb-4 text-lg font-semibold text-content-base">
+        <h3 id="assignment-modal-title" className="mb-4 text-lg font-semibold text-content-base">
           Einsatz planen
         </h3>
 
@@ -192,6 +234,7 @@ export function AssignmentModal({
               onChange={(e) => setTraineeId(e.target.value)}
               required
               className={selectClass}
+              aria-label="Azubi auswählen"
             >
               <option value="">Azubi auswählen...</option>
               {trainees.map((t) => (
@@ -205,6 +248,7 @@ export function AssignmentModal({
               value={scheduleType}
               onChange={(e) => setScheduleType(e.target.value as ScheduleType)}
               className={selectClass}
+              aria-label="Einsatztyp"
             >
               {Object.entries(TYPE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -268,6 +312,7 @@ export function AssignmentModal({
               value={displayLabel}
               onChange={(e) => setDisplayLabel(e.target.value)}
               className={inputClass}
+              aria-label="Beschreibung dieser Regel"
             />
           )}
 
@@ -282,6 +327,7 @@ export function AssignmentModal({
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               className={inputClass}
+              aria-label={scheduleType === "department" ? "Abteilung" : "Beschreibung"}
             />
           )}
 
@@ -289,6 +335,7 @@ export function AssignmentModal({
             value={supervisorId}
             onChange={(e) => setSupervisorId(e.target.value)}
             className={selectClass}
+            aria-label="Betreuer"
           >
             <option value="">Betreuer (optional)...</option>
             {officers.map((o) => (

@@ -159,11 +159,11 @@ export function AssignmentModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-backdrop"
-      onClick={onClose}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         className="w-full max-w-lg rounded-lg border border-stroke-subtle bg-surface-elevated p-6 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <h3 className="mb-4 text-lg font-semibold text-content-base">
           Einsatz planen

@@ -260,12 +260,12 @@ export default function SchedulePage() {
       {editItem && typeof window !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-backdrop"
-          onClick={() => setEditItem(null)}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setEditItem(null); }}
         >
           <div
             ref={popoverRef}
             className="w-80 rounded-lg border border-stroke-subtle bg-surface-elevated p-5 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <h3 className="mb-3 font-semibold text-content-base">
               Bearbeiten

@@ -544,7 +544,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(revisionReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
-    const res = await REVIEW(makeRequest("POST", { action: "needs_revision" }), { params });
+    const res = await REVIEW(makeRequest("POST", { action: "needs_revision", comment: "Bitte überarbeiten" }), { params });
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toEqual(revisionReport);
@@ -569,7 +569,7 @@ describe("POST /api/reports/[id]/review", () => {
     mockTx.weeklyReport.findUnique.mockResolvedValue(submittedReport);
     mockTx.weeklyReport.update.mockResolvedValue(rejectedReport);
     mockTx.reviewEvent.create.mockResolvedValue({});
-    const res = await REVIEW(makeRequest("POST", { action: "rejected" }), { params });
+    const res = await REVIEW(makeRequest("POST", { action: "rejected", comment: "Nicht akzeptabel" }), { params });
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toEqual(rejectedReport);

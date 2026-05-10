@@ -196,7 +196,7 @@ describe("POST /api/reports/[id]/review", () => {
       return fn(tx);
     });
 
-    const res = await POST(makeRequest({ action: "needs_revision" }), makeParams());
+    const res = await POST(makeRequest({ action: "needs_revision", comment: "Bitte überarbeiten" }), makeParams());
     expect(res.status).toBe(200);
   });
 

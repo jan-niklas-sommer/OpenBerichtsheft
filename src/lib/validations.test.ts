@@ -367,10 +367,14 @@ describe("weeklyReportSchema", () => {
     hours: 8,
     minutes: 0,
   };
+  const validEntries = Array.from({ length: 7 }, (_, i) => ({
+    ...validEntry,
+    date: `2025-01-${String(6 + i).padStart(2, "0")}`,
+  }));
   const valid = {
     calendarYear: 2025,
     calendarWeek: 3,
-    dailyEntries: [validEntry],
+    dailyEntries: validEntries,
   };
 
   it("accepts valid input", () => {
@@ -444,8 +448,16 @@ describe("weeklyReportSchema", () => {
     ).toThrow();
   });
 
-  it("accepts empty dailyEntries array", () => {
-    expect(weeklyReportSchema.parse({ ...valid, dailyEntries: [] })).toBeDefined();
+  it("rejects dailyEntries with fewer than 7 entries", () => {
+    expect(() =>
+      weeklyReportSchema.parse({ ...valid, dailyEntries: [validEntry] })
+    ).toThrow();
+  });
+
+  it("rejects empty dailyEntries array", () => {
+    expect(() =>
+      weeklyReportSchema.parse({ ...valid, dailyEntries: [] })
+    ).toThrow();
   });
 
   it("rejects invalid dailyEntry in array", () => {
@@ -463,12 +475,26 @@ describe("reviewSchema", () => {
     expect(reviewSchema.parse({ action: "approved" })).toEqual({ action: "approved", comment: undefined });
   });
 
-  it("accepts needs_revision action", () => {
-    expect(reviewSchema.parse({ action: "needs_revision" })).toEqual({ action: "needs_revision", comment: undefined });
+  it("rejects needs_revision action without comment", () => {
+    expect(() => reviewSchema.parse({ action: "needs_revision" })).toThrow();
   });
 
-  it("accepts rejected action", () => {
-    expect(reviewSchema.parse({ action: "rejected" })).toEqual({ action: "rejected", comment: undefined });
+  it("accepts needs_revision action with comment", () => {
+    expect(reviewSchema.parse({ action: "needs_revision", comment: "Bitte überarbeiten" })).toEqual({
+      action: "needs_revision",
+      comment: "Bitte überarbeiten",
+    });
+  });
+
+  it("rejects rejected action without comment", () => {
+    expect(() => reviewSchema.parse({ action: "rejected" })).toThrow();
+  });
+
+  it("accepts rejected action with comment", () => {
+    expect(reviewSchema.parse({ action: "rejected", comment: "Nicht ausreichend" })).toEqual({
+      action: "rejected",
+      comment: "Nicht ausreichend",
+    });
   });
 
   it("accepts action with comment", () => {

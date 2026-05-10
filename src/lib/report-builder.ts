@@ -7,6 +7,13 @@ const SCHEDULE_TO_DAY_TYPE: Record<ScheduleType, "company" | "vocational_school"
   other: "other",
 };
 
+const DEFAULT_HOURS: Record<ScheduleType, number> = {
+  department: 8,
+  school: 8,
+  vacation: 0,
+  other: 8,
+};
+
 export interface DefaultDailyEntry {
   date: string;
   dayType: "company" | "vocational_school" | "vacation" | "other";
@@ -31,7 +38,7 @@ export function buildDefaultEntries(
     return {
       date: dateStr,
       dayType: SCHEDULE_TO_DAY_TYPE[entry.scheduleType],
-      hours: 8,
+      hours: DEFAULT_HOURS[entry.scheduleType],
       minutes: 0,
       reportText: "",
     };

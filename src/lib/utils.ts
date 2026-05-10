@@ -34,12 +34,17 @@ export function getCurrentWeek(): { year: number; week: number } {
 
 export function getIsoWeek(date: Date): { year: number; week: number } {
   const d = new Date(date.getTime());
-  d.setHours(12, 0, 0, 0);
+  d.setUTCHours(12, 0, 0, 0);
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   return { year: d.getUTCFullYear(), week };
+}
+
+export function getIsoWeeksInYear(year: number): number {
+  const dec28 = new Date(year, 11, 28);
+  return getIsoWeek(dec28).week;
 }
 
 export function getTrainingStartWeek(trainingStartDate: Date | null | undefined): { year: number; week: number } | null {

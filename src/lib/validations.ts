@@ -19,7 +19,7 @@ export const updateUserSchema = z.object({
   name: z.string().min(1, "Name erforderlich").optional(),
   role: z.enum(["admin", "trainer", "training_officer", "trainee"]).optional(),
   password: z.string().min(8, "Mindestens 8 Zeichen").optional(),
-  deactivatedAt: z.date().nullable().optional(),
+  deactivatedAt: z.coerce.date().nullable().optional(),
   professionId: z.string().uuid().nullable().optional(),
   trainingStartDate: z.string().nullable().optional(),
 });

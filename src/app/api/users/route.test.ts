@@ -19,6 +19,9 @@ vi.mock("@/lib/prisma", () => ({
     trainerProfessionAssignment: {
       findMany: vi.fn(),
     },
+    traineeOfficerAssignment: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -145,7 +148,12 @@ describe("GET /api/users", () => {
 
   it("returns officers for trainer", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockFindMany.mockResolvedValue([{ id: "o-1", name: "Officer", email: "o@test.de" }]);
+    mockFindMany
+      .mockResolvedValueOnce([{ id: "t-1" }])
+      .mockResolvedValueOnce([{ id: "o-1", name: "Officer", email: "o@test.de" }]);
+    (prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { trainingOfficerId: "o-1" },
+    ]);
     const res = await GET(makeGetRequest({ role: "training_officer" }));
     expect(res.status).toBe(200);
   });

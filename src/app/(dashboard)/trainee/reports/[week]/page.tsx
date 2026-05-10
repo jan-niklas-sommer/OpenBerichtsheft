@@ -15,6 +15,7 @@ import {
   formatDate,
   getCurrentWeek,
   getIsoWeek,
+  getIsoWeeksInYear,
   DAY_TYPE_LABELS,
   DAY_TYPES,
 } from "@/lib/utils";
@@ -78,9 +79,9 @@ export default function ReportEditorPage() {
   }, [savedAt]);
 
   const autosaveData = useMemo(() => {
-    if (!isEditable) return null;
+    if (!isEditable || !dataFetched) return null;
     return { reportText, reportType, dailyEntries };
-  }, [isEditable, reportText, reportType, dailyEntries]);
+  }, [isEditable, dataFetched, reportText, reportType, dailyEntries]);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -148,8 +149,8 @@ export default function ReportEditorPage() {
     const calcWeek = (direction: -1 | 1) => {
       let w = currentWeek + direction;
       let y = currentYear;
-      if (w < 1) { w = 52; y--; }
-      else if (w > 52) { w = 1; y++; }
+      if (w < 1) { w = getIsoWeeksInYear(y - 1); y--; }
+      else if (w > getIsoWeeksInYear(y)) { w = 1; y++; }
       return { year: y, week: w };
     };
     const prev = calcWeek(-1);
@@ -254,9 +255,9 @@ export default function ReportEditorPage() {
     let newWeek = currentWeek + direction;
     let newYear = currentYear;
     if (newWeek < 1) {
-      newWeek = 52;
+      newWeek = getIsoWeeksInYear(newYear - 1);
       newYear--;
-    } else if (newWeek > 52) {
+    } else if (newWeek > getIsoWeeksInYear(newYear)) {
       newWeek = 1;
       newYear++;
     }
@@ -288,7 +289,7 @@ export default function ReportEditorPage() {
 
   const prevDisabled = (() => {
     let pw = currentWeek - 1, py = currentYear;
-    if (pw < 1) { pw = 52; py--; }
+    if (pw < 1) { pw = getIsoWeeksInYear(py - 1); py--; }
     return isBeforeTrainingStart(py, pw);
   })();
 

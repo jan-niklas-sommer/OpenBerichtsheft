@@ -62,18 +62,19 @@ export async function GET(req: NextRequest) {
     supervisorId: a.supervisorId ?? undefined,
   }));
 
-  const recurrenceRules: RecurrenceRule[] = rules.map((r) => ({
-    id: r.id,
-    traineeId: r.traineeId,
-    scheduleType: r.scheduleType,
-    startDate: r.startDate,
-    endDate: r.endDate,
-    weekDays: r.weekDays,
-    displayLabel: r.displayLabel ?? undefined,
-    department: r.department ?? undefined,
-    supervisorId: r.supervisorId ?? undefined,
-    createdAt: r.createdAt,
-  }));
+   const recurrenceRules: RecurrenceRule[] = rules.map((r) => ({
+     id: r.id,
+     traineeId: r.traineeId,
+     scheduleType: r.scheduleType,
+     startDate: r.startDate,
+     endDate: r.endDate,
+     weekDays: r.weekDays,
+     interval: r.interval ?? 1,
+     displayLabel: r.displayLabel ?? undefined,
+     department: r.department ?? undefined,
+     supervisorId: r.supervisorId ?? undefined,
+     createdAt: r.createdAt,
+   }));
 
   const allExceptions: RecurrenceException[] = [];
   for (const rule of rules) {

@@ -46,6 +46,14 @@ export async function GET(req: NextRequest) {
       where.traineeId = { in: trainees.map((t) => t.id) };
     }
 
+    if (role === "training_officer") {
+      const assignments = await prisma.traineeOfficerAssignment.findMany({
+        where: { trainingOfficerId: userId },
+        select: { traineeId: true },
+      });
+      where.traineeId = { in: assignments.map((a) => a.traineeId) };
+    }
+
     const rules = await prisma.recurrenceRule.findMany({
       where,
       include: {

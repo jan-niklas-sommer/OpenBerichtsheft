@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getIsoWeek } from "@/lib/utils";
+import { getIsoWeek, getIsoWeeksInYear } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 interface TraineeProgress {
@@ -27,7 +27,7 @@ function weeksBetween(start: { year: number; week: number }, end: { year: number
   while (y < end.year || (y === end.year && w <= end.week)) {
     weeks.push({ year: y, week: w });
     w++;
-    if (w > 52) { w = 1; y++; }
+    if (w > getIsoWeeksInYear(y)) { w = 1; y++; }
   }
   return weeks;
 }

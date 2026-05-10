@@ -11,12 +11,6 @@ function toDateStr(d: Date): string {
   return d.toISOString().split("T")[0];
 }
 
-function addDays(d: Date, days: number): Date {
-  const r = new Date(d);
-  r.setDate(r.getDate() + days);
-  return r;
-}
-
 function addMonths(d: Date, months: number): Date {
   const r = new Date(d);
   r.setMonth(r.getMonth() + months);

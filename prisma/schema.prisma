@@ -64,6 +64,7 @@ model User {
   passwordHash  String
   professionId       String?
   trainingStartDate  DateTime?
+  emailVerified      DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   deactivatedAt      DateTime?
@@ -281,4 +282,16 @@ model RecurrenceException {
 
   @@unique([ruleId, date])
   @@map("recurrence_exceptions")
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@map("verification_tokens")
 }

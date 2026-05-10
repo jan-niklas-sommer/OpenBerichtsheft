@@ -220,9 +220,10 @@ Nach der Anmeldung sehen Sie Ihr **Ausbilder-Dashboard**. Es zeigt alle **einger
 
 Jeder Eintrag zeigt:
 
-- **Kalenderwoche/Jahr** des Berichts
 - **Name** des Auszubildenden
-- **Status** des Berichts
+- **Ausbildungsberuf** und **Jahrgang** (JG, abgeleitet vom Ausbildungseintrittsdatum)
+- **Anzahl der Berichte** und offene Einreichungen
+- **Mini-Wochenübersicht** (letzte 8 Wochen, farbcodierte Punkte)
 
 ### 5.2 Bericht prüfen
 
@@ -269,6 +270,7 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 **Gantt-Chart Ansicht:**
 
 - Hierarchischer Header: Monatszeile (Monat + Jahr) oben, Wochenzeile (KW) darunter
+- Unter jedem Azubi-Namen wird der **Jahrgang** (JG, Ausbildungseintrittsjahr) in kleiner Schrift angezeigt
 - Wochenenden sind farblich hervorgehoben (Hellgrau / Dark Mode: dunkel)
 - Rote **Heute-Linie** markiert das aktuelle Datum
 - Wochengrenzen als gestrichelte Linien

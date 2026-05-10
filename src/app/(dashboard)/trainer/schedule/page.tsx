@@ -16,6 +16,7 @@ interface Trainee {
   id: string;
   name: string;
   email: string;
+  trainingStartDate?: string | null;
 }
 
 interface Officer {
@@ -106,7 +107,15 @@ export default function SchedulePage() {
         return matchesSearch && matchesProfession;
       })
       .filter((t) => assignmentTraineeIds.has(t.id))
-      .map((t) => [t.id, { name: t.name }] as [string, { name: string; profession?: string | null }])
+      .map((t) => {
+        const jg = t.trainingStartDate
+          ? new Date(t.trainingStartDate).getFullYear()
+          : null;
+        return [t.id, { name: t.name, sublabel: jg ? `JG ${jg}` : null }] as [
+          string,
+          { name: string; sublabel: string | null },
+        ];
+      })
       .sort((a, b) => a[1].name.localeCompare(b[1].name));
   }, [trainees, filteredAssignments, search, professionFilter]);
 
@@ -361,6 +370,7 @@ export default function SchedulePage() {
         rows={traineeRows.map(([id, info]) => ({
           traineeId: id,
           label: info.name,
+          sublabel: info.sublabel,
         }))}
         assignments={filteredAssignments}
         viewStart={viewStart}

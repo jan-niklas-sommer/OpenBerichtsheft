@@ -16,6 +16,7 @@ import {
 interface GanttRow {
   traineeId: string;
   label: string;
+  sublabel?: string | null;
 }
 
 interface GanttTimelineProps {
@@ -344,7 +345,7 @@ export function GanttTimeline({
     <>
       <div className="timeline-scroll overflow-x-auto">
         <div className="flex">
-          <div className="sticky left-0 z-10 min-w-[140px] pr-6 bg-surface-base">
+          <div className="sticky left-0 z-10 min-w-[160px] pr-6 bg-surface-base">
           <div
             style={{ height: headerHeight }}
             className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
@@ -354,12 +355,17 @@ export function GanttTimeline({
           {rows.map((row) => (
             <div
               key={row.traineeId}
-              className="flex items-center px-3"
+              className="flex flex-col justify-center px-3"
               style={{ height: rowHeight }}
             >
               <span className="truncate text-xs font-medium text-content-base">
                 {row.label}
               </span>
+              {row.sublabel && (
+                <span className="truncate text-[10px] text-content-subtle">
+                  {row.sublabel}
+                </span>
+              )}
             </div>
           ))}
         </div>

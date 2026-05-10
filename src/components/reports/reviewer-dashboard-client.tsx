@@ -153,6 +153,11 @@ export function ReviewerDashboardClient({
                     </p>
                     <p className="text-sm text-content-muted">
                       {trainee.profession || "Kein Beruf"}
+                      {trainee.trainingStartDate && (
+                        <>
+                          {" · "}JG {new Date(trainee.trainingStartDate).getFullYear()}
+                        </>
+                      )}
                       {" · "}{trainee.reports.length} Berichte
                       {submittedReports.length > 0 && (
                         <span className="text-warning">

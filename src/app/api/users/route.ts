@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     if (roleFilter === "trainee") {
       const trainees = await prisma.user.findMany({
         where: { role: "trainee", professionId: { in: professionIds }, deactivatedAt: null },
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, email: true, trainingStartDate: true },
       });
       return NextResponse.json(trainees);
     }

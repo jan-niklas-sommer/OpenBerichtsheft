@@ -131,11 +131,16 @@ describe("GET /api/users", () => {
   it("returns trainees for trainer by profession", async () => {
     mockAuth.mockResolvedValue(trainerSession);
     mockTrainerProfessions.mockResolvedValue([{ professionId: "prof-1" }]);
-    mockFindMany.mockResolvedValue([{ id: "t-1", name: "Trainee", email: "t@test.de" }]);
+    mockFindMany.mockResolvedValue([{ id: "t-1", name: "Trainee", email: "t@test.de", trainingStartDate: null }]);
     const res = await GET(makeGetRequest({ role: "trainee" }));
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual([{ id: "t-1", name: "Trainee", email: "t@test.de" }]);
+    expect(json).toEqual([{ id: "t-1", name: "Trainee", email: "t@test.de", trainingStartDate: null }]);
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: { id: true, name: true, email: true, trainingStartDate: true },
+      }),
+    );
   });
 
   it("returns officers for trainer", async () => {

@@ -1,246 +1,336 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient, Role, ReportStatus, DayType, ReportType, ScheduleType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+function upsertUser(email: string, name: string, role: Role, passwordHash: string, extra: Record<string, unknown> = {}) {
+  return prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: { email, name, role, passwordHash, ...extra },
+  });
+}
+
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
-  const fiAe = await prisma.trainingProfession.upsert({
-    where: { name: "Fachinformatiker für Anwendungsentwicklung" },
-    update: {},
-    create: { name: "Fachinformatiker für Anwendungsentwicklung" },
-  });
+  const professions = await Promise.all([
+    prisma.trainingProfession.upsert({
+      where: { name: "Fachinformatiker für Anwendungsentwicklung" },
+      update: {},
+      create: { name: "Fachinformatiker für Anwendungsentwicklung" },
+    }),
+    prisma.trainingProfession.upsert({
+      where: { name: "Fachinformatiker für Systemintegration" },
+      update: {},
+      create: { name: "Fachinformatiker für Systemintegration" },
+    }),
+    prisma.trainingProfession.upsert({
+      where: { name: "Kaufmann/-frau für Versicherungen und Finanzanlagen" },
+      update: {},
+      create: { name: "Kaufmann/-frau für Versicherungen und Finanzanlagen" },
+    }),
+  ]);
+  const [fiAe, fiSi, kvf] = professions;
 
-  const fiSi = await prisma.trainingProfession.upsert({
-    where: { name: "Fachinformatiker für Systemintegration" },
-    update: {},
-    create: { name: "Fachinformatiker für Systemintegration" },
-  });
+  await upsertUser("admin@example.com", "Admin User", Role.admin, passwordHash);
 
-  await prisma.user.upsert({
-    where: { email: "admin@example.com" },
-    update: {},
-    create: {
-      email: "admin@example.com",
-      name: "Admin User",
-      role: Role.admin,
-      passwordHash,
-    },
-  });
+  const trainers = await Promise.all([
+    upsertUser("trainer@example.com", "Max Mustermann", Role.trainer, passwordHash),
+    upsertUser("trainer2@example.com", "Dr. Katharina Weber", Role.trainer, passwordHash),
+    upsertUser("trainer3@example.com", "Stefan Krüger", Role.trainer, passwordHash),
+    upsertUser("trainer4@example.com", "Petra Hoffmann", Role.trainer, passwordHash),
+  ]);
+  const [t1, t2, t3, t4] = trainers;
 
-  const trainer = await prisma.user.upsert({
-    where: { email: "trainer@example.com" },
-    update: {},
-    create: {
-      email: "trainer@example.com",
-      name: "Max Mustermann (Ausbilder)",
-      role: Role.trainer,
-      passwordHash,
-    },
-  });
+  const officers = await Promise.all([
+    upsertUser("officer@example.com", "Erika Mustermann", Role.training_officer, passwordHash),
+    upsertUser("officer2@example.com", "Thomas Schmidt", Role.training_officer, passwordHash),
+    upsertUser("officer3@example.com", "Sandra Lehmann", Role.training_officer, passwordHash),
+    upsertUser("officer4@example.com", "Jörg Fischer", Role.training_officer, passwordHash),
+    upsertUser("officer5@example.com", "Nicole Braun", Role.training_officer, passwordHash),
+    upsertUser("officer6@example.com", "Ralf Wagner", Role.training_officer, passwordHash),
+    upsertUser("officer7@example.com", "Monika Becker", Role.training_officer, passwordHash),
+    upsertUser("officer8@example.com", "Wolfgang Hartmann", Role.training_officer, passwordHash),
+    upsertUser("officer9@example.com", "Claudia Zimmermann", Role.training_officer, passwordHash),
+    upsertUser("officer10@example.com", "Holger Richter", Role.training_officer, passwordHash),
+  ]);
+  const [o1, o2, o3, o4, o5, o6, o7, o8, o9, o10] = officers;
 
-  const officer = await prisma.user.upsert({
-    where: { email: "officer@example.com" },
-    update: {},
-    create: {
-      email: "officer@example.com",
-      name: "Erika Mustermann (Ausbildungsbeauftragte)",
-      role: Role.training_officer,
-      passwordHash,
-    },
-  });
+  const traineeDefs: { email: string; name: string; professionId: string; start: string }[] = [
+    { email: "trainee@example.com", name: "Anna Schulz", professionId: fiAe.id, start: "2026-01-05" },
+    { email: "trainee2@example.com", name: "Ben Müller", professionId: fiSi.id, start: "2026-03-01" },
+    { email: "trainee3@example.com", name: "Clara Weber", professionId: fiAe.id, start: "2025-08-01" },
+    { email: "trainee4@example.com", name: "David Becker", professionId: fiSi.id, start: "2025-08-01" },
+    { email: "trainee5@example.com", name: "Emma Fischer", professionId: fiAe.id, start: "2026-01-05" },
+    { email: "trainee6@example.com", name: "Felix Wagner", professionId: kvf.id, start: "2025-09-01" },
+    { email: "trainee7@example.com", name: "Greta Hoffmann", professionId: kvf.id, start: "2025-09-01" },
+    { email: "trainee8@example.com", name: "Hannes Richter", professionId: fiSi.id, start: "2026-01-05" },
+    { email: "trainee9@example.com", name: "Ines Lehmann", professionId: fiAe.id, start: "2025-08-01" },
+    { email: "trainee10@example.com", name: "Jan Schmidt", professionId: fiSi.id, start: "2026-03-01" },
+    { email: "trainee11@example.com", name: "Klara Braun", professionId: kvf.id, start: "2026-01-05" },
+    { email: "trainee12@example.com", name: "Lukas Zimmermann", professionId: fiAe.id, start: "2025-08-01" },
+    { email: "trainee13@example.com", name: "Mia Hartmann", professionId: fiSi.id, start: "2026-01-05" },
+    { email: "trainee14@example.com", name: "Niklas Krüger", professionId: kvf.id, start: "2025-09-01" },
+    { email: "trainee15@example.com", name: "Olivia Schneider", professionId: fiAe.id, start: "2026-03-01" },
+    { email: "trainee16@example.com", name: "Paul Meier", professionId: fiSi.id, start: "2025-08-01" },
+    { email: "trainee17@example.com", name: "Quirin Koch", professionId: kvf.id, start: "2026-01-05" },
+    { email: "trainee18@example.com", name: "Rosa Grün", professionId: fiAe.id, start: "2026-03-01" },
+    { email: "trainee19@example.com", name: "Samuel Wolf", professionId: fiSi.id, start: "2025-08-01" },
+    { email: "trainee20@example.com", name: "Theresa Braun", professionId: kvf.id, start: "2026-01-05" },
+    { email: "trainee21@example.com", name: "Uwe Neumann", professionId: fiAe.id, start: "2025-09-01" },
+    { email: "trainee22@example.com", name: "Vera Lange", professionId: kvf.id, start: "2026-03-01" },
+  ];
 
-  const trainee = await prisma.user.upsert({
-    where: { email: "trainee@example.com" },
-    update: {},
-    create: {
-      email: "trainee@example.com",
-      name: "Anna Azubi",
-      role: Role.trainee,
-      passwordHash,
-      professionId: fiAe.id,
-      trainingStartDate: new Date("2026-01-05"),
-    },
-  });
+  const trainees = await Promise.all(
+    traineeDefs.map((d) =>
+      upsertUser(d.email, d.name, Role.trainee, passwordHash, {
+        professionId: d.professionId,
+        trainingStartDate: new Date(d.start),
+      })
+    )
+  );
 
-  const trainee2 = await prisma.user.upsert({
-    where: { email: "trainee2@example.com" },
-    update: {},
-    create: {
-      email: "trainee2@example.com",
-      name: "Ben Azubi",
-      role: Role.trainee,
-      passwordHash,
-      professionId: fiSi.id,
-      trainingStartDate: new Date("2026-03-01"),
-    },
-  });
+  for (const trainer of trainers) {
+    for (const prof of professions) {
+      await prisma.trainerProfessionAssignment.upsert({
+        where: {
+          trainerId_professionId: { trainerId: trainer.id, professionId: prof.id },
+        },
+        update: {},
+        create: { trainerId: trainer.id, professionId: prof.id },
+      });
+    }
+  }
 
-  await prisma.trainerProfessionAssignment.upsert({
-    where: {
-      trainerId_professionId: { trainerId: trainer.id, professionId: fiAe.id },
-    },
-    update: {},
-    create: {
-      trainerId: trainer.id,
-      professionId: fiAe.id,
-    },
-  });
-
-  await prisma.trainerProfessionAssignment.upsert({
-    where: {
-      trainerId_professionId: { trainerId: trainer.id, professionId: fiSi.id },
-    },
-    update: {},
-    create: {
-      trainerId: trainer.id,
-      professionId: fiSi.id,
-    },
-  });
-
-  const existingOfficerAssignment = await prisma.traineeOfficerAssignment.findFirst({
-    where: { traineeId: trainee.id, trainingOfficerId: officer.id },
-  });
-  if (!existingOfficerAssignment) {
-    await prisma.traineeOfficerAssignment.create({
-      data: {
-        traineeId: trainee.id,
-        trainingOfficerId: officer.id,
-        assignedById: trainer.id,
-        validFrom: new Date("2026-01-01"),
-        validUntil: new Date("2026-12-31"),
-      },
+  for (let i = 0; i < trainees.length; i++) {
+    const officer = officers[i % officers.length];
+    const trainer = trainers[i % trainers.length];
+    const existing = await prisma.traineeOfficerAssignment.findFirst({
+      where: { traineeId: trainees[i].id, trainingOfficerId: officer.id },
     });
+    if (!existing) {
+      await prisma.traineeOfficerAssignment.create({
+        data: {
+          traineeId: trainees[i].id,
+          trainingOfficerId: officer.id,
+          assignedById: trainer.id,
+          validFrom: new Date("2026-01-01"),
+          validUntil: new Date("2026-12-31"),
+        },
+      });
+    }
   }
 
   await prisma.appSetting.upsert({
     where: { key: "workingDays" },
     update: {},
-    create: {
-      key: "workingDays",
-      value: JSON.stringify([1, 2, 3, 4, 5]),
-    },
+    create: { key: "workingDays", value: JSON.stringify([1, 2, 3, 4, 5]) },
   });
 
-  const existingScheduleForAnna = await prisma.scheduleAssignment.findFirst({
-    where: { traineeId: trainee.id },
-  });
-  if (!existingScheduleForAnna) {
-    await prisma.scheduleAssignment.createMany({
-      data: [
-        {
-          traineeId: trainee.id,
-          scheduleType: "department",
-          startDate: new Date("2026-01-05"),
-          endDate: new Date("2026-02-13"),
-          department: "IT-Entwicklung",
-          color: "#10b981",
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "school",
-          startDate: new Date("2026-02-16"),
-          endDate: new Date("2026-02-27"),
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "department",
-          startDate: new Date("2026-03-02"),
-          endDate: new Date("2026-04-10"),
-          department: "IT-Support",
-          color: "#6366f1",
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "vacation",
-          startDate: new Date("2026-04-13"),
-          endDate: new Date("2026-04-24"),
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "department",
-          startDate: new Date("2026-04-27"),
-          endDate: new Date("2026-06-05"),
-          department: "IT-Entwicklung",
-          supervisorId: officer.id,
-          color: "#10b981",
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "school",
-          startDate: new Date("2026-06-08"),
-          endDate: new Date("2026-06-19"),
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "other",
-          startDate: new Date("2026-06-22"),
-          endDate: new Date("2026-06-26"),
-          color: "#8b5cf6",
-          createdBy: trainer.id,
-        },
-        {
-          traineeId: trainee.id,
-          scheduleType: "department",
-          startDate: new Date("2026-06-29"),
-          endDate: new Date("2026-09-30"),
-          department: "IT-Entwicklung",
-          color: "#10b981",
-          createdBy: trainer.id,
-        },
-      ],
-    });
+  const departments = [
+    "IT-Entwicklung", "IT-Support", "Netzwerktechnik", "Systemadministration",
+    "Qualitätssicherung", "DevOps", "Data Engineering", "Cybersecurity",
+    "Schadenabteilung", "Lebensversicherung", "Kundenbetreuung", "Risikomanagement",
+    "Anwendungsentwicklung", "Frontend-Team", "Backend-Team", "Mobile-Team",
+  ];
 
-    const existingScheduleForBen = await prisma.scheduleAssignment.findFirst({
-      where: { traineeId: trainee2.id },
+  const scheduleTypes = ["department", "school", "vacation", "other"] as const;
+
+  for (let i = 0; i < trainees.length; i++) {
+    const existing = await prisma.scheduleAssignment.findFirst({
+      where: { traineeId: trainees[i].id },
     });
-    if (!existingScheduleForBen) {
-      await prisma.scheduleAssignment.createMany({
-        data: [
-          {
-            traineeId: trainee2.id,
-            scheduleType: "department",
-            startDate: new Date("2026-03-01"),
-            endDate: new Date("2026-04-17"),
-            department: "Netzwerktechnik",
-            color: "#f97316",
-            createdBy: trainer.id,
-          },
-          {
-            traineeId: trainee2.id,
-            scheduleType: "school",
-            startDate: new Date("2026-04-20"),
-            endDate: new Date("2026-05-01"),
-            createdBy: trainer.id,
-          },
-          {
-            traineeId: trainee2.id,
-            scheduleType: "department",
-            startDate: new Date("2026-05-04"),
-            endDate: new Date("2026-07-31"),
-            department: "Systemadministration",
-            supervisorId: officer.id,
-            color: "#0ea5e9",
-            createdBy: trainer.id,
-          },
-        ],
+    if (existing) continue;
+
+    const start = new Date(traineeDefs[i].start);
+    const entries: { traineeId: string; scheduleType: ScheduleType; startDate: Date; endDate: Date; department: string | null; supervisorId: string | null; createdBy: string }[] = [];
+    let cursor = new Date(start);
+    cursor.setDate(cursor.getDate() - cursor.getDay() + 1);
+
+    for (let block = 0; block < 12; block++) {
+      const type = scheduleTypes[block % scheduleTypes.length];
+      const durationWeeks = type === "vacation" ? 2 : type === "school" ? 2 : 4 + (block % 3);
+      const end = new Date(cursor);
+      end.setDate(end.getDate() + durationWeeks * 7 - 3);
+
+      if (end > new Date("2026-12-31")) break;
+
+      const assignedOfficer = officers[(i + block) % officers.length];
+
+      entries.push({
+        traineeId: trainees[i].id,
+        scheduleType: type,
+        startDate: new Date(cursor),
+        endDate: new Date(end),
+        department: type === "department" ? departments[(i + block) % departments.length] : null,
+        supervisorId: type === "department" && block % 3 === 0 ? assignedOfficer.id : null,
+        createdBy: trainers[i % trainers.length].id,
       });
+
+      cursor = new Date(end);
+      cursor.setDate(cursor.getDate() + 3);
+    }
+
+    if (entries.length > 0) {
+      await prisma.scheduleAssignment.createMany({ data: entries });
     }
   }
 
-  console.log("Seed data created:");
-  console.log("  Admin:    admin@example.com / password123");
-  console.log("  Ausbilder: trainer@example.com / password123");
-  console.log("  Offizier:  officer@example.com / password123");
-  console.log("  Azubi 1:  trainee@example.com / password123");
-  console.log("  Azubi 2:  trainee2@example.com / password123");
+  const reportTexts = [
+    "Heute habe ich gelernt, dass man Kaffee nicht nur trinken, sondern auch als Debugging-Tool einsetzen kann. Drei Tassen später: Bug gefunden. ☕→🐛→✅",
+    "Mein Code kompiliert. Mein Code funktioniert. Ich bin unverwundbar. *Tests starten* ... Ich bin verwundbar. 😭",
+    "Heute 8 Stunden versucht einen CSS-Bug zu fixen. Am Ende war es ein fehlendes Semikolon. Ich hasse mein Leben. Aber die Seite sieht jetzt geil aus! ✨",
+    "Pair Programming mit dem Ausbilder. Er hat mir gezeigt wie man richtig refactored. Mein Code vorher: Spaghetti. Mein Code nachher: Michelin-Sterne Restaurant. 🍝→⭐",
+    "Git merge conflict gelöst. Ich fühle mich wie ein Krieger der einen Drachen besiegt hat. Nächster Konflikt in 3... 2... 1... 🐉⚔️",
+    "Stand-up Meeting: 'Und was hast du gestern gemacht?' — Ich: *schweigt in 47 Sprachen* — Nein Spaß, ich hab die API-Endpoint fertiggestellt. 🎯",
+    "Heute durfte ich mein erstes eigenes Feature deployen! Production! Live! Echte Nutzer! *Panik* ... Hat funktioniert. Ich bin offiziell Developer. 🚀",
+    "Datenbank-Optimierung gelernt. SELECT * FROM tabelle WHERE 1=1 war gestern. Heute: Indexe, Query-Pläne, und eine Ausführungszeit von 0.002ms statt 47s. 📊",
+    "Documentation Day! 47 Kommentare im Code hinterlassen. Mein zukünftiges Ich wird dankbar sein. Mein aktuelles Ich ist es definitiv nicht. 📝😤",
+    "Heute: React Hooks deep dive. useState, useEffect, useMemo, useCallback — mein Gehirn sieht aus wie ein dependency array. [?, ?, 🧠, ?]",
+    "Password-Hashing gelernt. bcrypt ist wie eine Zwiebel — Layer für Layer. Und wie bei einer Zwiebel weint man beim Schneiden. 🧅😢",
+    "Erster Tag in der Schadenabteilung: Ein Kunde hat sein Handy in der Pfanne mitgebraten und will Schadensersatz. Versicherungswelt ist wild. 📱🍳",
+    "Heute Lebensversicherungsberechnungen gelernt. Sterbetafeln sind morbide aber mathematisch faszinierend. Lebenserwartung berechnet: Ich brauche mehr Kaffee. ☕📈",
+    "Kundenbetreuung-Praxis: Einen wütenden Kunden beruhigt. Niveauvoll und professionell. Innere Stimme: AAAAAAAAAAAH. Äußere Stimme: 'Natürlich helfe ich Ihnen gerne!' 😊🔥",
+    "Netzwerk-Kabel gezogen. Server down. Kollegen schauen mich an. Ich schaue auf das Kabel. Kabel zurückgesteckt. Server up. Niemand hat was gesehen. 🤫",
+    "Firewall-Regeln konfiguriert. Port 80, 443, 8080... Moment, war 8080 jetzt dev oder prod? *ratter* Naja,testen wir mal. Spoiler: Es war prod. 🙈",
+    "Docker-Container gebaut. Image-Size: 1.2GB. Ausbilder: 'Das geht kleiner.' 3 Stunden später: 89MB. Ich bin jetzt offiziell Docker-Magier. 🐳✨",
+    "TypeScript strict mode aktiviert. 847 Fehler. Nach 6 Stunden: 0 Fehler. Mein Code ist jetzt typesafe und ich bin mental exhausted. 💪😤",
+    "Unit Tests geschrieben für meinen Code. 100% Coverage! Test: expect(true).toBe(true). Na gut, vielleicht doch etwas ausführlicher... 🧪",
+    "Sprint Review: Mein Feature wird live demonstriert. Cheering vom Team! Ich schaue auf den Code von letzter Woche und schäme mich. Aber hey, es funktioniert! 🎉",
+    "Heute Risikomanagement gelernt. Risikomatrix erstellt: Hoch-Wahrscheinlichkeit + Hoher-Schaden = 'Das machen wir nie wieder so'. Gute Lektion. 📋",
+    "SQL-Injection gelernt. Bobby Tables heißt der Typ. DROP TABLE students; — Niemals User-Input vertrauen! 🛡️",
+    "Agile Scrum Retrospektive: 'Was lief gut?' — Ich hab nicht den Server zerstört. 'Was kann besser?' — Ich sollte aufhören den Server zu zerstören. 📊😅",
+    "Heute: Kubernetes introduziert bekommen. Pods, Services, Deployments — mein Gehirn braucht horizontal pod autoscaling. 🧠➡️🧠🧠🧠",
+    "Versicherungsverträge analysiert. Kleingedrucktes lesen ist wie Code-Review — man findet die bösen Überraschungen erst bei genauerem Hinsehen. 🔍",
+  ];
+
+  function getIsoWeekAndYear(date: Date): { year: number; week: number } {
+    const d = new Date(date.getTime());
+    d.setHours(12, 0, 0, 0);
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+    return { year: d.getUTCFullYear(), week };
+  }
+
+  function getWeekDates(year: number, week: number) {
+    const jan4 = new Date(year, 0, 4);
+    const dayOfWeek = jan4.getDay() || 7;
+    const monday = new Date(jan4);
+    monday.setDate(jan4.getDate() - dayOfWeek + 1 + (week - 1) * 7);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return { start: monday, end: sunday };
+  }
+
+  const statuses: ReportStatus[] = [
+    ReportStatus.approved,
+    ReportStatus.submitted,
+    ReportStatus.draft,
+    ReportStatus.approved,
+    ReportStatus.approved,
+    ReportStatus.needs_revision,
+    ReportStatus.submitted,
+    ReportStatus.approved,
+    ReportStatus.draft,
+    ReportStatus.rejected,
+  ];
+
+  for (let i = 0; i < trainees.length; i++) {
+    const trainee = trainees[i];
+    const startDate = new Date(traineeDefs[i].start);
+    const now = new Date();
+
+    const startInfo = getIsoWeekAndYear(startDate);
+    const currentInfo = getIsoWeekAndYear(now);
+
+    let week = startInfo.week;
+    let year = startInfo.year;
+    let reportCount = 0;
+    const maxReports = 4 + (i % 5);
+
+    while ((year < currentInfo.year || (year === currentInfo.year && week <= currentInfo.week)) && reportCount < maxReports) {
+      const existingReport = await prisma.weeklyReport.findFirst({
+        where: { traineeId: trainee.id, calendarYear: year, calendarWeek: week },
+      });
+      if (existingReport) {
+        week++;
+        if (week > 52) { week = 1; year++; }
+        continue;
+      }
+
+      const { start: weekStart, end: weekEnd } = getWeekDates(year, week);
+      if (weekStart < startDate) {
+        week++;
+        if (week > 52) { week = 1; year++; }
+        continue;
+      }
+
+      const status = statuses[reportCount % statuses.length];
+      const text = reportTexts[(i * 5 + reportCount) % reportTexts.length];
+      const submittedAt = status !== ReportStatus.draft ? new Date(weekStart.getTime() + 4 * 86400000) : null;
+      const reviewedAt = status === ReportStatus.approved || status === ReportStatus.rejected ? new Date(weekStart.getTime() + 5 * 86400000) : null;
+      const reviewer = trainers[i % trainers.length];
+
+      const report = await prisma.weeklyReport.create({
+        data: {
+          traineeId: trainee.id,
+          weekStartDate: weekStart,
+          weekEndDate: weekEnd,
+          calendarYear: year,
+          calendarWeek: week,
+          reportText: `${text}\n\nKW ${week}/${year} — ${traineeDefs[i].name}`,
+          reportType: ReportType.weekly,
+          status,
+          submittedAt,
+          reviewedAt,
+          reviewedById: reviewedAt ? reviewer.id : null,
+          reviewComment: status === ReportStatus.rejected
+            ? "Bitte den Berichtstext überarbeiten und Details zu den Tätigkeiten ergänzen."
+            : status === ReportStatus.needs_revision
+            ? "Formatierung anpassen und konkrete Beispiele nachreichen."
+            : null,
+        },
+      });
+
+      const days: Date[] = [];
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(weekStart);
+        day.setDate(day.getDate() + d);
+        days.push(day);
+      }
+
+      const dayTypes: DayType[] = [
+        DayType.company, DayType.company, DayType.vocational_school,
+        DayType.company, DayType.company, DayType.other, DayType.other,
+      ];
+
+      await prisma.dailyEntry.createMany({
+        data: days.map((day, d) => ({
+          weeklyReportId: report.id,
+          date: day,
+          dayType: dayTypes[d],
+          hours: d < 5 ? 8 : 0,
+          minutes: 0,
+        })),
+      });
+
+      reportCount++;
+      week++;
+      if (week > 52) { week = 1; year++; }
+    }
+  }
+
+  console.log("🌱 Seed data created:");
+  console.log(`  ${professions.length} Berufe`);
+  console.log(`  ${trainers.length} Ausbilder`);
+  console.log(`  ${officers.length} Ausbildungsbeauftragte`);
+  console.log(`  ${trainees.length} Auszubildende`);
+  console.log("");
+  console.log("  Login: <role>@example.com / password123");
+  console.log("  Azubi-Logins: trainee@example.com bis trainee22@example.com");
 }
 
 main()

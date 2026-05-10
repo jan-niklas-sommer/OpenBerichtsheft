@@ -45,13 +45,16 @@ export const weeklyReportSchema = z.object({
   calendarWeek: z.number().int().min(1).max(53),
   reportText: z.string().optional(),
   reportType: z.enum(["weekly", "daily"]).optional(),
-  dailyEntries: z.array(dailyEntrySchema),
+  dailyEntries: z.array(dailyEntrySchema).min(7).max(7),
 });
 
 export const reviewSchema = z.object({
   action: z.enum(["approved", "needs_revision", "rejected"]),
   comment: z.string().optional(),
-});
+}).refine(
+  (data) => data.action === "approved" || (data.comment && data.comment.trim().length > 0),
+  { message: "Comment required for rejection or revision", path: ["comment"] }
+);
 
 export const assignmentSchema = z.object({
   trainerId: z.string().uuid(),
@@ -61,13 +64,7 @@ export const assignmentSchema = z.object({
 export const updateReportSchema = z.object({
   reportText: z.string().optional(),
   reportType: z.enum(["weekly", "daily"]).optional(),
-  dailyEntries: z.array(z.object({
-    date: z.string(),
-    dayType: z.enum(["company", "vocational_school", "vacation", "other"]),
-    hours: z.number().int().min(0).max(24),
-    minutes: z.number().int().min(0).max(59),
-    reportText: z.string().optional(),
-  })).optional(),
+  dailyEntries: z.array(dailyEntrySchema).optional(),
 });
 
 export const officerAssignmentSchema = z.object({

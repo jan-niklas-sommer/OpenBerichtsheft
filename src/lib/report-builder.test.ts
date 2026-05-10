@@ -43,6 +43,23 @@ describe("buildDefaultEntries (Prefill)", () => {
     }
   });
 
+  it("setzt 0 Stunden für Urlaub", () => {
+    const rule: RecurrenceRule = {
+      id: "r1",
+      traineeId: "t1",
+      scheduleType: "vacation",
+      startDate: new Date("2025-01-01"),
+      endDate: new Date("2025-12-31"),
+      weekDays: 127,
+      createdAt: new Date("2025-01-01"),
+    };
+    const entries = buildDefaultEntries(2025, 10, noAssignments, [rule], noExceptions);
+    for (const entry of entries) {
+      expect(entry.hours).toBe(0);
+      expect(entry.dayType).toBe("vacation");
+    }
+  });
+
   it("lässt reportText-Felder leer (kein automatischer Text)", () => {
     const entries = buildDefaultEntries(2025, 10, noAssignments, noRules, noExceptions);
     for (const entry of entries) {

@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { weeklyReportSchema } from "@/lib/validations";
 import { getWeekDates, getIsoWeek } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const yearParam = z.coerce.number().int().min(2020).max(2100).optional();
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -12,12 +15,13 @@ export async function GET(req: NextRequest) {
   const userId = session.user.id;
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
-  const year = url.searchParams.get("year");
+  const yearRaw = url.searchParams.get("year");
+  const year = yearRaw ? yearParam.parse(yearRaw) : undefined;
 
   if (role === "trainee") {
     const where: Record<string, unknown> = { traineeId: userId };
     if (status) where.status = status;
-    if (year) where.calendarYear = parseInt(year);
+    if (year) where.calendarYear = year;
 
     const reports = await prisma.weeklyReport.findMany({
       where,
@@ -58,7 +62,7 @@ export async function GET(req: NextRequest) {
       where.traineeId = { in: traineeIds };
     }
     if (status) where.status = status;
-    if (year) where.calendarYear = parseInt(year);
+    if (year) where.calendarYear = year;
 
     const reports = await prisma.weeklyReport.findMany({
       where,

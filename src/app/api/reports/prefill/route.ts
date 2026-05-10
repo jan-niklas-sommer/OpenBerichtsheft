@@ -4,6 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildDefaultEntries } from "@/lib/report-builder";
 import { type SingleAssignment, type RecurrenceRule, type RecurrenceException } from "@/lib/schedule-resolver";
 import { getWeekDates } from "@/lib/utils";
+import { z } from "zod";
+
+const prefillParams = z.object({
+  year: z.coerce.number().int().min(2020).max(2100),
+  week: z.coerce.number().int().min(1).max(53),
+});
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -13,11 +19,14 @@ export async function GET(req: NextRequest) {
   }
 
   const url = new URL(req.url);
-  const year = parseInt(url.searchParams.get("year") || "");
-  const week = parseInt(url.searchParams.get("week") || "");
-  if (!year || !week) {
-    return NextResponse.json({ error: "year and week required" }, { status: 400 });
+  const parsed = prefillParams.safeParse({
+    year: url.searchParams.get("year"),
+    week: url.searchParams.get("week"),
+  });
+  if (!parsed.success) {
+    return NextResponse.json({ error: "year and week required", details: parsed.error.flatten() }, { status: 400 });
   }
+  const { year, week } = parsed.data;
 
   const traineeId = session.user.id;
   const weekDates = getWeekDates(year, week);

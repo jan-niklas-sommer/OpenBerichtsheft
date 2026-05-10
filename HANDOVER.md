@@ -2000,3 +2000,49 @@ Schema-Aenderungen sind rueckwaertskompatibel (neue Indizes, Unique, FK-Aenderun
 
 - DailyEntry Unique-Constraint kann bei bestehenden Duplikaten in Production zu Fehlern fuehren. Vor Migration Duplikate pruefen.
 - Phase 3-7 der Qualitaetsoffensive ausstehend.
+
+---
+
+## AP: Phase 3 – Validierung & Datenqualität (Qualitätsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** Validierungs- und Datenqualitäts-Fixes aus der Qualitätsoffensive.
+
+**Umfang:**
+1. QO-M15: `dailyEntries` auf `.min(7).max(7)` validieren
+2. QO-M16: `reviewSchema` Kommentar-Pflicht bei rejected/needs_revision
+3. QO-M7: `updateReportSchema` nutzt `dailyEntrySchema` statt Duplikat
+4. QO-M3/M4: Query-Param-Validierung für year (reports + prefill)
+5. QO-M17: `tailwind-merge` installiert, `cn()` nutzt `twMerge(clsx(...))`
+6. QO-M18: Report-Builder `DEFAULT_HOURS` per ScheduleType (vacation=0)
+
+**Nicht-Ziele:** Phase 4-7, UI-Änderungen.
+
+### Reviewer
+
+Plan deckt ausschließlich Phase 3 ab. Keine UI-Berührung, keine Schema-Migration. Freigabe erteilt.
+
+### Implementierte Änderungen
+
+- **QO-M15:** `validations.ts` – `dailyEntries` Array-Validation `.min(7).max(7)` hinzugefügt.
+- **QO-M16:** `validations.ts` – `reviewSchema` mit `.refine()` das `comment` bei `action: "rejected" | "needs_revision"` erzwingt.
+- **QO-M7:** `validations.ts` – `updateReportSchema` referenziert `dailyEntrySchema` statt duplizierter Felddefinition.
+- **QO-M3/M4:** `reports/route.ts` – `yearParam` Zod-Schema mit `z.coerce.number().int().min(2020).max(2100).optional()`. `prefill/route.ts` – `prefillParams` Zod-Schema für year + week mit 400-Fehler inkl. Details.
+- **QO-M17:** `tailwind-merge` als neue Dependency. `cn()` in `utils.ts` nutzt jetzt `twMerge(clsx(...))`.
+- **QO-M18:** `report-builder.ts` – `DEFAULT_HOURS: Record<ScheduleType, number>` mit vacation=0, rest=8.
+- **Tests:** `validations.test.ts` +19 Tests, `report-builder.test.ts` +1 Test (vacation hours), `route.test.ts` + `review/route.test.ts` angepasst (comment bei rejected/needs_revision).
+
+### Verifikation
+
+- **Tests:** 730 Tests, 42 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Build:** erfolgreich.
+- **Typecheck:** `npm run typecheck` nicht verfügbar.
+
+### Offene Risiken / Folgeaufgaben
+
+- Phase 4-7 der Qualitätsoffensive ausstehend.
+- `typecheck`-Script nicht in `package.json`.

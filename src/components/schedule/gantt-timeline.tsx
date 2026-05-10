@@ -50,8 +50,9 @@ interface TooltipState {
 }
 
 const DRAG_THRESHOLD = 5;
-const DECELERATION = 0.95;
-const MIN_VELOCITY = 0.5;
+const DECELERATION = 0.85;
+const MIN_VELOCITY = 0.3;
+const MAX_VELOCITY = 20;
 
 export function GanttTimeline({
   rows,
@@ -97,7 +98,7 @@ export function GanttTimeline({
         velocityRef.current = 0;
         return;
       }
-      el.scrollLeft += velocityRef.current;
+      el.scrollLeft -= velocityRef.current;
       velocityRef.current *= DECELERATION;
 
       if (onScrollNearEdge && el.scrollLeft < el.clientWidth * 0.3) {
@@ -137,7 +138,7 @@ export function GanttTimeline({
       const now = Date.now();
       const dt = now - lastPosRef.current.time;
       if (dt > 0) {
-        velocityRef.current = (clientX - lastPosRef.current.x) / dt;
+        velocityRef.current = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, (clientX - lastPosRef.current.x) / dt * 8));
       }
       lastPosRef.current = { x: clientX, time: now };
     };
@@ -149,7 +150,6 @@ export function GanttTimeline({
       target.removeEventListener("touchcancel", touchEndHandlerRef.current);
 
       if (isDraggingRef.current && Math.abs(velocityRef.current) > MIN_VELOCITY) {
-        velocityRef.current *= 16;
         animFrameRef.current = requestAnimationFrame(momentumLoopRef.current);
       }
       setTimeout(() => {
@@ -204,14 +204,13 @@ export function GanttTimeline({
     const now = Date.now();
     const dt = now - lastPosRef.current.time;
     if (dt > 0) {
-      velocityRef.current = (e.clientX - lastPosRef.current.x) / dt;
+      velocityRef.current = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, (e.clientX - lastPosRef.current.x) / dt * 8));
     }
     lastPosRef.current = { x: e.clientX, time: now };
   }, []);
 
   const handleMouseUp = useCallback(() => {
     if (isDraggingRef.current && Math.abs(velocityRef.current) > MIN_VELOCITY) {
-      velocityRef.current *= 16;
       animFrameRef.current = requestAnimationFrame(momentumLoopRef.current);
     }
     setTimeout(() => {

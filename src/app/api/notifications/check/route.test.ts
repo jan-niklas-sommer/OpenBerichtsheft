@@ -133,11 +133,11 @@ describe("POST /api/notifications/check", () => {
     expect(createdForKw8).toBe(false);
   });
 
-  it("works without CRON_SECRET set", async () => {
+  it("returns 403 without CRON_SECRET set", async () => {
     delete process.env.CRON_SECRET;
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([]);
     const res = await POST(makeRequest());
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(403);
   });
 });

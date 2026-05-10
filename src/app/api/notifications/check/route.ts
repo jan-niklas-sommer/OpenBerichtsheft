@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   const url = new URL(req.url);
   const secret = url.searchParams.get("secret");
-  if (secret !== process.env.CRON_SECRET && process.env.CRON_SECRET) {
+  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 403 });
   }
 

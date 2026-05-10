@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { updateScheduleSchema } from "@/lib/validations";
 
 const createSchema = z.object({
   traineeId: z.string().uuid(),
@@ -215,8 +216,11 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, ...updates } = body;
-  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const parsed = updateScheduleSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
+  }
+  const { id, ...updates } = parsed.data;
 
   if (role === "trainer") {
     const existing = await prisma.scheduleAssignment.findUnique({ where: { id } });

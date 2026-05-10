@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
@@ -13,11 +14,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Passwort", type: "password" },
       },
       async authorize(credentials) {
-        // TODO: Add rate limiting (e.g. per-IP or per-email lockout) to prevent brute-force attacks
         if (!credentials?.email || !credentials?.password) return null;
 
+        const email = credentials.email as string;
+
+        if (isRateLimited(email)) return null;
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         });
 
         if (!user || user.deactivatedAt || user.anonymizedAt) return null;
@@ -26,7 +30,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           credentials.password as string,
           user.passwordHash
         );
-        if (!valid) return null;
+        if (!valid) {
+          recordFailedAttempt(email);
+          return null;
+        }
+
+        clearAttempts(email);
 
         return {
           id: user.id,

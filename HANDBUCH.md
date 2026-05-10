@@ -326,12 +326,12 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
    - **Sonstiges**: Feiertag, Krankheit, etc. (Lila)
 5. Setzen Sie Start- und Enddatum über den Kalender-Picker (Klick öffnet den Kalender, deutsches Format `dd.MM.yyyy`).
 6. Optional: Wählen Sie einen Ausbildungsbeauftragten als Betreuer.
-7. Bei **Wiederholung**: Wählen Sie die Wochentage. Das System zeigt eine Vorschau der nächsten 12 Termine.
+7. Bei **Wiederholung**: Wählen Sie die Wochentage und das **Intervall** (z.B. "Alle 2 Wochen" für jeden zweiten Besuch). Das System zeigt eine Vorschau der nächsten 12 Termine.
 8. Klicken Sie auf **Erstellen** bzw. **Regel erstellen**.
 
 **Konflikterkennung:** Überlappende Zuweisungen am selben Tag werden mit einem roten Ring markiert. Die angezeigte Zuweisung wird durch Layering bestimmt: Schule > Urlaub > Sonstiges > Abteilung. Bei gleichem Typ gewinnt die zuletzt erstellte Regel.
 
-**Wiederholungsregeln** gelten für alle Tage im gewählten Zeitraum, die den konfigurierten Wochentagen entsprechen.
+**Wiederholungsregeln** gelten für alle Tage im gewählten Zeitraum, die den konfigurierten Wochentagen entsprechen. Das **Intervall** steuert die Frequenz: "Jede Woche" (Standard), "Alle 2 Wochen", "Alle 3 Wochen" oder "Alle 4 Wochen".
 
 **Hinweis:** Wenn Sie einen Ausbildungsbeauftragten als Betreuer auswählen, wird dieser automatisch für den Zeitraum dem Auszubildenden zugeordnet.
 

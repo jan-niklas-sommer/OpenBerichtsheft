@@ -398,6 +398,7 @@ Die Anwendung ist ein **Berichtsheft**, keine Zeiterfassung. Stunden in DailyEnt
 | startDate | DateTime | Beginn der Regel |
 | endDate | DateTime | Ende der Regel |
 | weekDays | Int | Bitfeld für Wochentage (siehe Bitfeld-Konvention) |
+| interval | Int (Default: 1) | Frequenz-Intervall (1 = jede Woche, 2 = alle 2 Wochen, etc.) |
 | displayLabel | String? | Anzeigename (z.B. "IT-Abteilung") |
 | department | String? | Abteilungsname (bei scheduleType=department) |
 | supervisorId | String? (FK → User) | Ausbildungsbeauftragter |

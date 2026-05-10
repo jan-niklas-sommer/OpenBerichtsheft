@@ -27,6 +27,7 @@ export interface RecurrenceRule {
   startDate: Date;
   endDate: Date;
   weekDays: number;
+  interval?: number;
   displayLabel?: string;
   department?: string;
   supervisorId?: string;
@@ -118,6 +119,22 @@ export function resolveDay(
     if (!isInRange(date, rule.startDate, rule.endDate)) continue;
     const isoDay = getIsoDayOfWeek(date);
     if (!bitfieldContainsWeekday(rule.weekDays, isoDay)) continue;
+
+    if ((rule.interval ?? 1) > 1) {
+      const start = normalizeDate(rule.startDate);
+      const target = normalizeDate(date);
+      const diffDays = Math.round((target.getTime() - start.getTime()) / 86400000);
+      const dayOfWeekStart = getIsoDayOfWeek(start);
+      let matchCount = 0;
+      for (let d = 0; d <= diffDays; d++) {
+        const checkDate = new Date(start);
+        checkDate.setDate(start.getDate() + d);
+        if (bitfieldContainsWeekday(rule.weekDays, getIsoDayOfWeek(checkDate))) {
+          matchCount++;
+        }
+      }
+      if (matchCount % (rule.interval ?? 1) !== 1) continue;
+    }
 
     candidates.push({
       scheduleType: rule.scheduleType,

@@ -55,6 +55,7 @@ export function AssignmentModal({
   const [supervisorId, setSupervisorId] = useState("");
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [displayLabel, setDisplayLabel] = useState("");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
 
   const previewDates = useMemo(() => {
     if (mode !== "recurring" || !startDate || !endDate || selectedDays.length === 0) return [];
@@ -121,6 +122,7 @@ export function AssignmentModal({
     setSupervisorId("");
     setSelectedDays([1, 2, 3, 4, 5]);
     setDisplayLabel("");
+    setRecurrenceInterval(1);
     setError("");
   };
 
@@ -170,6 +172,7 @@ export function AssignmentModal({
             startDate,
             endDate,
             weekDays: selectedDays,
+            interval: recurrenceInterval,
             displayLabel: displayLabel || undefined,
             department: department || undefined,
             supervisorId: supervisorId || undefined,
@@ -259,6 +262,7 @@ export function AssignmentModal({
           </div>
 
           {mode === "recurring" && (
+            <>
             <div>
               <label className="mb-1 block text-xs text-content-muted">
                 Wochentage
@@ -284,6 +288,23 @@ export function AssignmentModal({
                 })}
               </div>
             </div>
+            <div>
+              <label htmlFor="interval" className="mb-1 block text-xs text-content-muted">
+                Intervall
+              </label>
+              <select
+                id="interval"
+                value={recurrenceInterval}
+                onChange={(e) => setRecurrenceInterval(Number(e.target.value))}
+                className={selectClass}
+              >
+                <option value={1}>Jede Woche</option>
+                <option value={2}>Alle 2 Wochen</option>
+                <option value={3}>Alle 3 Wochen</option>
+                <option value={4}>Alle 4 Wochen</option>
+              </select>
+            </div>
+            </>
           )}
 
           <div className="flex gap-3">

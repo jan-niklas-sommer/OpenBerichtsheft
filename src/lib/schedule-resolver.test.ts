@@ -235,3 +235,67 @@ describe("resolveWeek", () => {
     expect(monday.scheduleType).toBe("school");
   });
 });
+
+describe("resolveDay mit Intervall", () => {
+  const baseRule: RecurrenceRule = {
+    id: "r1",
+    traineeId: "t1",
+    scheduleType: "school",
+    startDate: new Date("2025-01-06"),
+    endDate: new Date("2025-12-31"),
+    weekDays: weekdayToBit(1),
+    createdAt: new Date("2025-01-01"),
+  };
+
+  it("liefert jeden Montag bei interval=1 (Default)", () => {
+    const rule = { ...baseRule };
+    expect(resolveDay(new Date("2025-01-06"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-13"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-20"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+  });
+
+  it("liefert nur jeden 2. Montag bei interval=2", () => {
+    const rule = { ...baseRule, interval: 2 };
+    expect(resolveDay(new Date("2025-01-06"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-13"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+    expect(resolveDay(new Date("2025-01-20"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-27"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+  });
+
+  it("liefert nur jeden 3. Montag bei interval=3", () => {
+    const rule = { ...baseRule, interval: 3 };
+    expect(resolveDay(new Date("2025-01-06"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-13"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+    expect(resolveDay(new Date("2025-01-20"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+    expect(resolveDay(new Date("2025-01-27"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+  });
+
+  it("funktioniert mit mehreren Wochentagen und interval=2", () => {
+    const rule: RecurrenceRule = {
+      ...baseRule,
+      weekDays: weekdayToBit(1) | weekdayToBit(3),
+      interval: 2,
+    };
+    expect(resolveDay(new Date("2025-01-06"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-08"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+    expect(resolveDay(new Date("2025-01-13"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-15"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+    expect(resolveDay(new Date("2025-01-20"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-22"), noAssignments, [rule], noExceptions).scheduleType).toBe("department");
+  });
+
+  it("default interval=1 funktioniert ohne explizites Feld", () => {
+    const rule: RecurrenceRule = {
+      id: "r1",
+      traineeId: "t1",
+      scheduleType: "school",
+      startDate: new Date("2025-01-06"),
+      endDate: new Date("2025-01-20"),
+      weekDays: weekdayToBit(1),
+      createdAt: new Date("2025-01-01"),
+    };
+    expect(resolveDay(new Date("2025-01-06"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-13"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+    expect(resolveDay(new Date("2025-01-20"), noAssignments, [rule], noExceptions).scheduleType).toBe("school");
+  });
+});

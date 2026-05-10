@@ -2418,3 +2418,51 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - ZIP-Export mit einzelnen PDFs — optional, nicht im Scope.
 - Deckblatt mit Name/Ausbildungsjahr — optionale Erweiterung.
 - Große PDFs (>50 Berichte) könnten Memory-problematisch sein — Streaming-Optimierung bei Bedarf.
+- **Vorbestehend:** `nodemailer` war nicht installiert (PR #82) — behoben mit `npm install`.
+
+---
+
+## 2026-05-10 – Issue #85: Frequenz-Intervall im Resolver (z.B. alle 2 Wochen)
+
+### Planner
+
+**Ziel:** Wiederholungsregeln um `interval`-Feld erweitern, sodass z.B. "alle 2 Wochen Berufsschule" möglich ist. Vollständig rückwärtskompatibel (Default: 1).
+
+**Betroffene Dateien:**
+- `prisma/schema.prisma` — `interval Int @default(1)` auf RecurrenceRule
+- `src/lib/schedule-resolver.ts` — Interval-Logik in `resolveDay`
+- `src/lib/validations.ts` — `interval` in `updateRecurrenceRuleSchema`
+- `src/app/api/recurrence-rules/route.ts` — `interval` in create + update
+- `src/components/schedule/assignment-modal.tsx` — Intervall-Dropdown
+
+**Akzeptanzkriterien:** interval im Datenmodell, Resolver löst korrekt auf, UI zeigt Auswahl, alle Tests bestanden.
+
+### Reviewer
+
+- Plan ist schlüssig. `interval` als optionales Feld (Default 1) im Resolver-Interface sichert Abwärtskompatibilität.
+- Zählung ab `rule.startDate` (erster matching Tag = Treffer 1) ist korrekt.
+- API validiert `min(1).max(12)` — ausreichend für "jede Woche" bis "alle 12 Wochen".
+- UI-Dropdown mit 4 Optionen (1-4) deckt die gängigsten Fälle ab.
+
+### Implementierte Änderungen
+
+1. **`prisma/schema.prisma`** — `interval Int @default(1)` auf RecurrenceRule. Migration `20260510141216_add_recurrence_interval`.
+2. **`src/lib/schedule-resolver.ts`** — `RecurrenceRule.interval` (optional). In `resolveDay`: wenn `interval > 1`, zähle matching Wochentage ab `startDate`, akzeptiere nur wenn `matchCount % interval === 1`.
+3. **`src/lib/validations.ts`** — `interval: z.number().int().min(1).max(12).optional()` in `updateRecurrenceRuleSchema`.
+4. **`src/app/api/recurrence-rules/route.ts`** — `interval` in `createRuleSchema`, POST-Handler (`interval ?? 1`), PUT-Handler.
+5. **`src/components/schedule/assignment-modal.tsx`** — `recurrenceInterval` State, `<select>` mit 4 Optionen (Jede Woche, Alle 2/3/4 Wochen). Fragment-Wrapper für JSX-Geschwister.
+6. **Tests:**
+   - `schedule-resolver.test.ts` — 5 neue Tests: interval=1 Default, interval=2 (jeder 2. Montag), interval=3, Multi-Day+interval=2, Default ohne Feld.
+   - `validations.test.ts` — 4 neue Tests: valid interval=2, <1, >12, =1.
+
+### Verifikation
+
+- **Tests:** 876 Tests, 55 Dateien, alle bestanden (+26 neu).
+- **Lint:** 0 Errors, 20 Warnings (vorbestehend).
+- **Build:** Erfolgreich (vorbestehender `nodemailer`-Fehler behoben).
+- **Migration:** Angewendet, rückwärtskompatibel (Default 1).
+
+### Offene Risiken / Folgeaufgaben
+
+- Intervall > 4 nicht in UI sichtbar (aber über API nutzbar bis max 12).
+- Interval-Zählung iteriert über alle Tage von startDate bis target — bei sehr langen Zeiträumen und vielen Regeln könnte das langsam werden. Optimierung: Nur matching Tage zählen via Modular-Arithmetik bei Bedarf.

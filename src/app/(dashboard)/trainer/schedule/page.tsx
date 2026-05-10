@@ -265,7 +265,7 @@ export default function SchedulePage() {
           <div
             ref={popoverRef}
             className="w-80 rounded-lg border border-stroke-subtle bg-surface-elevated p-5 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <h3 className="mb-3 font-semibold text-content-base">
               Bearbeiten

@@ -41,6 +41,157 @@ const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "draft", label: "Entwurf" },
 ];
 
+function TraineeCard({
+  trainee,
+  basePath,
+  recentWeeks,
+  isExpanded,
+  onToggle,
+}: {
+  trainee: TraineeWithReports;
+  basePath: string;
+  recentWeeks: { year: number; week: number }[];
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const [dotTooltip, setDotTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
+  const dotContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleDotEnter = useCallback((text: string, e: React.MouseEvent) => {
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    const containerRect = dotContainerRef.current?.getBoundingClientRect();
+    if (!containerRect) return;
+    setDotTooltip({
+      text,
+      x: rect.left + rect.width / 2 - containerRect.left,
+      y: rect.top - containerRect.top - 4,
+    });
+  }, []);
+
+  const handleDotLeave = useCallback(() => {
+    setDotTooltip(null);
+  }, []);
+
+  const submittedReports = trainee.reports.filter((r) => r.status === "submitted");
+
+  return (
+    <Card>
+      <button
+        className="flex w-full items-center justify-between px-4 py-3 text-left"
+        onClick={onToggle}
+      >
+        <div>
+          <p className="font-medium text-content-base">
+            {trainee.name}
+          </p>
+          <p className="text-sm text-content-muted">
+            {trainee.profession || "Kein Beruf"}
+            {trainee.trainingStartDate && (
+              <>
+                {" · "}JG {new Date(trainee.trainingStartDate).getFullYear()}
+              </>
+            )}
+            {" · "}{trainee.reports.length} Berichte
+            {submittedReports.length > 0 && (
+              <span className="text-warning">
+                {" · "}{submittedReports.length} offen
+              </span>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1.5">
+            {recentWeeks.map((w) => {
+              const report = trainee.reports.find(
+                (r) => r.calendarYear === w.year && r.calendarWeek === w.week
+              );
+              const tooltipText = report
+                ? `KW ${w.week}: ${STATUS_LABELS[report.status]}`
+                : `KW ${w.week}: Kein Bericht`;
+              const href = report
+                ? `${basePath}/report/${report.id}`
+                : "#";
+              return (
+                <Link
+                  key={`${w.year}-${w.week}`}
+                  href={href}
+                  className={`h-[14px] w-[14px] rounded-sm ${report ? statusDotColor(report.status) : "bg-surface-overlay border border-stroke-subtle"}`}
+                  onMouseEnter={(e) => handleDotEnter(tooltipText, e)}
+                  onMouseLeave={handleDotLeave}
+                />
+              );
+            })}
+            {dotTooltip && (
+              <div
+                className="pointer-events-none absolute z-30 whitespace-nowrap rounded-md border border-stroke-subtle bg-surface-elevated px-2 py-1 text-[10px] shadow-md text-content-base"
+                style={{
+                  left: dotTooltip.x,
+                  top: dotTooltip.y,
+                  transform: "translate(-50%, -100%)",
+                }}
+              >
+                {dotTooltip.text}
+              </div>
+            )}
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4 text-content-subtle" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-content-subtle" />
+          )}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="border-t border-stroke-subtle px-4 py-3 space-y-2">
+          {submittedReports.length > 0 && (
+            <div className="mb-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-muted">
+                Zu prüfen
+              </p>
+              {submittedReports.map((report) => (
+                <Link key={report.id} href={`${basePath}/report/${report.id}`}>
+                  <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-surface-overlay">
+                    <div>
+                      <p className="text-sm font-medium text-content-base">
+                        KW {report.calendarWeek}/{report.calendarYear}
+                      </p>
+                    </div>
+                    <Badge variant={statusVariant(report.status)}>
+                      {STATUS_LABELS[report.status]}
+                    </Badge>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {trainee.reports
+            .filter((r) => r.status !== "submitted")
+            .map((report) => (
+              <Link key={report.id} href={`${basePath}/report/${report.id}`}>
+                <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-surface-overlay">
+                  <div>
+                    <p className="text-sm font-medium text-content-base">
+                      KW {report.calendarWeek}/{report.calendarYear}
+                    </p>
+                  </div>
+                  <Badge variant={statusVariant(report.status)}>
+                    {STATUS_LABELS[report.status]}
+                  </Badge>
+                </div>
+              </Link>
+            ))}
+
+          {trainee.reports.length === 0 && (
+            <p className="text-sm text-content-muted py-2">Keine Berichte vorhanden.</p>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export function ReviewerDashboardClient({
   title,
   basePath,
@@ -76,24 +227,6 @@ export function ReviewerDashboardClient({
     }
     return weeks;
   }, [currentYear, currentWeek]);
-
-  const [dotTooltip, setDotTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
-  const dotContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleDotEnter = useCallback((text: string, e: React.MouseEvent) => {
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    const containerRect = dotContainerRef.current?.getBoundingClientRect();
-    if (!containerRect) return;
-    setDotTooltip({
-      text,
-      x: rect.left + rect.width / 2 - containerRect.left,
-      y: rect.top - containerRect.top - 4,
-    });
-  }, []);
-
-  const handleDotLeave = useCallback(() => {
-    setDotTooltip(null);
-  }, []);
 
   return (
     <div>
@@ -137,130 +270,16 @@ export function ReviewerDashboardClient({
         </Card>
       ) : (
         <div className="space-y-3">
-          {filteredTrainees.map((trainee) => {
-            const isExpanded = expandedTrainee === trainee.id;
-            const submittedReports = trainee.reports.filter((r) => r.status === "submitted");
-
-            return (
-              <Card key={trainee.id}>
-                <button
-                  className="flex w-full items-center justify-between px-4 py-3 text-left"
-                  onClick={() => setExpandedTrainee(isExpanded ? null : trainee.id)}
-                >
-                  <div>
-                    <p className="font-medium text-content-base">
-                      {trainee.name}
-                    </p>
-                    <p className="text-sm text-content-muted">
-                      {trainee.profession || "Kein Beruf"}
-                      {trainee.trainingStartDate && (
-                        <>
-                          {" · "}JG {new Date(trainee.trainingStartDate).getFullYear()}
-                        </>
-                      )}
-                      {" · "}{trainee.reports.length} Berichte
-                      {submittedReports.length > 0 && (
-                        <span className="text-warning">
-                          {" · "}{submittedReports.length} offen
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {/* Mini week overview */}
-                    <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1.5">
-                      {recentWeeks.map((w) => {
-                        const report = trainee.reports.find(
-                          (r) => r.calendarYear === w.year && r.calendarWeek === w.week
-                        );
-                        const tooltipText = report
-                          ? `KW ${w.week}: ${STATUS_LABELS[report.status]}`
-                          : `KW ${w.week}: Kein Bericht`;
-                        const href = report
-                          ? `${basePath}/report/${report.id}`
-                          : "#";
-                        return (
-                          <Link
-                            key={`${w.year}-${w.week}`}
-                            href={href}
-                            className={`h-[14px] w-[14px] rounded-sm ${report ? statusDotColor(report.status) : "bg-surface-overlay border border-stroke-subtle"}`}
-                            onMouseEnter={(e) => handleDotEnter(tooltipText, e)}
-                            onMouseLeave={handleDotLeave}
-                          />
-                        );
-                      })}
-                      {dotTooltip && (
-                        <div
-                          className="pointer-events-none absolute z-30 whitespace-nowrap rounded-md border border-stroke-subtle bg-surface-elevated px-2 py-1 text-[10px] shadow-md text-content-base"
-                          style={{
-                            left: dotTooltip.x,
-                            top: dotTooltip.y,
-                            transform: "translate(-50%, -100%)",
-                          }}
-                        >
-                          {dotTooltip.text}
-                        </div>
-                      )}
-                    </div>
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-content-subtle" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-content-subtle" />
-                    )}
-                  </div>
-                </button>
-
-                {isExpanded && (
-                  <div className="border-t border-stroke-subtle px-4 py-3 space-y-2">
-                    {/* Submitted reports first */}
-                    {submittedReports.length > 0 && (
-                      <div className="mb-3">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-muted">
-                          Zu prüfen
-                        </p>
-                        {submittedReports.map((report) => (
-                          <Link key={report.id} href={`${basePath}/report/${report.id}`}>
-                            <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-surface-overlay">
-                              <div>
-                                <p className="text-sm font-medium text-content-base">
-                                  KW {report.calendarWeek}/{report.calendarYear}
-                                </p>
-                              </div>
-                              <Badge variant={statusVariant(report.status)}>
-                                {STATUS_LABELS[report.status]}
-                              </Badge>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* All other reports */}
-                    {trainee.reports
-                      .filter((r) => r.status !== "submitted")
-                      .map((report) => (
-                        <Link key={report.id} href={`${basePath}/report/${report.id}`}>
-                          <div className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-surface-overlay">
-                            <div>
-                              <p className="text-sm font-medium text-content-base">
-                                KW {report.calendarWeek}/{report.calendarYear}
-                              </p>
-                            </div>
-                            <Badge variant={statusVariant(report.status)}>
-                              {STATUS_LABELS[report.status]}
-                            </Badge>
-                          </div>
-                        </Link>
-                      ))}
-
-                    {trainee.reports.length === 0 && (
-                      <p className="text-sm text-content-muted py-2">Keine Berichte vorhanden.</p>
-                    )}
-                  </div>
-                )}
-              </Card>
-            );
-          })}
+          {filteredTrainees.map((trainee) => (
+            <TraineeCard
+              key={trainee.id}
+              trainee={trainee}
+              basePath={basePath}
+              recentWeeks={recentWeeks}
+              isExpanded={expandedTrainee === trainee.id}
+              onToggle={() => setExpandedTrainee(expandedTrainee === trainee.id ? null : trainee.id)}
+            />
+          ))}
         </div>
       )}
     </div>

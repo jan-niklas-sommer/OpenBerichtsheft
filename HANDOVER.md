@@ -1865,3 +1865,37 @@ npm run dev
 - Dynamisches Nachladen refetched den gesamten Zeitraum (nicht Delta) — bei sehr langen Zeiträumen könnte das langsam werden.
 - Scroll-Snap auf Monatsgrenzen wurde bewusst nicht implementiert (zu restriktiv bei freiem Drag).
 - Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI, Issue #67 (Calendar-Today-Indikator).
+
+---
+
+## 2026-05-10 – Arbeitspaket: Tooltip-Bleed im Reviewer-Dashboard fixen
+
+### Planner
+
+- **Ziel:** Hover-Tooltip auf Status-Punkten im Ausbilder-Dashboard erscheint für alle Azubi-Zeilen gleichzeitig statt nur für die betroffene Zeile.
+- **Ursache:** Einzelner `dotTooltip`-State und einzelner `dotContainerRef` werden über alle Azubi-Cards geteilt. Tooltip-Rendering (`{dotTooltip && (...)}`) in jedem Card führt dazu, dass der Tooltip in **allen** Karten angezeigt wird. `dotContainerRef.current` zeigt immer auf den zuletzt gerenderten Container, was die Positionsberechnung verfälscht.
+- **Umfang:** `src/components/reports/reviewer-dashboard-client.tsx` — Extraktion einer `TraineeCard`-Sub-Komponente mit eigenem `dotTooltip`-State und eigenem `dotContainerRef`.
+- **Nicht-Ziele:** Keine Architektur-, Datenmodell- oder API-Änderungen.
+- **Akzeptanzkriterien:** Tooltip erscheint nur in der Zeile, über der gehovert wird. Alle Tests bestanden.
+
+### Reviewer
+
+- Freigabe. Minimaler Refactor — State-Isolation durch Sub-Komponente. Keine Seiteneffekte.
+
+### Implementierte Änderungen
+
+- **Neu:** `TraineeCard`-Sub-Komponente in `reviewer-dashboard-client.tsx` mit eigenem `dotTooltip`-State und `dotContainerRef`.
+- **Verschoben:** `handleDotEnter`, `handleDotLeave`, Tooltip-Rendering, Mini-Week-Overview, expandierter Bericht-Bereich in `TraineeCard`.
+- **Vereinfacht:** `ReviewerDashboardClient` mappt nur noch über `<TraineeCard>`-Instanzen.
+- Props: `trainee`, `basePath`, `recentWeeks`, `isExpanded`, `onToggle`.
+
+### Verifikation
+
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Tests:** 700 Tests, 41 Dateien, alle bestanden.
+- **Build:** erfolgreich.
+- **Typecheck:** `npm run typecheck` nicht verfügbar.
+
+### Offene Risiken / Folgeaufgaben
+
+- Keine neuen Risiken.

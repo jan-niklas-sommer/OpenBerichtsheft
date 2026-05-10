@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   type ScheduleAssignmentView,
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
+import { computeDataBounds } from "@/lib/schedule-bounds";
 
 function addMonths(d: Date, months: number): Date {
   const r = new Date(d);
@@ -12,30 +13,58 @@ function addMonths(d: Date, months: number): Date {
   return r;
 }
 
+function toMonday(d: Date): Date {
+  const r = new Date(d);
+  const day = r.getDay();
+  const offset = day === 0 ? -6 : 1 - day;
+  r.setDate(r.getDate() + offset);
+  r.setHours(0, 0, 0, 0);
+  return r;
+}
+
+function toSunday(d: Date): Date {
+  const r = new Date(d);
+  const day = r.getDay();
+  const offset = day === 0 ? 0 : 7 - day;
+  r.setDate(r.getDate() + offset);
+  r.setHours(0, 0, 0, 0);
+  return r;
+}
+
 export default function OfficerSchedulePage() {
   const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const boundsRef = useRef<{ minBound: Date; maxBound: Date } | null>(null);
+  const initialSnapRef = useRef(false);
   const [viewStart, setViewStart] = useState<Date>(() => {
     const d = new Date();
-    d.setMonth(d.getMonth() - 3);
-    d.setDate(d.getDate() - d.getDay() + 1);
-    d.setHours(0, 0, 0, 0);
-    return d;
+    d.setMonth(d.getMonth() - 6);
+    return toMonday(d);
   });
   const [viewEnd, setViewEnd] = useState<Date>(() => {
     const d = new Date();
-    d.setMonth(d.getMonth() + 3);
-    d.setHours(0, 0, 0, 0);
-    return d;
+    d.setMonth(d.getMonth() + 6);
+    return toSunday(d);
   });
 
   useEffect(() => {
     fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
       .then((r) => r.json())
       .then((data) => {
-        setAssignments(Array.isArray(data) ? data : []);
+        const arr = Array.isArray(data) ? data : [];
+        setAssignments(arr);
         setLoading(false);
+
+        if (!initialSnapRef.current && arr.length > 0) {
+          const bounds = computeDataBounds(arr);
+          if (bounds) {
+            boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
+            setViewStart(bounds.start);
+            setViewEnd(bounds.end);
+          }
+          initialSnapRef.current = true;
+        }
       });
   }, [viewStart, viewEnd]);
 
@@ -58,10 +87,19 @@ export default function OfficerSchedulePage() {
 
   const handleScrollNearEdge = useCallback(
     (direction: "start" | "end") => {
+      const bounds = boundsRef.current;
       if (direction === "end") {
-        setViewEnd((prev) => addMonths(prev, 3));
+        setViewEnd((prev) => {
+          const next = addMonths(prev, 1);
+          const limit = bounds ? bounds.maxBound : addMonths(new Date(), 24);
+          return next > limit ? limit : next;
+        });
       } else {
-        setViewStart((prev) => addMonths(prev, -3));
+        setViewStart((prev) => {
+          const next = addMonths(prev, -1);
+          const limit = bounds ? bounds.minBound : addMonths(new Date(), -24);
+          return next < limit ? limit : next;
+        });
       }
     },
     [],

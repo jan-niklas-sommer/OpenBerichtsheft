@@ -92,10 +92,8 @@ describe("YearCalendar", () => {
     expect(container.querySelectorAll("a").length).toBeGreaterThan(0);
   });
 
-  it("shows legend following mouse on hover", async () => {
-    const user = userEvent.setup();
-    const { container } = render(<YearCalendar {...defaultProps} />);
-    await user.hover(container.firstElementChild!);
+  it("shows legend with all status items", () => {
+    render(<YearCalendar {...defaultProps} />);
     expect(screen.getByText("Entwurf")).toBeInTheDocument();
     expect(screen.getByText("Genehmigt")).toBeInTheDocument();
     expect(screen.getByText("Fehlt")).toBeInTheDocument();

@@ -174,7 +174,7 @@ export function GanttTimeline({
           {monthHeaders.map((m, i) => (
             <div
               key={i}
-              className="absolute flex items-center px-1 text-[10px] font-medium text-content-muted"
+              className="absolute flex items-center px-1 text-[11px] font-medium text-content-muted"
               style={{ left: m.offset, width: m.width, height: monthRowHeight }}
             >
               <span className="truncate">{m.label}</span>
@@ -186,7 +186,7 @@ export function GanttTimeline({
           {weekHeaders.map((w, i) => (
             <div
               key={i}
-              className={`absolute flex items-center text-[9px] px-1 ${
+              className={`absolute flex items-center text-[10px] px-1 ${
                 i % 2 === 0 ? "text-content-subtle" : "text-content-subtle/0"
               }`}
               style={{

@@ -515,7 +515,7 @@ export default function ReportEditorPage() {
                             updateEntry(index, "hours", Math.min(24, Math.max(0, parseInt(e.target.value) || 0)))
                           }
                           disabled={!isEditable}
-                          className="h-10 w-16 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
+                          className="h-10 w-20 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
                         />
                         <span className="text-sm text-content-muted">h</span>
                         <input
@@ -527,7 +527,7 @@ export default function ReportEditorPage() {
                             updateEntry(index, "minutes", Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
                           }
                           disabled={!isEditable}
-                          className="h-10 w-16 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
+                          className="h-10 w-20 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
                         />
                         <span className="text-sm text-content-muted">min</span>
                       </div>

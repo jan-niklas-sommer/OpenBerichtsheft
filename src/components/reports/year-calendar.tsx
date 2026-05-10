@@ -186,6 +186,15 @@ export function YearCalendar({
           ))}
         </div>
       )}
+
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-content-muted">
+        {LEGEND_ITEMS.map((item) => (
+          <span key={item.status} className="flex items-center gap-1">
+            <span className={`inline-block h-2.5 w-2.5 rounded-sm ${statusDotColor(item.status)}`} />
+            {item.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

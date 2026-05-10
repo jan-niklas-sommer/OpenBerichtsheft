@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { isRateLimited, recordFailedAttempt, clearAttempts, _reset } from "./rate-limit";
+import { isRateLimited, recordFailedAttempt, clearAttempts, _resetAll } from "./rate-limit";
 
 describe("rate-limit", () => {
   beforeEach(() => {
-    _reset();
+    _resetAll();
   });
 
   it("is not rate limited initially", () => {

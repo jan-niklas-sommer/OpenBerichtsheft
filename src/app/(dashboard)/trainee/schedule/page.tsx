@@ -29,6 +29,8 @@ export default function TraineeSchedulePage() {
     return d;
   });
 
+  const traineeId = assignments.length > 0 ? assignments[0].traineeId : "self";
+
   useEffect(() => {
     fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
       .then((r) => r.json())
@@ -60,7 +62,7 @@ export default function TraineeSchedulePage() {
       </div>
 
       <GanttTimeline
-        rows={[{ traineeId: "self", label: "" }]}
+        rows={[{ traineeId, label: "" }]}
         assignments={assignments}
         viewStart={viewStart}
         viewEnd={viewEnd}

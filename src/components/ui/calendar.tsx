@@ -26,7 +26,7 @@ const calendarClassNames = {
   selected:
     "bg-accent text-accent-fg hover:bg-accent hover:text-accent-fg focus:bg-accent focus:text-accent-fg rounded-md",
   today:
-    "bg-surface-overlay text-content-base font-semibold rounded-md",
+    "text-accent font-semibold rounded-md underline decoration-accent decoration-2 underline-offset-4",
   outside:
     "text-content-subtle opacity-50",
   disabled: "text-content-subtle opacity-50",

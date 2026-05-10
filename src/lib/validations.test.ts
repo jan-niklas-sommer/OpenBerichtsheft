@@ -781,6 +781,30 @@ describe("updateRecurrenceRuleSchema", () => {
       updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: [] })
     ).toThrow();
   });
+
+  it("accepts valid interval", () => {
+    expect(
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 2 })
+    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 2 });
+  });
+
+  it("rejects interval < 1", () => {
+    expect(() =>
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 0 })
+    ).toThrow();
+  });
+
+  it("rejects interval > 12", () => {
+    expect(() =>
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 13 })
+    ).toThrow();
+  });
+
+  it("accepts interval = 1", () => {
+    expect(
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 1 })
+    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 1 });
+  });
 });
 
 describe("changePasswordSchema", () => {

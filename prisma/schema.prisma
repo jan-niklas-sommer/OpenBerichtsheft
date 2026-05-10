@@ -249,6 +249,7 @@ model RecurrenceRule {
   startDate    DateTime
   endDate      DateTime
   weekDays     Int
+  interval     Int          @default(1)
   displayLabel String?
   department   String?
   supervisorId String?

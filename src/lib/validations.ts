@@ -97,6 +97,7 @@ export const updateRecurrenceRuleSchema = z.object({
     z.number().int().min(1).max(127),
     z.array(z.number().int().min(1).max(7)).min(1),
   ]).optional(),
+  interval: z.number().int().min(1).max(12).optional(),
   displayLabel: z.string().nullable().optional(),
   department: z.string().nullable().optional(),
   supervisorId: z.string().uuid().nullable().optional(),

@@ -14,6 +14,7 @@ const createRuleSchema = z.object({
     z.number().int().min(1).max(127),
     z.array(z.number().int().min(1).max(7)).min(1),
   ]),
+  interval: z.number().int().min(1).max(12).optional(),
   displayLabel: z.string().optional(),
   department: z.string().optional(),
   supervisorId: z.string().uuid().optional(),
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { traineeId, scheduleType, startDate, endDate, weekDays, displayLabel, department, supervisorId } = parsed.data;
+  const { traineeId, scheduleType, startDate, endDate, weekDays, interval, displayLabel, department, supervisorId } = parsed.data;
 
   if (role === "trainer") {
     const trainee = await prisma.user.findUnique({
@@ -118,6 +119,7 @@ export async function POST(req: NextRequest) {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       weekDays: weekDaysBitfield,
+      interval: interval ?? 1,
       displayLabel: displayLabel || null,
       department: department || null,
       supervisorId: supervisorId || null,
@@ -169,6 +171,7 @@ export async function PUT(req: NextRequest) {
   if (updates.displayLabel !== undefined) data.displayLabel = updates.displayLabel || null;
   if (updates.department !== undefined) data.department = updates.department || null;
   if (updates.supervisorId !== undefined) data.supervisorId = updates.supervisorId || null;
+  if (updates.interval !== undefined) data.interval = updates.interval;
   if (Object.keys(data).length > 0) {
     data.updatedById = userId;
   }

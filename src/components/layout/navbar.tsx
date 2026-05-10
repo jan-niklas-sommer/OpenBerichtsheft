@@ -20,6 +20,7 @@ import {
   CalendarDays,
   Check,
   KeyRound,
+  FileDown,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import type { NotificationData } from "@/types";
@@ -34,6 +35,7 @@ const NAV_ITEMS: Record<string, NavItem[]> = {
   trainee: [
     { href: "/trainee", label: "Übersicht", icon: <LayoutDashboard className="h-4 w-4" /> },
     { href: "/trainee/schedule", label: "Planung", icon: <CalendarDays className="h-4 w-4" /> },
+    { href: "/trainee/export", label: "Export", icon: <FileDown className="h-4 w-4" /> },
   ],
   trainer: [
     { href: "/trainer", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },

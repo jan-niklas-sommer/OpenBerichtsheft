@@ -2367,3 +2367,54 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 
 - JWT wird nicht invalidiert bei Passwort-Änderung — bei Bedarf extra Feature.
 - Keine Passwort-Stärke-Anzeige (z.B. zxcvbn) — mögliche Erweiterung.
+
+---
+
+## 2026-05-10 – Issue #83: PDF-Batch-Export nach Zeitraum
+
+### Planner
+
+**Ziel:** User können mehrere Berichte als Sammel-PDF exportieren — Zeitraum-Auswahl, Quick-Buttons, Vorschau der Berichtsanzahl.
+
+**Betroffene Dateien:**
+- `src/components/reports/pdf-document.tsx` — Neue `PdfBatchDocument`-Komponente
+- `src/app/api/reports/export/route.tsx` — Neue Batch-Export API
+- `src/app/api/reports/count/route.ts` — Neue Count-API (Vorschau)
+- `src/app/(dashboard)/trainee/export/page.tsx` — Neue Export-Seite
+- `src/components/layout/navbar.tsx` — Export-Nav-Item für Trainees
+
+**Akzeptanzkriterien:**
+- Export-Seite mit Zeitraum-Auswahl und Quick-Buttons
+- Vorschau der Berichtsanzahl vor Export
+- Sammel-PDF (alle Berichte chronologisch)
+- Berechtigungsprüfung (Trainee → eigene, Trainer/Officer → zugeordnete, Admin → alle)
+- Einzel-Export bleibt im Editor
+- Alle Tests + Build bestanden
+
+### Reviewer
+
+- Plan deckt Issue #83 vollständig ab. ZIP-Export als optionales Folge-Feature.
+- Berechtigungslogik analog zum Einzel-PDF (PR #92-Pattern).
+- `PdfBatchDocument` rendert mehrere `<Page>` in einem `<Document>` — @react-pdf/renderer unterstützt das.
+- Count-API für Vorschau ist sauber getrennt vom Export.
+
+### Implementierte Änderungen
+
+1. **`src/components/reports/pdf-document.tsx`** — `PdfBatchDocument`-Komponente: iteriert über `reports[]`, erzeugt pro Bericht eine `<Page>`.
+2. **`src/app/api/reports/export/route.tsx`** — `GET /api/reports/export?from=&to=&traineeId=`: Zod-Datenvalidierung, Berechtigungsprüfung (Trainee/Trainer/Officer/Admin), `findMany` mit Datumsfilter, `renderToStream`, PDF-Response.
+3. **`src/app/api/reports/count/route.ts`** — `GET /api/reports/count?from=&to=`: Gibt `{ count }` für die Vorschau zurück.
+4. **`src/app/(dashboard)/trainee/export/page.tsx`** — Client-Komponente mit Date-Pickern, 4 Quick-Buttons (Letzter Monat, 3 Monate, Letztes Jahr, Gesamte Historie), Vorschau mit Berichtsanzahl, Download-Button.
+5. **`src/components/layout/navbar.tsx`** — `FileDown`-Icon + Export-Nav-Item für Trainees.
+6. **Tests:** `export/route.test.ts` (13 Tests: 401, 400, 404, 200, Berechtigungen für alle 4 Rollen), `count/route.test.ts` (5 Tests).
+
+### Verifikation
+
+- **Tests:** 850 Tests, 52 Dateien, alle bestanden (+30 neu).
+- **Lint:** 0 Errors, 19 Warnings (vorbestehend).
+- **Build:** Erfolgreich (inkl. `/trainee/export`, `/api/reports/export`, `/api/reports/count`).
+
+### Offene Risiken / Folgeaufgaben
+
+- ZIP-Export mit einzelnen PDFs — optional, nicht im Scope.
+- Deckblatt mit Name/Ausbildungsjahr — optionale Erweiterung.
+- Große PDFs (>50 Berichte) könnten Memory-problematisch sein — Streaming-Optimierung bei Bedarf.

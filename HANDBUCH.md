@@ -232,6 +232,17 @@ Unter **Planung** (Navigation, `/trainee/schedule/`) sehen Sie Ihre persönliche
 
 **Hinweis:** Sie können die Einsatzplanung nur einsehen. Änderungen werden durch Ihren Ausbilder vorgenommen (siehe Abschnitt 5.5).
 
+### PDF-Export
+
+Unter **Export** (Navigation, `/trainee/export/`) können Sie mehrere Wochenberichte als Sammel-PDF herunterladen.
+
+1. Wählen Sie einen Zeitraum über die Datumsfelder "Von" / "Bis" oder nutzen Sie die Quick-Buttons:
+   - **Letzter Monat**, **Letzte 3 Monate**, **Letztes Jahr**, **Gesamte Historie**
+2. Die Vorschau zeigt an, wie viele Berichte im gewählten Zeitraum liegen.
+3. Klicken Sie auf **Als PDF herunterladen** — alle Berichte werden chronologisch in einer PDF-Datei zusammengefasst.
+
+Der Einzel-Export (ein Bericht als PDF) bleibt weiterhin im Berichtseditor verfügbar.
+
 ---
 
 ## 5. Rolle: Ausbilder

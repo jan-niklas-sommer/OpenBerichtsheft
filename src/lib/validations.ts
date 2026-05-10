@@ -75,6 +75,34 @@ export const officerAssignmentSchema = z.object({
   trainingOfficerId: z.string().uuid(),
   validFrom: z.string(),
   validUntil: z.string(),
+}).refine(
+  (data) => new Date(data.validUntil) > new Date(data.validFrom),
+  { message: "validUntil must be after validFrom", path: ["validUntil"] }
+);
+
+export const scheduleTypeSchema = z.enum(["department", "school", "vacation", "other"]);
+
+export const updateScheduleSchema = z.object({
+  id: z.string().uuid(),
+  scheduleType: scheduleTypeSchema.optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  department: z.string().nullable().optional(),
+  supervisorId: z.string().uuid().nullable().optional(),
+});
+
+export const updateRecurrenceRuleSchema = z.object({
+  id: z.string().uuid(),
+  scheduleType: scheduleTypeSchema.optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  weekDays: z.union([
+    z.number().int().min(1).max(127),
+    z.array(z.number().int().min(1).max(7)).min(1),
+  ]).optional(),
+  displayLabel: z.string().nullable().optional(),
+  department: z.string().nullable().optional(),
+  supervisorId: z.string().uuid().nullable().optional(),
 });
 
 export const updateSettingsSchema = z.object({

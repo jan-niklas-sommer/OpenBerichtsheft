@@ -190,21 +190,24 @@ describe("POST /api/notifications/check", () => {
   });
 
   it("creates notifications for missing weeks", async () => {
+    process.env.CRON_SECRET = "test-secret";
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: null }]);
     mockReportFindMany.mockResolvedValue([]);
     mockNotifFindMany.mockResolvedValue([]);
     mockNotifCreate.mockResolvedValue({});
-    const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
+    const req = new NextRequest("http://localhost:3000/api/notifications/check?secret=test-secret", { method: "POST" });
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.traineesChecked).toBe(1);
     expect(json.created).toBeGreaterThan(0);
     expect(mockNotifCreate).toHaveBeenCalled();
+    delete process.env.CRON_SECRET;
   });
 
   it("respects deduplication of recent notifications", async () => {
+    process.env.CRON_SECRET = "test-secret";
     mockAuth.mockResolvedValue(adminSession);
     mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
     mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: null }]);
@@ -213,7 +216,7 @@ describe("POST /api/notifications/check", () => {
       { userId: "trainee-1", message: "KW 16/2026" },
     ]);
     mockNotifCreate.mockResolvedValue({});
-    const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
+    const req = new NextRequest("http://localhost:3000/api/notifications/check?secret=test-secret", { method: "POST" });
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
     const existingWeekMsg = "Fehlender Wochenbericht für KW 16/2026";
@@ -221,9 +224,11 @@ describe("POST /api/notifications/check", () => {
       (call: unknown[]) => (call[0] as { data?: { message?: string } })?.data?.message === existingWeekMsg,
     );
     expect(hasDup).toBe(false);
+    delete process.env.CRON_SECRET;
   });
 
   it("skips weeks that already have reports", async () => {
+    process.env.CRON_SECRET = "test-secret";
     mockAuth.mockResolvedValue(adminSession);
     mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
     mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: null }]);
@@ -233,25 +238,28 @@ describe("POST /api/notifications/check", () => {
     ]);
     mockNotifFindMany.mockResolvedValue([]);
     mockNotifCreate.mockResolvedValue({});
-    const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
+    const req = new NextRequest("http://localhost:3000/api/notifications/check?secret=test-secret", { method: "POST" });
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.created).toBe(0);
     expect(mockNotifCreate).not.toHaveBeenCalled();
+    delete process.env.CRON_SECRET;
   });
 
   it("returns 0 created when no trainees exist", async () => {
+    process.env.CRON_SECRET = "test-secret";
     mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([]);
     mockReportFindMany.mockResolvedValue([]);
     mockNotifFindMany.mockResolvedValue([]);
-    const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
+    const req = new NextRequest("http://localhost:3000/api/notifications/check?secret=test-secret", { method: "POST" });
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.created).toBe(0);
     expect(json.traineesChecked).toBe(0);
+    delete process.env.CRON_SECRET;
   });
 
   it("accepts valid cron secret", async () => {
@@ -267,16 +275,18 @@ describe("POST /api/notifications/check", () => {
   });
 
   it("skips weeks before training start date", async () => {
+    process.env.CRON_SECRET = "test-secret";
     mockAuth.mockResolvedValue(adminSession);
     mockGetIsoWeek.mockReturnValue({ year: 2026, week: 18 });
     mockUserFindMany.mockResolvedValue([{ id: "trainee-1", trainingStartDate: new Date("2026-05-01") }]);
     mockReportFindMany.mockResolvedValue([]);
     mockNotifFindMany.mockResolvedValue([]);
     mockNotifCreate.mockResolvedValue({});
-    const req = new NextRequest("http://localhost:3000/api/notifications/check", { method: "POST" });
+    const req = new NextRequest("http://localhost:3000/api/notifications/check?secret=test-secret", { method: "POST" });
     const res = await PostCheck(req);
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.traineesChecked).toBe(1);
+    delete process.env.CRON_SECRET;
   });
 });

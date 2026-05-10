@@ -1,414 +1,632 @@
 # Code Review – OpenBerichtsheft
 
-Datum: 2026-05-07
-Reviewer: Automatisiertes Code-Review
-Codebase: Initial MVP (Commit 887f445)
+## Review-Historie
+
+| Datum | Review | Basis |
+|-------|--------|-------|
+| 2026-05-07 | Initial-Review | Commit 887f445 (MVP) |
+| 2026-05-10 | **Qualitätsoffensive** | Stand nach PR #58-#73, 700 Tests |
 
 ---
 
-## Zusammenfassung
+## Qualitätsoffensive – 2026-05-10
 
-| Schweregrad | Anzahl |
-|-------------|--------|
-| **Kritisch** | 3 |
-| **Hoch** | 11 |
-| **Mittel** | 39 |
-| **Niedrig** | 23 |
+### Zusammenfassung
 
-### Top 5 dringendste Probleme
+| Kategorie | Anzahl |
+|-----------|--------|
+| **Hoch** | 10 |
+| **Mittel** | 28 |
+| **Niedrig** | 35 |
 
-1. **Submit-Button schlägt stillschweigend fehl** bei neuen Berichten wegen Stale-State-Closure (Issue #37)
-2. **PUT `/api/reports/[id]` hat keine Eingabevalidierung** – beliebige Daten können geschrieben werden (Issue #7)
-3. **Autosave Race Condition** kann zu Datenverlust führen (Issue #68)
-4. **Kein Middleware-Auth-Guard** – ein einziger vergessener `auth()`-Check ist ein Auth-Bypass (Issue #90)
-5. **JWT-Rolle wird nie aktualisiert** – Rollenänderungen erfordern erneute Anmeldung (Issue #72)
+### Alte Issues – Aufloesungsstatus
 
----
+Folgende Issues aus dem Initial-Review (2026-05-07) wurden **behoben**:
 
-## Erweiterbarkeit und Wartbarkeit
+| Issue | Beschreibung | Behoben in |
+|-------|-------------|-----------|
+| #7 | PUT ohne Eingabevalidierung | Code-Review-Fixes AP |
+| #11 | Nicht-transaktionaler Submit | Code-Review-Fixes AP |
+| #14 | Nicht-transaktionaler Review | Code-Review-Fixes AP |
+| #26 | Officer-Assignment DELETE Ownership | Code-Review-Fixes AP |
+| #35 | statusVariant dreifach dupliziert | Code-Review-Fixes AP |
+| #37 | Submit schlägt fehl bei neuen Berichten | Code-Review-Fixes AP |
+| #52/#53 | Dashboard-Duplizierung entfernt | Design-System APs |
+| #63 | Side Effect waehrend Render (ThemeProvider) | Code-Review-Fixes AP |
+| #68 | Autosave Race Condition | Code-Review-Fixes AP |
+| #72 | JWT-Rolle wird nie aktualisiert | Code-Review-Fixes AP |
+| #82 | ReviewEvent onDelete Cascade | Code-Review-Fixes AP |
+| #85 | Kein Soft Delete fuer WeeklyReports | Code-Review-Fixes AP |
+| #88 | date-fns installiert aber nicht genutzt | Code-Review-Fixes AP |
+| #90 | Kein Middleware-Auth-Guard | Code-Review-Fixes AP |
+| #89 | Keine Security Headers | Code-Review-Fixes AP |
+| #93 | Kein CSRF-Schutz | Code-Review-Fixes AP |
 
-### Architektur-Einschätzung
+Folgende Issues aus dem Initial-Review sind **weiterhin offen**:
 
-**Positiv:**
-
-- Klare Trennung zwischen API-Routen, Seiten, Komponenten und Utilities.
-- Prisma-Schema ist sauber modelliert mit Enums und Constraints.
-- TypeScript strict mode aktiviert.
-- Konsistente Rollenprüfung in (fast) allen API-Routen.
-- Designsystem ist konsistent (Button, Card, Input, Badge).
-
-**Verbesserungspotenzial:**
-
-| Bereich | Problem | Empfehlung |
-|---------|---------|------------|
-| **Komponentengröße** | Report-Editor ist 335 Zeilen, verantwortlich für Navigation, Fetching, Editing, Autosave, Submit | Aufteilen in `WeekNavigator`, `ReportTextEditor`, `DailyEntryEditor`, `ReportActionBar` und Hooks `useReportData`, `useWeekNavigation` |
-| **Code-Duplizierung** | Trainer- und Officer-Dashboard sind zu 95 % identisch | Gemeinsame `ReviewerDashboard`-Komponente erstellen, die rollenspezifisch konfiguriert wird |
-| **Code-Duplizierung** | `statusVariant`-Funktion in 3 Dateien identisch | Nach `src/lib/utils.ts` extrahieren |
-| **Code-Duplizierung** | Trainer- und Officer-Report-Review-Seiten nahezu identisch | Gemeinsame `ReviewerReportPage`-Komponente |
-| **Fehlende Fehlerbehandlung** | Nahezu alle API-Routen ohne try/catch | Zentraler Error-Handler oder Wrapper-Funktion |
-| **Fehlende Validierung** | PUT-Route für Berichte hat keine Zod-Validierung | `updateReportSchema` erstellen und anwenden |
-| **Fehlende Middleware** | Kein zentraler Auth-Guard auf Edge-Ebene | `src/middleware.ts` mit NextAuth-Middleware |
-| **Enge Kopplung** | Autosave-Hook direkt mit Fetch-Logik gekoppelt | Abstraktere Persistenzschnittstelle |
-| **Fehlende Paginierung** | Alle List-Endpunkte liefern ungefiltert alle Datensätze | `take`/`skip` mit `hasMore`-Envelope |
-| **Fehlende Error Boundaries** | Keine `error.tsx`-Dateien | Mindestens für Dashboard-Bereich |
-| **Types duplizieren Prisma-Enums** | `Role`, `DayType` manuell definiert, obwohl Prisma sie generiert | Direkt aus `@prisma/client` importieren |
-
-### Skalierbarkeit
-
-- **Autosave** funktioniert für einzelne Nutzer, aber gleichzeitige Requests sind nicht abgesichert. Bei wachsender Nutzerzahl steigt die Wahrscheinlichkeit von Race Conditions.
-- **Dashboard-Abfragen** ohne Paginierung werden mit der Zeit langsamer. Bei 50 Azubis × 52 Wochen/Jahr = 2.600 Berichte pro Jahr pro Prüfer.
-- **Keine Caching-Strategie** für häufig abgefragte Daten (z. B. Zuordnungen).
+| Issue | Beschreibung | Status |
+|-------|-------------|--------|
+| #1 | Keine Paginierung auf GET /api/reports | Offen |
+| #4 | Upsert mit deleteMany + create nicht atomar | Offen |
+| #10 | TOCTOU Race Condition bei PUT | Teilweise behoben (Transactions) |
+| #30 | Kein Rate Limiting auf Login | Offen |
+| #39 | Report-Editor zu groß | Offen |
+| #40 | Hartkodierte 52-Wochen-Grenze | Offen |
+| #44 | Wochen-Navigation verwirft ungespeicherte Aenderungen | Offen |
+| #51 | Kein Fehler-Feedback bei Review | Offen |
+| #55 | handleToggleActive sendet Date-Objekt | Unbekannt |
+| #79 | Manuelle ISO-Woche-Berechnung | Teilweise behoben |
 
 ---
 
-## Alle gefundenen Probleme
+## Neue Befunde – Qualitaetsoffensive 2026-05-10
 
 ---
 
-### KRITISCH
+### HOCH (10)
 
-#### Issue #37 – Submit schlägt fehl bei neuen Berichten
+#### QO-H1 – Kein Rate Limiting auf irgendeinem Endpunkt
 
-- **Datei:** `src/app/(dashboard)/trainee/reports/[week]/page.tsx:121-139`
-- **Kategorie:** Bug
-- **Beschreibung:** Wenn ein Azubi einen neuen Bericht (noch nicht in DB) einreicht:
-  1. `handleSubmit` ruft `handleSave()` auf.
-  2. `handleSave` erstellt den Bericht per POST und ruft `setReport(data)` auf.
-  3. React-State-Updates sind asynchron – `report` im Closure von `handleSubmit` ist noch `null`.
-  4. `report?.id` ist `undefined`, Funktion kehrt früh zurück.
-  5. Bericht wird als Entwurf gespeichert, aber **nie eingereicht**. Keine Fehlermeldung.
-- **Fix:** Return-Value von `handleSave()` nutzen: `const result = await handleSave(); const reportId = result?.id || report?.id;`
-
-#### Issue #7 – PUT ohne Eingabevalidierung
-
-- **Datei:** `src/app/api/reports/[id]/route.ts:70-71`
+- **Dateien:** Alle `src/app/api/**/route.ts`
 - **Kategorie:** Sicherheit
-- **Beschreibung:** PUT-Handler parst Body direkt mit `req.json()` ohne Zod-Validierung. Beliebige Felder, falsche Typen oder malformede Daten werden ungeprüft an Prisma übergeben.
-- **Fix:** `updateReportSchema` mit Zod definieren und `safeParse` anwenden.
+- **Beschreibung:** Kein einziges Rate Limiting implementiert. Login-Endpunkt ist gegen Brute-Force-Angriffe ungeschuetzt (TODO in `src/lib/auth.ts:16` bestaetigt). PDF-Generierung ist CPU-intensiv und kann fuer DoS missbraucht werden.
+- **Fix:** Serverseitiges Rate Limiting (z.B. `rate-limiter-flexible` oder Upstash). Mindestens Login, PDF-Export und POST-Routen absichern.
 
-#### Issue #68 – Autosave Race Condition
+#### QO-H2 – Fehlende Zod-Validierung auf PUT `/api/schedule`
 
-- **Datei:** `src/hooks/use-autosave.ts:13-30`
-- **Kategorie:** Bug / Race Condition
-- **Beschreibung:** Wenn ein Save länger als das Debounce-Intervall dauert, startet ein zweiter Save parallel. Der spätere (ältere) Save kann den neueren überschreiben.
-- **Fix:** In-flight-Tracking mit Ref. Neuen Save queuen oder alten abbrechen (AbortController).
+- **Datei:** `src/app/api/schedule/route.ts:217-234`
+- **Kategorie:** Sicherheit
+- **Beschreibung:** PUT-Body wird manuell destrukturiert ohne Zod-Schema. `scheduleType`-Werte werden nicht gegen das Enum validiert, Datumsstrings ungueltig. Beliebige Felder koennen uebergeben werden.
+- **Fix:** `updateScheduleSchema` mit Zod erstellen und anwenden, analog zu `updateReportSchema`.
 
----
+#### QO-H3 – Fehlende Zod-Validierung auf PUT `/api/recurrence-rules`
 
-### HOCH
+- **Datei:** `src/app/api/recurrence-rules/route.ts:145-167`
+- **Kategorie:** Sicherheit
+- **Beschreibung:** Gleiche Problematik wie QO-H2. PUT-Body ohne Schema-Validierung.
+- **Fix:** `updateRecurrenceRuleSchema` mit Zod erstellen.
 
-#### Issue #1 – Keine Paginierung auf GET /api/reports
+#### QO-H4 – CRON_SECRET-Bypass wenn ENV-Var nicht gesetzt
 
-- **Datei:** `src/app/api/reports/route.ts:22-59`
+- **Datei:** `src/app/api/notifications/check/route.ts:13`
+- **Kategorie:** Sicherheit
+- **Beschreibung:** `if (secret !== process.env.CRON_SECRET && process.env.CRON_SECRET)` – wenn `CRON_SECRET` nicht in der Environment gesetzt ist, wird die Pruefung komplett uebersprungen. Jeder Admin kann Notifications triggern.
+- **Fix:** `if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET)` – Fehler werfen wenn ENV-Var fehlt.
+
+#### QO-H5 – officerAssignmentSchema validiert validUntil > validFrom nicht
+
+- **Datei:** `src/lib/validations.ts:73-78`, `prisma/schema.prisma:112-113`
+- **Kategorie:** Datenintegritaet
+- **Beschreibung:** Weder Zod-Schema noch DB-Constraint verhindern `validUntil < validFrom`. Logisch ungueltige Zeitspannen koennen erstellt werden.
+- **Fix:** `.refine(data => new Date(data.validUntil) > new Date(data.validFrom))` im Schema. DB-Seite via Application-Layer.
+
+#### QO-H6 – DB-Query bei JEDEM JWT-Refresh
+
+- **Datei:** `src/lib/auth.ts:41-54`
 - **Kategorie:** Performance
-- **Beschreibung:** `findMany` ohne `take`/`skip`. Bei wachsender Datenmenge werden immer alle Berichte inkl. DailyEntries geladen.
-- **Fix:** `take`/`skip` Query-Parameter mit `{ data, total, hasMore }` Envelope.
+- **Beschreibung:** Der `jwt`-Callback ruft `prisma.user.findUnique` bei jedem Request auf, um die Rolle zu aktualisieren. Bei haeufigen API-Calls (Autosave, Session-Polling) ist das ein signifikanter Flaschenhals.
+- **Fix:** Rolle im JWT cachen und nur periodisch (z.B. alle 5 Minuten) oder bei expliziter Rollenänderung erneuern.
 
-#### Issue #4 – Upsert mit deleteMany + create nicht atomar
+#### QO-H7 – ReviewAction.withdrawn ohne korrespondierenden ReportStatus
 
-- **Datei:** `src/app/api/reports/route.ts:112-119`
-- **Kategorie:** Race Condition
-- **Beschreibung:** Concurrent Autosave-Requests können interleaven. `deleteMany` + `create` in einem Upsert ist zwar transaktional, aber zwei parallele Upserts auf denselben Bericht nicht.
-- **Fix:** `$transaction` mit explizitem Locking oder optimistischem Locking (Versionspalte).
+- **Datei:** `prisma/schema.prisma:36` vs `prisma/schema.prisma:32-40`
+- **Kategorie:** Datenintegritaet
+- **Beschreibung:** `ReviewAction`-Enum enthaelt `withdrawn`, aber `ReportStatus` hat keinen `withdrawn`-Wert. Ein Bericht kann per ReviewEvent "withdrawn" werden, aber sein Status-Feld kann diesen Zustand nicht darstellen.
+- **Fix:** Entweder `withdrawn` aus `ReviewAction` entfernen oder `withdrawn` zu `ReportStatus` hinzufuegen.
 
-#### Issue #10 – TOCTOU Race Condition bei PUT
+#### QO-H8 – Accessibility: 7 fehlende aria-labels, 5 fehlende Formular-Labels
 
-- **Datei:** `src/app/api/reports/[id]/route.ts:63-90`
-- **Kategorie:** Race Condition
-- **Beschreibung:** Status wird gelesen, geprüft, dann aktualisiert – ohne Locking. Zwischen Read und Write kann ein Submit den Status ändern.
-- **Fix:** Bedingtes Update: `where: { id, status: { in: ["draft", "needs_revision"] } }`.
+- **Dateien:** `navbar.tsx:131,199,212`, `reviewer-dashboard-client.tsx:243-245`, `report-calendar.tsx:67-75`, `assignment-modal.tsx:190-299`
+- **Kategorie:** Accessibility
+- **Beschreibung:** Icon-only Buttons ohne `aria-label` (Logout, Filter, Monatsnavigation). Assignment-Modal hat 5 Formularfelder ohne `<label>`.
+- **Fix:** `aria-label` auf allen Icon-Buttons. `<label htmlFor>` auf allen Formularfeldern.
 
-#### Issue #11 – Nicht-transaktionaler Submit
+#### QO-H9 – Fehlende Tests fuer 2 API-Routen + 4 Komponenten
 
-- **Datei:** `src/app/api/reports/[id]/submit/route.ts:27-44`
-- **Kategorie:** Datenintegrität
-- **Beschreibung:** Status-Update und ReviewEvent-Erstellung sind zwei separate Operationen. Schlägt das Event fehl, ist der Bericht "submitted" ohne Audit-Trail.
-- **Fix:** Beides in `prisma.$transaction([...])` wrappen.
+- **Dateien:** `src/app/api/recurrence-rules/route.ts` (208 Zeilen), `src/app/api/reports/prefill/route.ts` (84 Zeilen)
+- **Kategorie:** Testabdeckung
+- **Beschreibung:** `recurrence-rules` hat GET/POST/PUT/DELETE ohne einzige Testdatei. `prefill` hat GET ohne Tests. Komponenten ohne Tests: `calendar.tsx`, `popover.tsx`, `date-picker.tsx`, `assignment-modal.tsx`.
+- **Fix:** Testdateien erstellen. Mindestens Auth, Validierung und Erfolgsfall abdecken.
 
-#### Issue #14 – Nicht-transaktionaler Review
+#### QO-H10 – Kein Focus-Trap und kein role="dialog" auf Modal
 
-- **Datei:** `src/app/api/reports/[id]/review/route.ts:56-73`
-- **Kategorie:** Datenintegrität
-- **Beschreibung:** Gleiches Problem wie #11. Status-Update und Event-Erstellung nicht atomar.
-- **Fix:** `$transaction` verwenden.
-
-#### Issue #26 – Trainer kann beliebige Officer-Assignments löschen
-
-- **Datei:** `src/app/api/officer-assignments/route.ts:82-97`
-- **Kategorie:** Sicherheit
-- **Beschreibung:** DELETE prüft nicht, ob die Zuordnung zum Trainer gehört. Jeder Trainer kann jede Officer-Zuordnung per ID löschen.
-- **Fix:** Vor dem Löschen prüfen: `assignment.trainerId === session.user.id`.
-
-#### Issue #30 – Kein Rate Limiting auf Login
-
-- **Datei:** `src/app/(auth)/login/page.tsx` und `src/lib/auth.ts`
-- **Kategorie:** Sicherheit
-- **Beschreibung:** Keine Drosselung von Login-Versuchen. Brute-Force-Angriffe sind möglich.
-- **Fix:** Serverseitiges Rate Limiting implementieren (z. B. `rate-limiter-flexible`). Account-Lockout nach N fehlgeschlagenen Versuchen.
-
-#### Issue #72 – JWT-Rolle wird nie aktualisiert
-
-- **Datei:** `src/lib/auth.ts:38-43`
-- **Kategorie:** Sicherheit
-- **Beschreibung:** Die Rolle wird nur beim ersten Login ins JWT geschrieben. Rollenänderungen durch Admins werden erst nach erneutem Login wirksam.
-- **Fix:** Rolle bei jedem JWT-Refresh aus DB neu laden, oder kürzere Token-Lebensdauer mit Refresh-Strategie.
-
-#### Issue #89 – Keine Security Headers
-
-- **Datei:** `next.config.ts`
-- **Kategorie:** Sicherheit
-- **Beschreibung:** Keine Security-Header konfiguriert: X-Frame-Options, X-Content-Type-Options, HSTS, CSP, Referrer-Policy.
-- **Fix:** `headers()` Funktion in next.config.ts hinzufügen.
-
-#### Issue #90 – Kein Middleware-Auth-Guard
-
-- **Datei:** Fehlt (`src/middleware.ts` existiert nicht)
-- **Kategorie:** Sicherheit
-- **Beschreibung:** Kein zentraler Auth-Schutz auf Edge-Ebene. Jede API-Route muss individuell `auth()` aufrufen. Ein vergessener Check = Auth-Bypass.
-- **Fix:** `src/middleware.ts` mit NextAuth-Middleware erstellen.
-
-#### Issue #93 – Kein CSRF-Schutz auf Custom-API-Routen
-
-- **Datei:** Alle API-Routen außer `/api/auth/`
-- **Kategorie:** Sicherheit
-- **Beschreibung:** NextAuth sichert nur eigene Routen gegen CSRF. Custom-Routen (POST/PUT/DELETE) haben keinen CSRF-Schutz.
-- **Fix:** CSRF-Token aus NextAuth-Cookie validieren oder Token im Request-Body/Header prüfen.
+- **Datei:** `src/components/schedule/assignment-modal.tsx:159-163`
+- **Kategorie:** Accessibility
+- **Beschreibung:** Modal hat kein `role="dialog"`, kein `aria-modal="true"`, keinen Focus-Trap. Tab-Taste entweicht in den Hintergrund.
+- **Fix:** `role="dialog"`, `aria-modal="true"`, Focus-Trap mit `useEffect` oder Library.
 
 ---
 
-### MITTEL
+### MITTEL (28)
 
-#### Issue #2 – Unvalidiertes parseInt auf year-Parameter
+#### QO-M1 – Unbehandelte Prisma-Fehler auf DELETE (6 Handler)
 
-- **Datei:** `src/app/api/reports/route.ts:20, 50`
-- **Kategorie:** Bug
-- **Fix:** Zod-Validierung: `z.coerce.number().int().min(2020).max(2100).optional().parse(year)`.
+- **Dateien:** `schedule/route.ts:268`, `recurrence-rules/route.ts:206`, `officer-assignments/route.ts:109`, `assignments/route.ts:77`, `professions/[id]/route.ts:39`, `notifications/[id]/route.ts:31`
+- **Fix:** try/catch mit P2025-Fehlerabfang und 404-Response.
 
-#### Issue #3 – Kein try/catch in API-Routen
+#### QO-M2 – notifications/[id] PUT/DELETE: 500 statt 404
 
-- **Datei:** Alle API-Routen
-- **Kategorie:** Wartbarkeit
-- **Fix:** try/catch mit strukturierten Fehlerantworten und serverseitigem Logging.
+- **Datei:** `src/app/api/notifications/[id]/route.ts:14,31`
+- **Fix:** try/catch um Prisma-Aufrufe, bei P2025 → 404.
 
-#### Issue #5 – Keine Validierung dass DailyEntry-Daten zur Woche passen
+#### QO-M3 – Unvalidierte Query-Params: parseInt ohne Bereichspruefung
 
-- **Datei:** `src/app/api/reports/route.ts:81, 102`
-- **Kategorie:** Datenintegrität
-- **Fix:** Nach Parsing prüfen: jedes `dailyEntries[].date` muss innerhalb `weekStartDate`–`weekEndDate` liegen.
+- **Dateien:** `reports/route.ts:20,61`, `reports/prefill/route.ts:16-17`
+- **Beschreibung:** `parseInt(year)` ohne Bereichsvalidierung. `parseInt("abc")` → `NaN`.
+- **Fix:** Zod: `z.coerce.number().int().min(2020).max(2100)`.
 
-#### Issue #8 – deleteMany + create bei jedem Autosave
+#### QO-M4 – schedule PUT/DELETE: UUID-Validierung fehlt
 
-- **Datei:** `src/app/api/reports/[id]/route.ts:78-86`
-- **Kategorie:** Performance
-- **Fix:** Diff berechnen und `update`/`create`/`delete` gezielt einsetzen.
+- **Dateien:** `schedule/route.ts:268`, `recurrence-rules/route.ts:206`, `officer-assignments/route.ts:109`, `assignments/route.ts:77`
+- **Beschreibung:** Query-Param `id` wird nur auf Existenz geprueft, nicht auf UUID-Format. Beliebige Strings → 500.
+- **Fix:** `z.string().uuid()` Validierung.
 
-#### Issue #16 – Redundantes statusMap
+#### QO-M5 – Jeder authentifizierte User kann ALLE Settings lesen
 
-- **Datei:** `src/app/api/reports/[id]/review/route.ts:50-54`
-- **Kategorie:** Wartbarkeit
-- **Fix:** Action direkt als `ReportStatus` validieren und verwenden.
+- **Datei:** `src/app/api/settings/route.ts:10`
+- **Beschreibung:** GET hat keine Rollenbeschraenkung. Azubis koennen alle AppSetting-Key-Value-Paare lesen.
+- **Fix:** Mindestens auf Admin/Trainer beschraenken, oder nur `workingDays` freigeben.
 
-#### Issue #18 – Kein Duplicate-Email-Handling
+#### QO-M6 – Schwaches Passwort-Hash-Placeholder bei Anonymisierung
 
-- **Datei:** `src/app/api/users/route.ts:45-50`
-- **Kategorie:** Bug
-- **Fix:** `Prisma.PrismaClientKnownRequestError` mit Code P2002 abfangen und 409 zurückgeben.
+- **Datei:** `src/app/api/users/[id]/anonymize/route.ts:25`
+- **Beschreibung:** `passwordHash` wird auf `"-"` gesetzt statt auf einen sicheren Zufalls-Hash. Erkennbarer Platzhalter.
+- **Fix:** `bcrypt.hash(crypto.randomUUID(), 12)` verwenden.
 
-#### Issue #20 – Keine Existenzprüfung bei User-Update
+#### QO-M7 – Inkonsistente Validierungsfehler-Details
 
-- **Datei:** `src/app/api/users/[id]/route.ts:30-34`
-- **Kategorie:** Bug
-- **Fix:** P2025-Fehler abfangen und 404 zurückgeben.
+- **Dateien:** `officer-assignments/route.ts:42`, `assignments/route.ts:36`, `reports/[id]/review/route.ts:55`
+- **Beschreibung:** Drei Routen returnen `{ error: "Validation failed" }` ohne `details: parsed.error.flatten()`, waehrend andere Routen dies mitliefern.
+- **Fix:** `details` konsistent hinzufuegen.
 
-#### Issue #23 – Trainer sieht alle Zuordnungen
+#### QO-M8 – N+1 Query: schedule GET fuer training_officer
 
-- **Datei:** `src/app/api/assignments/route.ts:15-23`
-- **Kategorie:** Sicherheit
-- **Fix:** `where: { trainerId: session.user.id }` für Trainer-Rolle.
+- **Datei:** `src/app/api/schedule/route.ts:62-81`
+- **Beschreibung:** Schleife mit einzelnen Queries pro Assignment statt Sammelabfrage.
+- **Fix:** Alle traineeIds sammeln, dann einzelnes `findMany` mit `where: { traineeId: { in: ids } }`.
 
-#### Issue #29 – Keine Cache-Header auf Session-Endpoint
+#### QO-M9 – N+1 Query: Notification-Erstellung in Schleife
 
-- **Datei:** `src/app/api/auth/session/route.ts:4-10`
-- **Kategorie:** Sicherheit
-- **Fix:** `Cache-Control: no-store, max-age=0` Header hinzufügen.
+- **Datei:** `src/app/api/notifications/check/route.ts:59-66`
+- **Beschreibung:** `prisma.notification.create()` in Schleife statt `createMany()`.
+- **Fix:** `prisma.notification.createMany({ data: [...] })`.
 
-#### Issue #34 – Kein Error-Handling auf Fetch (Trainee-Übersicht)
+#### QO-M10 – Fehlender Index auf WeeklyReport.reviewedById
 
-- **Datei:** `src/app/(dashboard)/trainee/page.tsx:17-23`
-- **Kategorie:** Bug
-- **Fix:** Error-State hinzufügen, `r.ok` prüfen, `.catch()` hinzufügen.
+- **Datei:** `prisma/schema.prisma:138`
+- **Fix:** `@@index([reviewedById])` hinzufuegen.
 
-#### Issue #39 – Report-Editor zu groß (335 Zeilen)
+#### QO-M11 – Fehlender Composite-Index auf TraineeOfficerAssignment
 
-- **Datei:** `src/app/(dashboard)/trainee/reports/[week]/page.tsx`
-- **Kategorie:** Wartbarkeit / Erweiterbarkeit
-- **Fix:** In kleinere Komponenten und Hooks aufteilen.
+- **Datei:** `prisma/schema.prisma:107-124`
+- **Beschreibung:** Kein Index auf `[traineeId, validFrom, validUntil]` fuer Overlap-Detection-Queries.
+- **Fix:** `@@index([traineeId, validFrom, validUntil])` hinzufuegen.
 
-#### Issue #40 – Hartkodierte 52-Wochen-Grenze
+#### QO-M12 – Cascade-Delete auf ScheduleAssignment.creator zerstoert aktive Schedules
 
-- **Datei:** `src/app/(dashboard)/trainee/reports/[week]/page.tsx:152-157`
-- **Kategorie:** Bug
-- **Fix:** ISO-Jahre mit 53 Wochen berücksichtigen. `date-fns` nutzen.
+- **Datei:** `prisma/schema.prisma:233`
+- **Beschreibung:** `onDelete: Cascade` auf `creator`-Relation. Wenn der Ersteller geloescht wird, werden ALLE seine Schedule-Assignments geloescht – auch aktiv genutzte.
+- **Fix:** `onDelete: SetNull` und `createdBy` optional machen.
 
-#### Issue #44 – Wochen-Navigation verwirft ungespeicherte Änderungen
+#### QO-M13 – Cascade-Delete auf RecurrenceRule.createdBy/trainee
 
-- **Datei:** `src/app/(dashboard)/trainee/reports/[week]/page.tsx:149-174`
-- **Kategorie:** UX
-- **Fix:** Dirty-State tracken, Bestätigungsdialog anzeigen.
+- **Datei:** `prisma/schema.prisma:257-258`
+- **Beschreibung:** Gleiche Problematik wie QO-M12.
+- **Fix:** `onDelete: SetNull` fuer `createdBy`. `onDelete: Restrict` fuer `trainee`.
 
-#### Issue #45 – Fetch lädt alle Jahresberichte, filtert dann clientseitig
+#### QO-M14 – Kein @@unique auf DailyEntry[weeklyReportId, date]
 
-- **Datei:** `src/app/(dashboard)/trainee/reports/[week]/page.tsx:64-78`
-- **Kategorie:** Performance
-- **Fix:** `week`-Query-Parameter an API hinzufügen, serverseitig filtern.
+- **Datei:** `prisma/schema.prisma:156-171`
+- **Beschreibung:** Ohne Unique-Constraint koennen doppelte Tageseintrage fuer dasselbe Datum in demselben Bericht eingefuegt werden.
+- **Fix:** `@@unique([weeklyReportId, date])` hinzufuegen.
 
-#### Issue #51 – Kein Fehler-Feedback bei Review
+#### QO-M15 – weeklyReportSchema validiert nicht auf genau 7 dailyEntries
 
-- **Datei:** `src/app/(dashboard)/trainer/report/[id]/page.tsx:29-40`
-- **Kategorie:** UX
-- **Fix:** Error-State und Fehlermeldung anzeigen bei `!res.ok`.
+- **Datei:** `src/lib/validations.ts:48`
+- **Fix:** `.min(7).max(7)` oder `.length(7)` auf dem Array.
 
-#### Issue #55 – handleToggleActive sendet Date-Objekt gegen Zod-String-Schema
+#### QO-M16 – reviewSchema erfordert keinen Kommentar bei rejected/needs_revision
 
-- **Datei:** `src/app/(dashboard)/admin/users/page.tsx:47-59`
-- **Kategorie:** Bug
-- **Fix:** ISO-String senden und Schema auf `z.string().nullable()` ändern oder coerce verwenden.
+- **Datei:** `src/lib/validations.ts:51-54`
+- **Beschreibung:** Kommentar ist immer optional. Bei Ablehnung sollte ein Begruendungstext Pflicht sein.
+- **Fix:** Bedingte Validierung: `.refine()` das `comment` erforderlich macht wenn `action` nicht `approved`.
 
-#### Issue #58 – Keine Bestätigung vor Zuordnungs-Löschung
+#### QO-M17 – cn() fehlt tailwind-merge
 
-- **Datei:** `src/app/(dashboard)/admin/assignments/page.tsx:103`
-- **Kategorie:** UX
-- **Fix:** Bestätigungsdialog.
+- **Datei:** `src/lib/utils.ts:1-5`
+- **Beschreibung:** `cn()` nutzt nur `clsx` ohne `twMerge`. Konfliktierende Tailwind-Klassen werden nicht aufgeloest.
+- **Fix:** `import { twMerge } from 'tailwind-merge'` und `return twMerge(clsx(...inputs))`.
 
-#### Issue #63 – Side Effect während Render (Theme-Provider)
+#### QO-M18 – report-builder.ts: Hartkodierte 8 Stunden fuer alle Tagestypen
 
-- **Datei:** `src/components/ui/theme-provider.tsx:51-53`
-- **Kategorie:** Bug
-- **Fix:** `classList.toggle` in `useEffect` verschieben.
+- **Datei:** `src/lib/report-builder.ts:34`
+- **Beschreibung:** `hours: 8` unabhaengig von `dayType`. Urlaub sollte 0 oder konfigurierbare Stunden haben.
+- **Fix:** Nach `dayType` differenzieren oder konfigurierbar machen.
 
-#### Issue #69 – onSave-Instabilität triggert unnötige Autosave-Resets
+#### QO-M19 – Autosave triggert bei Referenzwechsel auch ohne Inhaltsaenderung
 
-- **Datei:** `src/hooks/use-autosave.ts:22-30`
-- **Kategorie:** Performance
-- **Fix:** Ref für onSave-Callback statt Dependency-Array.
+- **Datei:** `src/hooks/use-autosave.ts:55-63`
+- **Beschreibung:** `useEffect` auf `data` feuert bei jedem neuen Objekt-Referenz, auch wenn Inhalt identisch ist.
+- **Fix:** Deep-Compare oder Hash-Vergleich vor Save.
 
-#### Issue #76 – Datums-Validierung zu lose
+#### QO-M20 – Autosave: Kein Retry bei Fehler
 
-- **Datei:** `src/lib/validations.ts:24`
-- **Kategorie:** Datenintegrität
-- **Fix:** `z.string().datetime()` oder Regex für ISO-Datumsformat.
+- **Datei:** `src/hooks/use-autosave.ts:35-36`
+- **Beschreibung:** Fehlerhafter Save → Status "error", aber keine Wiederholung. Daten koennen verloren gehen.
+- **Fix:** Retry-Logik mit exponentiellem Backoff.
 
-#### Issue #78 – dailyEntries hat kein Min/Max
+#### QO-M21 – Session wird nach Initial-Fetch nie erneuert
 
-- **Datei:** `src/lib/validations.ts:34`
-- **Kategorie:** Bug
-- **Fix:** `.min(1).max(7)` oder `.length(7)` hinzufügen.
+- **Datei:** `src/hooks/use-session.ts:1-21`
+- **Beschreibung:** Kein `refetchInterval`. Wenn Admin User deaktiviert, bleibt Client-Session aktiv.
+- **Fix:** NaechstAuth `useSession` mit `refetchInterval: 300` nutzen, oder manuell nachbauen.
 
-#### Issue #79 – Manuelle ISO-Woche-Berechnung fehleranfällig
+#### QO-M22 – Gantt-Timeline: 578 Zeilen, sollte aufgeteilt werden
 
-- **Datei:** `src/lib/utils.ts:7-38`
-- **Kategorie:** Bug
-- **Fix:** `date-fns` verwenden (`getISOWeek`, `startOfISOWeek`).
+- **Datei:** `src/components/schedule/gantt-timeline.tsx`
+- **Beschreibung:** Enthaelt Drag-Scroll-Physik, Tooltip-Logik, Header/Row/Block-Rendering in einer Datei.
+- **Fix:** Aufteilen in `useDragScroll`-Hook, `TimelineHeader`, `TimelineRow`, `TimelineBlock`, `TimelineTooltip`.
 
-#### Issue #82 – ReviewEvent.onDelete: Cascade zerstört Audit-Trail
+#### QO-M23 – TraineeWithReports-Interface dupliziert
 
-- **Datei:** `prisma/schema.prisma:147`
-- **Kategorie:** Datenintegrität
-- **Fix:** `onDelete: SetNull` und `actorId` optional machen.
+- **Dateien:** `reviewer-dashboard.tsx:12-24`, `reviewer-dashboard-client.tsx:11-23`
+- **Fix:** Einmal definieren und aus Shared-Types exportieren.
+
+#### QO-M24 – 4 unnötige Typ-Assertions in reviewer-report-page.tsx
+
+- **Datei:** `src/components/reports/reviewer-report-page.tsx:88,91,98`
+- **Beschreibung:** `(e as { reportText?: string }).reportText` – die Assertion ist unnötig, da `DailyEntryData` bereits `reportText` enthaelt.
+- **Fix:** Typ des API-Responses korrekt definieren, Assertions entfernen.
+
+#### QO-M25 – Duplicate schedule type enum in 2 Dateien
+
+- **Dateien:** `schedule/route.ts:8`, `recurrence-rules/route.ts:9`
+- **Fix:** In `src/lib/validations.ts` oder `types.ts` zentral definieren und importieren.
+
+#### QO-M26 – Keine Seed-Daten fuer RecurrenceRules, Notifications, ReviewEvents
+
+- **Datei:** `prisma/seed.ts`
+- **Beschreibung:** RecurrenceRules, Notifications und ReviewEvents werden nicht geseedet. Diese Features sind mit Seed-Daten nicht testbar.
+- **Fix:** Mindestens je 3-5 Beispieldaten hinzufuegen.
+
+#### QO-M27 – Seed: getIsoWeek/getWeekDates dupliziert utils.ts
+
+- **Datei:** `prisma/seed.ts:208-226`
+- **Fix:** Aus `src/lib/utils.ts` importieren.
+
+#### QO-M28 – Seed: Woche-53-Behandlung fehlerhaft
+
+- **Datei:** `prisma/seed.ts:259-260`
+- **Beschreibung:** `if (week > 52)` geht von max 52 Wochen aus. ISO-Jahre koennen 53 Wochen haben (z.B. 2020, 2026).
+- **Fix:** Korrekte ISO-Woche-53-Behandlung.
 
 ---
 
-### NIEDRIG
+### NIEDRIG (35)
 
-#### Issue #6 – reportText ohne Längenbegrenzung
+#### QO-L1 – bg-black/20 Hardcode in navbar.tsx
 
-- **Datei:** `src/lib/validations.ts:33`
-- **Fix:** `.max(50000)` hinzufügen.
+- **Datei:** `src/components/layout/navbar.tsx:212`
+- **Fix:** Durch Design-Token ersetzen (z.B. `bg-overlay-backdrop`).
 
-#### Issue #31 – Login-Fehlermeldung ohne ARIA
+#### QO-L2 – Opacity < 0.4 in button.tsx und gantt-timeline.tsx
 
-- **Datei:** `src/app/(auth)/login/page.tsx:66-68`
-- **Fix:** `role="alert"` hinzufügen.
+- **Dateien:** `button.tsx:54` (opacity-25), `gantt-timeline.tsx:460` (opacity-20)
+- **Fix:** Mindestens 0.4 verwenden oder Token verwenden.
 
-#### Issue #35 – statusVariant dreifach dupliziert
+#### QO-L3 – Gleiche Input-Klassen 4x dupliziert
 
-- **Datei:** `trainee/page.tsx`, `trainer/page.tsx`, `officer/page.tsx`
+- **Dateien:** `input.tsx:25,60`, `select.tsx:28`, `date-picker.tsx:57`
+- **Fix:** Gemeinsame Konstante `INPUT_CLASSES` extrahieren.
+
+#### QO-L4 – Unused import: React in calendar.tsx
+
+- **Datei:** `src/components/ui/calendar.tsx:3`
+- **Fix:** `import * as React from "react"` entfernen.
+
+#### QO-L5 – Tooltip-Positionierung 3x unterschiedlich implementiert
+
+- **Dateien:** `reviewer-dashboard-client.tsx:60-73`, `year-calendar.tsx:117-123`, `gantt-timeline.tsx:295-316`
+- **Fix:** Gemeinsame `useTooltipPosition`-Hook oder Utility.
+
+#### QO-L6 – isBeforeTrainingStart 2x dupliziert
+
+- **Dateien:** `report-calendar.tsx:55-58`, `year-calendar.tsx:47-49`
 - **Fix:** Nach `src/lib/utils.ts` extrahieren.
 
-#### Issue #43 – Number-Inputs ohne accessible Labels
+#### QO-L7 – STATUS_FILTERS, LEGEND_ITEMS, modeTabs als Inline-Konstanten
 
-- **Datei:** `src/app/(dashboard)/trainee/reports/[week]/page.tsx:303-326`
-- **Fix:** `aria-label` hinzufügen.
+- **Dateien:** `reviewer-dashboard-client.tsx:35-42`, `year-calendar.tsx:125-132`, `assignment-modal.tsx:150-156`
+- **Fix:** Als Module-Level-Konstanten ausserhalb der Komponente definieren.
 
-#### Issue #60 – Spinner-SVG ohne aria-hidden
+#### QO-L8 – TraineeCard fehlt React.memo
 
-- **Datei:** `src/components/ui/button.tsx:47-66`
-- **Fix:** `aria-hidden="true"` am SVG.
+- **Datei:** `src/components/reports/reviewer-dashboard-client.tsx:44-193`
+- **Fix:** `export default React.memo(TraineeCard)`.
 
-#### Issue #65 – Mobiles Menü ohne Focus-Trapping und ARIA
+#### QO-L9 – Unsafe Cast: e.target.value as ScheduleType
 
-- **Datei:** `src/components/layout/navbar.tsx:102-123`
-- **Fix:** `role="dialog"`, `aria-modal`, `aria-expanded`, Focus-Trap.
+- **Datei:** `src/components/schedule/assignment-modal.tsx:206`
+- **Fix:** Zod-Validierung oder Typ-Guard verwenden.
 
-#### Issue #66 – Kein Skip-to-Content-Link
+#### QO-L10 – NavbarProps.role als string statt Role
 
-- **Datei:** `src/components/layout/navbar.tsx`
-- **Fix:** Visuell versteckter Link "Zum Inhalt springen" oben.
+- **Datei:** `src/components/layout/navbar.tsx:147`
+- **Fix:** `role: Role` aus `@/types` importieren.
 
-#### Issue #71 – use-session.ts redundant mit NextAuth useSession
+#### QO-L11 – status: string statt ReportStatus in TraineeWithReports
 
-- **Datei:** `src/hooks/use-session.ts`
-- **Fix:** `SessionProvider` und `useSession` von next-auth verwenden.
+- **Dateien:** `reviewer-dashboard-client.tsx:16-23`, `reviewer-dashboard.tsx:17-23`
+- **Fix:** `status: ReportStatus` verwenden.
 
-#### Issue #81 – Types duplizieren Prisma-Enums
+#### QO-L12 – NotificationBell sollte eigene Datei sein
 
-- **Datei:** `src/types/index.ts:1, 10`
-- **Fix:** Aus `@prisma/client` importieren.
+- **Datei:** `src/components/layout/navbar.tsx:56-145`
+- **Fix:** Nach `src/components/layout/notification-bell.tsx` extrahieren.
 
-#### Issue #85 – Kein Soft Delete für WeeklyReports
+#### QO-L13 – Fehlender Index auf ReviewEvent.actorId
 
-- **Datei:** `prisma/schema.prisma:109`
-- **Fix:** `onDelete: Restrict` oder Soft Deletes implementieren.
+- **Datei:** `prisma/schema.prisma:176`
+- **Fix:** `@@index([actorId])` hinzufuegen.
 
-#### Issue #88 – date-fns installiert aber nicht genutzt
+#### QO-L14 – Fehlende Indizes auf ScheduleAssignment.createdBy, RecurrenceRule.createdById
 
-- **Datei:** `package.json`
-- **Fix:** Entweder für ISO-Woche-Berechnung nutzen oder entfernen.
+- **Dateien:** `schema.prisma:227,252-253`
+- **Fix:** `@@index` hinzufuegen.
+
+#### QO-L15 – Redundanter @@index auf RecurrenceException (schon UNIQUE)
+
+- **Datei:** `prisma/schema.prisma:278-279`
+- **Fix:** `@@index` entfernen (UNIQUE erstellt automatisch einen Index).
+
+#### QO-L16 – DailyEntry.hours als Int erlaubt negative Werte auf DB-Ebene
+
+- **Datei:** `prisma/schema.prisma:161`
+- **Fix:** Application-Layer-Validierung vorhanden, aber `@Check` waere sicherer (Prisma untestuetzt nicht nativ → Dokumentieren).
+
+#### QO-L17 – weekStartDate/weekEndDate redundant mit calendarYear/calendarWeek
+
+- **Datei:** `prisma/schema.prisma:129-130`
+- **Fix:** Dokumentieren dass dies bewusste Denormalisierung fuer Query-Convenience ist.
+
+#### QO-L18 – Notification.type als freier String statt Enum
+
+- **Datei:** `prisma/schema.prisma:191`
+- **Fix:** Enum `NotificationType` erstellen.
+
+#### QO-L19 – ScheduleAssignment/RecurrenceRule color-Feld unvalidiert
+
+- **Datei:** `prisma/schema.prisma:226,250`
+- **Fix:** Entweder validieren oder in Migration entfernen (API ignoriert es bereits).
+
+#### QO-L20 – officerAssignmentSchema: validFrom/validUntil ohne Format-Validierung
+
+- **Datei:** `src/lib/validations.ts:76-77`
+- **Fix:** `z.string().datetime()` oder ISO-Date-Regex.
+
+#### QO-L21 – createUserSchema: professionId nicht required fuer trainee
+
+- **Datei:** `src/lib/validations.ts:8-15`
+- **Fix:** `.refine()` das professionId erforderlich macht wenn role = "trainee".
+
+#### QO-L22 – updateReportSchema: dailyEntry dupliziert dailyEntrySchema
+
+- **Datei:** `src/lib/validations.ts:64-70`
+- **Fix:** `dailyEntrySchema` wiederverwenden.
+
+#### QO-L23 – reportText ohne max-Laenge
+
+- **Datei:** `src/lib/validations.ts:46,62`
+- **Fix:** `.max(50000)` hinzufuegen.
+
+#### QO-L24 – workingDays-Validierung: max(6) inkonsistent mit ISO-Tagen (1-7)
+
+- **Datei:** `src/lib/validations.ts:81`
+- **Fix:** Pruefen ob JS-Day (0-6) oder ISO-Day (1-7) verwendet wird und validieren entsprechend.
+
+#### QO-L25 – Auth: Unsafe Type-Assertions auf session.user
+
+- **Datei:** `src/lib/auth.ts:58-60`
+- **Fix:** NextAuth-Module-Augmentation korrekt einrichten.
+
+#### QO-L26 – getWeekDates nutzt Local-Time, getIsoWeek UTC
+
+- **Datei:** `src/lib/utils.ts:7-20 vs 30-46`
+- **Fix:** Konsistent UTC oder Local-Time verwenden.
+
+#### QO-L27 – schedule-resolver: SingleAssignment hardcoded createdAt: new Date(0)
+
+- **Datei:** `src/lib/schedule-resolver.ts:111`
+- **Fix:** Dokumentieren dass Single-Assignments bei Layer-Konflikten immer verlieren.
+
+#### QO-L28 – Seed: week > 52 statt korrekter ISO-53-Wochen-Logik
+
+- **Datei:** `prisma/seed.ts:259-260`
+- **Fix:** Korrekte ISO-Wochenanzahl verwenden.
+
+#### QO-L29 – Seed: Keine ReviewEvents fuer geseedete Berichte
+
+- **Datei:** `prisma/seed.ts:277-296`
+- **Fix:** ReviewEvents fuer approved/rejected/needs_revision-Berichte erstellen.
+
+#### QO-L30 – auth.test.ts: authorize-Funktion kopiert statt importiert
+
+- **Datei:** `src/lib/auth.test.ts:20-41`
+- **Fix:** Funktion aus `auth.ts` importieren und testen.
+
+#### QO-L31 – Cross-File-Test-Duplizierung (Route-Tests importieren andere Routen)
+
+- **Dateien:** `users/route.test.ts:4-5`, `reports/[id]/route.test.ts:4-5`, `notifications/route.test.ts:5-6`
+- **Fix:** Dedizierte Tests in den jeweiligen Test-Dateien belassen, nicht querverweisen.
+
+#### QO-L32 – Magic Numbers: 8 Wochen, 200ms Tooltip, 320px Tooltip-Breite
+
+- **Dateien:** `reviewer-dashboard-client.tsx:222,300`, `gantt-timeline.tsx:302-303`
+- **Fix:** Als benannte Konstanten extrahieren.
+
+#### QO-L33 – Kein AbortController in use-session.ts
+
+- **Datei:** `src/hooks/use-session.ts:10-18`
+- **Fix:** `AbortController` in useEffect-Cleanup nutzen.
+
+#### QO-L34 – Duplicate schedule type enum (siehe QO-M25)
+
+- **Dateien:** `schedule/route.ts:8`, `recurrence-rules/route.ts:9`
+
+#### QO-L35 – E2E-Tests decken nicht alle kritischen User-Flows ab
+
+- **Datei:** `e2e/`
+- **Beschreibung:** Fehlende E2E-Tests fuer: Report-Submission, Review-Workflow, PDF-Export, Admin-User-CRUD, Schedule-Planning, Withdraw.
+- **Fix:** Weitere E2E-Tests hinzufuegen.
 
 ---
 
-## Priorisierung für nächsten Sprint
+## Dokumentations-Befunde
 
-### Sofort beheben (Critical + High Security)
+### QO-DOC1 – ARCHITECTURE.md: TraineeTrainerAssignment-Modell falsch dokumentiert
 
-1. Issue #37 – Submit-Bug bei neuen Berichten
-2. Issue #7 – PUT ohne Validierung
-3. Issue #68 – Autosave Race Condition
-4. Issue #90 – Middleware erstellen
-5. Issue #89 – Security Headers
-6. Issue #93 – CSRF-Schutz
-7. Issue #72 – JWT-Rollen-Refresh
-8. Issue #30 – Rate Limiting Login
-9. Issue #26 – Officer-Assignment DELETE Ownership-Check
+- **Datei:** `ARCHITECTURE.md` (Modell heisst jetzt `TrainerProfessionAssignment` mit `trainerId + professionId`)
+- **Fix:** Modell-Sektion komplett aktualisieren.
 
-### Als nächstes beheben (High Performance + Data Integrity)
+### QO-DOC2 – ARCHITECTURE.md: Notification-Modell nicht dokumentiert
 
-10. Issue #11/#14 – Transaktionale Submit/Review
-11. Issue #1/#48 – Paginierung
-12. Issue #82 – Audit-Trail-Schutz
+- **Fix:** `Notification`-Modell mit Feldern und Relationen hinzufuegen.
 
-### Danach (Medium)
+### QO-DOC3 – ARCHITECTURE.md: "Projektstruktur (geplant)" ist veraltet
 
-13. Issue #39 – Report-Editor aufteilen
-14. Issue #52/#53 – Dashboard-Duplizierung entfernen
-15. Issue #79 – date-fns für ISO-Woche nutzen
-16. Issue #40 – 53-Wochen-Jahre unterstützen
-17. Alle fehlenden Error-Handler in API-Routen
-18. Alle fehlenden Error-States in Client-Komponenten
+- **Fix:** Aktualisierte Struktur dokumentieren, "(geplant)" entfernen.
 
-### Optionally (Low)
+### QO-DOC4 – ARCHITECTURE.md: Next.js 15.x → tatsaechlich 16.x
 
-19. Accessibility-Verbesserungen (ARIA, Focus-Management, Skip-Link)
-20. Loading-Skeletons
-21. Redundante Dependencies entfernen
-22. Types aus Prisma importieren statt duplizieren
+- **Fix:** Version korrigieren.
+
+### QO-DOC5 – ARCHITECTURE.md: Withdraw-Statusuebergang (submitted → draft) fehlt
+
+- **Fix:** Im Statusmodell ergaenzen.
+
+### QO-DOC6 – ARCHITECTURE.md: officer-assignments API-Route nicht dokumentiert
+
+- **Fix:** Route zur API-Tabelle hinzufuegen.
+
+### QO-DOC7 – HANDBUCH.md: Testzugangs-Tabelle unvollstaendig (nur 5 von 37 Usern)
+
+- **Fix:** Alle User auflisten oder Muster dokumentieren.
+
+### QO-DOC8 – HANDBUCH.md: Abschnitt 7.3 beschreibt altes Zuordnungsmodell
+
+- **Fix:** Aktualisieren auf Trainer-to-Profession-Modell.
+
+### QO-DOC9 – HANDBUCH.md: Abschnitt 7.4 "Officer-UI in zukuenftigen Versionen" – bereits implementiert
+
+- **Fix:** Auf `/trainer/officers/` verweisen.
+
+### QO-DOC10 – HANDBUCH.md: Trainee-Schedule-View nicht dokumentiert
+
+- **Fix:** `/trainee/schedule/` dokumentieren.
+
+### QO-DOC11 – DESIGN_SYSTEM.md: Font Family falsch (Inter → Geist, JetBrains Mono → Geist Mono)
+
+- **Fix:** Korrigieren.
+
+### QO-DOC12 – DESIGN_SYSTEM.md: Viele dokumentierte Tokens nicht als CSS-Variablen implementiert
+
+- **Beschreibung:** Font-Size, Font-Weight, Line-Height, Space, Icon-Size, Motion-Token sind dokumentiert aber nicht in globals.css.
+- **Fix:** Entweder als CSS-Variablen implementieren oder als "Konvention" markieren.
+
+### QO-DOC13 – README.md: Features-Liste fehlt 15+ implementierte Features
+
+- **Fix:** PDF-Export, Schedule, Notifications, Professions, Settings, Progress, etc. ergaenzen.
+
+### QO-DOC14 – README.md: Projektstruktur stark veraltet
+
+- **Fix:** Aktualisieren.
+
+### QO-DOC15 – README.md: typecheck-Script in AGENTS.md referenziert aber nicht in package.json
+
+- **Fix:** Script erstellen oder AGENTS.md korrigieren.
+
+---
+
+## Priorisierung der Qualitaetsoffensive
+
+### Phase 1 – Sicherheit & Datenintegritaet (Sofort)
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 1 | QO-H4: CRON_SECRET-Bypass | Klein |
+| 2 | QO-H2/H3: Zod-Validierung auf PUT schedule/recurrence-rules | Mittel |
+| 3 | QO-H5: validUntil > validFrom Validierung | Klein |
+| 4 | QO-H7: ReviewAction.withdrawn aufraeumen | Klein |
+| 5 | QO-M6: Schwacher Passwort-Hash bei Anonymisierung | Klein |
+| 6 | QO-H1: Rate Limiting (mindestens Login) | Mittel |
+
+### Phase 2 – Performance & Stabilitaet
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 7 | QO-H6: DB-Query bei jedem JWT-Refresh | Mittel |
+| 8 | QO-M8/M9: N+1 Queries beheben | Klein |
+| 9 | QO-M1/M2: try/catch auf DELETE-Handlern | Klein |
+| 10 | QO-M10/M11: Fehlende DB-Indizes | Klein |
+| 11 | QO-M12/M13: Cascade-Delete auf Schedule/Recurrence | Klein |
+| 12 | QO-M14: Unique-Constraint auf DailyEntry | Klein |
+
+### Phase 3 – Validierung & Datenqualitaet
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 13 | QO-M15: dailyEntries genau 7 | Klein |
+| 14 | QO-M16: Kommentar bei rejected/needs_revision erforderlich | Klein |
+| 15 | QO-M3/M4: Query-Param-Validierung | Klein |
+| 16 | QO-M17: twMerge in cn() | Klein |
+| 17 | QO-M18: Report-Builder Stunden nach Typ | Klein |
+
+### Phase 4 – Testabdeckung
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 18 | QO-H9: recurrence-rules Tests | Mittel |
+| 19 | QO-H9: prefill Tests | Klein |
+| 20 | QO-H9: assignment-modal Tests | Mittel |
+| 21 | QO-L30: auth.test.ts authorize importieren | Klein |
+| 22 | QO-M26: Seed-Daten vervollstaendigen | Mittel |
+
+### Phase 5 – Accessibility
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 23 | QO-H8: aria-labels auf Icon-Buttons | Klein |
+| 24 | QO-H8: Formular-Labels im Assignment-Modal | Klein |
+| 25 | QO-H10: Focus-Trap + role="dialog" auf Modal | Mittel |
+
+### Phase 6 – Code-Qualitaet & Refactoring
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 26 | QO-M22: Gantt-Timeline aufteilen | Groß |
+| 27 | QO-L1-L7: Hardcodes, Duplikate, Inline-Konstanten | Mittel |
+| 28 | QO-M19-M21: Autosave & Session-Verbesserungen | Mittel |
+| 29 | QO-M23-M25: Interface-Duplikate, Typ-Assertions, Enums | Klein |
+
+### Phase 7 – Dokumentation
+
+| # | Issue | Aufwand |
+|---|-------|---------|
+| 30 | QO-DOC1-DOC6: ARCHITECTURE.md aktualisieren | Mittel |
+| 31 | QO-DOC7-DOC10: HANDBUCH.md aktualisieren | Mittel |
+| 32 | QO-DOC11-DOC12: DESIGN_SYSTEM.md korrigieren | Klein |
+| 33 | QO-DOC13-DOC15: README.md aktualisieren | Klein |
+
+---
+
+## Altes Initial-Review (2026-05-07) – Archiv
+
+*Das Initial-Review vom 2026-05-07 ist oben im Aufloesungsstatus dokumentiert. Die urspruenglichen Issue-Beschreibungen waren:*
+
+### Top 5 dringendste Probleme (Initial-Review)
+
+1. Submit-Button schlaegt stillschweigend fehl bei neuen Berichten (#37) – **BEHOBEN**
+2. PUT ohne Eingabevalidierung (#7) – **BEHOBEN**
+3. Autosave Race Condition (#68) – **BEHOBEN**
+4. Kein Middleware-Auth-Guard (#90) – **BEHOBEN**
+5. JWT-Rolle wird nie aktualisiert (#72) – **BEHOBEN**

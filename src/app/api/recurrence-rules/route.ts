@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { weekdayToBit } from "@/lib/schedule-resolver";
+import { updateRecurrenceRuleSchema } from "@/lib/validations";
 
 const createRuleSchema = z.object({
   traineeId: z.string().uuid(),
@@ -143,8 +144,11 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, ...updates } = body;
-  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const parsed = updateRecurrenceRuleSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
+  }
+  const { id, ...updates } = parsed.data;
 
   if (role === "trainer") {
     const existing = await prisma.recurrenceRule.findUnique({ where: { id } });
@@ -160,7 +164,7 @@ export async function PUT(req: NextRequest) {
   if (updates.weekDays !== undefined) {
     data.weekDays = typeof updates.weekDays === "number"
       ? updates.weekDays
-      : (updates.weekDays as number[]).reduce((acc: number, day: number) => acc | weekdayToBit(day), 0);
+      : updates.weekDays.reduce((acc, day) => acc | weekdayToBit(day), 0);
   }
   if (updates.displayLabel !== undefined) data.displayLabel = updates.displayLabel || null;
   if (updates.department !== undefined) data.department = updates.department || null;

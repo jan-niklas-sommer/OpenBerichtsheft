@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export async function POST(
   _req: NextRequest,
@@ -22,7 +24,7 @@ export async function POST(
     data: {
       name: "Anonym",
       email: `anonym-${id}@deleted`,
-      passwordHash: "-",
+      passwordHash: await bcrypt.hash(crypto.randomUUID(), 12),
       professionId: null,
       anonymizedAt: new Date(),
     },

@@ -232,14 +232,26 @@ describe("PUT /api/schedule", () => {
   it("updates assignment as admin", async () => {
     mockAuth.mockResolvedValue(adminSession);
     mockScheduleUpdate.mockResolvedValue({ id: "sa-1", department: "HR" });
-    const res = await PUT(makePutRequest({ id: "sa-1", department: "HR" }));
+    const res = await PUT(makePutRequest({ id: "550e8400-e29b-41d4-a716-446655440000", department: "HR" }));
     expect(res.status).toBe(200);
+  });
+
+  it("returns 400 for invalid id", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const res = await PUT(makePutRequest({ id: "bad", department: "HR" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for invalid scheduleType", async () => {
+    mockAuth.mockResolvedValue(adminSession);
+    const res = await PUT(makePutRequest({ id: "550e8400-e29b-41d4-a716-446655440000", scheduleType: "invalid" }));
+    expect(res.status).toBe(400);
   });
 
   it("returns 403 for trainer not owner", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockScheduleFindUnique.mockResolvedValue({ id: "sa-1", createdBy: "other-trainer" });
-    const res = await PUT(makePutRequest({ id: "sa-1", department: "HR" }));
+    mockScheduleFindUnique.mockResolvedValue({ id: "550e8400-e29b-41d4-a716-446655440000", createdBy: "other-trainer" });
+    const res = await PUT(makePutRequest({ id: "550e8400-e29b-41d4-a716-446655440000", department: "HR" }));
     expect(res.status).toBe(403);
   });
 });

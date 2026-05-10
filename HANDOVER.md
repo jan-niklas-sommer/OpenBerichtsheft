@@ -1899,3 +1899,53 @@ npm run dev
 ### Offene Risiken / Folgeaufgaben
 
 - Keine neuen Risiken.
+
+---
+
+## AP: Phase 1 – Sicherheit & Datenintegritaet (Qualitaetsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** 6 Sicherheits- und Datenintegritaets-Fixes aus der Qualitaetsoffensive (CODE_REVIEW.md).
+
+**Umfang:**
+1. QO-H4: CRON_SECRET-Bypass fixen
+2. QO-H2/H3: Zod-Schemas fuer PUT schedule + recurrence-rules
+3. QO-H5: validUntil > validFrom Validierung
+4. QO-H7: ReviewAction.withdrawn aufraeumen
+5. QO-M6: Sicherer Passwort-Hash bei Anonymisierung
+6. QO-H1: Rate Limiting auf Login
+
+**Nicht-Ziele:** Phase 2-7, UI-Aenderungen.
+
+### Reviewer
+
+Plan deckt ausschliesslich Phase 1 ab. Keine UI-Beruehrung, keine Schema-Migration. Freigabe erteilt.
+
+### Implementierte Aenderungen
+
+- **QO-H4:** `notifications/check/route.ts` – CRON_SECRET-Bedingung korrigiert: `!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET`. Ohne ENV-Var wird jetzt 403 zurueckgegeben statt bypassed.
+- **QO-H2:** `schedule/route.ts` PUT – `updateScheduleSchema` (Zod) eingefuehrt mit UUID-Validierung fuer `id`, Enum-Validierung fuer `scheduleType`, nullable Felder.
+- **QO-H3:** `recurrence-rules/route.ts` PUT – `updateRecurrenceRuleSchema` (Zod) eingefuehrt mit gleicher Qualitaet.
+- **QO-H5:** `validations.ts` – `officerAssignmentSchema` mit `.refine()` das `validUntil > validFrom` sicherstellt.
+- **QO-H7:** Analyse ergab: `ReviewAction.withdrawn` ist korrekt als Audit-Trail-Eintrag (`submit/route.ts:101`). Report-Status geht korrekt auf `draft` zurueck. Kein Fix noetig – Works as designed.
+- **QO-M6:** `users/[id]/anonymize/route.ts` – `passwordHash: "-"` ersetzt durch `bcrypt.hash(crypto.randomUUID(), 12)`.
+- **QO-H1:** `src/lib/rate-limit.ts` (neu) – In-Memory Rate Limiter: 5 Attempts, 15 Min Lockout. `src/lib/auth.ts` nutzt `isRateLimited`, `recordFailedAttempt`, `clearAttempts`.
+- **Neue Schemas:** `scheduleTypeSchema`, `updateScheduleSchema`, `updateRecurrenceRuleSchema` in `validations.ts`.
+
+### Verifikation
+
+- **Tests:** 726 Tests (26 neue), 44 Dateien, alle bestanden.
+  - `rate-limit.test.ts`: 7 Tests (Rate Limiting: 5 Attempts, Lockout, Reset, Timer).
+  - `validations.test.ts`: 19 neue Tests (officerAssignment refine, updateScheduleSchema, updateRecurrenceRuleSchema).
+  - `schedule/route.test.ts`: 2 neue Tests (400 bei invalid id/scheduleType).
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Rate Limiting ist In-Memory – bei Multi-Instance-Deployment nicht instanzuebergreifend. Fuer Production auf Redis-basierte Loesung migrieren.
+- `typecheck`-Script nicht in `package.json` (AGENTS.md fordert es).
+- Phase 2-7 der Qualitaetsoffensive ausstehend.

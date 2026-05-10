@@ -115,7 +115,7 @@ describe("POST /api/users/[id]/anonymize", () => {
       data: {
         name: "Anonym",
         email: "anonym-user-1@deleted",
-        passwordHash: "-",
+        passwordHash: expect.any(String),
         professionId: null,
         anonymizedAt: expect.any(Date),
       },

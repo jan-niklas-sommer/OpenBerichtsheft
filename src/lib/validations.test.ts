@@ -11,6 +11,8 @@ import {
   officerAssignmentSchema,
   createProfessionSchema,
   updateProfessionSchema,
+  updateScheduleSchema,
+  updateRecurrenceRuleSchema,
 } from "./validations";
 
 describe("loginSchema", () => {
@@ -640,6 +642,116 @@ describe("officerAssignmentSchema", () => {
   it("rejects non-UUID trainingOfficerId", () => {
     expect(() =>
       officerAssignmentSchema.parse({ ...valid, trainingOfficerId: "bad" })
+    ).toThrow();
+  });
+
+  it("rejects validUntil before validFrom", () => {
+    expect(() =>
+      officerAssignmentSchema.parse({ ...valid, validFrom: "2026-12-31", validUntil: "2026-01-01" })
+    ).toThrow();
+  });
+
+  it("rejects equal validFrom and validUntil", () => {
+    expect(() =>
+      officerAssignmentSchema.parse({ ...valid, validFrom: "2026-06-01", validUntil: "2026-06-01" })
+    ).toThrow();
+  });
+});
+
+describe("updateScheduleSchema", () => {
+  it("accepts valid input with all fields", () => {
+    const input = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      scheduleType: "department",
+      startDate: "2026-01-05",
+      endDate: "2026-01-09",
+      department: "IT",
+      supervisorId: "660e8400-e29b-41d4-a716-446655440001",
+    };
+    expect(updateScheduleSchema.parse(input)).toEqual(input);
+  });
+
+  it("accepts id only", () => {
+    const input = { id: "550e8400-e29b-41d4-a716-446655440000" };
+    expect(updateScheduleSchema.parse(input)).toEqual(input);
+  });
+
+  it("rejects missing id", () => {
+    expect(() => updateScheduleSchema.parse({ department: "IT" })).toThrow();
+  });
+
+  it("rejects non-UUID id", () => {
+    expect(() => updateScheduleSchema.parse({ id: "bad" })).toThrow();
+  });
+
+  it("rejects invalid scheduleType", () => {
+    expect(() =>
+      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", scheduleType: "invalid" })
+    ).toThrow();
+  });
+
+  it("accepts null department", () => {
+    expect(
+      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", department: null })
+    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", department: null });
+  });
+
+  it("accepts null supervisorId", () => {
+    expect(
+      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", supervisorId: null })
+    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", supervisorId: null });
+  });
+
+  it("rejects non-UUID supervisorId", () => {
+    expect(() =>
+      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", supervisorId: "bad" })
+    ).toThrow();
+  });
+});
+
+describe("updateRecurrenceRuleSchema", () => {
+  it("accepts valid input with all fields", () => {
+    const input = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      scheduleType: "school",
+      startDate: "2026-01-05",
+      endDate: "2026-06-30",
+      weekDays: [1, 2, 3, 4, 5],
+      displayLabel: "Berufsschule",
+      department: "Schule",
+      supervisorId: "660e8400-e29b-41d4-a716-446655440001",
+    };
+    expect(updateRecurrenceRuleSchema.parse(input)).toEqual(input);
+  });
+
+  it("accepts id only", () => {
+    const input = { id: "550e8400-e29b-41d4-a716-446655440000" };
+    expect(updateRecurrenceRuleSchema.parse(input)).toEqual(input);
+  });
+
+  it("accepts weekDays as bitfield number", () => {
+    expect(
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: 31 })
+    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: 31 });
+  });
+
+  it("rejects missing id", () => {
+    expect(() => updateRecurrenceRuleSchema.parse({ scheduleType: "school" })).toThrow();
+  });
+
+  it("rejects non-UUID id", () => {
+    expect(() => updateRecurrenceRuleSchema.parse({ id: "bad" })).toThrow();
+  });
+
+  it("rejects invalid scheduleType", () => {
+    expect(() =>
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", scheduleType: "invalid" })
+    ).toThrow();
+  });
+
+  it("rejects empty weekDays array", () => {
+    expect(() =>
+      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: [] })
     ).toThrow();
   });
 });

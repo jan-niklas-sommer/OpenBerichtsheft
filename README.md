@@ -37,13 +37,17 @@ Die App läuft dann auf **http://localhost:3000**.
 
 Alle Konten verwenden das Passwort `password123`.
 
-| Rolle | E-Mail |
-|-------|--------|
-| Administrator | admin@example.com |
-| Ausbilder | trainer@example.com |
-| Ausbildungsbeauftragter | officer@example.com |
-| Auszubildende | trainee@example.com |
-| Auszubildender | trainee2@example.com |
+| Rolle | E-Mail | Name |
+|-------|--------|------|
+| Administrator | admin@example.com | Admin User |
+| Ausbilder | trainer@example.com | Max Mustermann |
+| Ausbilder | trainer2@example.com | Dr. Katharina Weber |
+| Ausbilder | trainer3@example.com | Stefan Krüger |
+| Ausbilder | trainer4@example.com | Petra Hoffmann |
+| Ausbildungsbeauftragte/r | officer@example.com | Erika Mustermann |
+| Ausbildungsbeauftragte/r | officer2@example.com | Thomas Schmidt |
+| Ausbildungsbeauftragte/r | officer3@example.com – officer10@example.com | … |
+| Auszubildende | trainee@example.com – trainee22@example.com | 22 Azubis, 3 Berufe (FiAE, FiSi, KVF) |
 
 ## Rollen
 

@@ -2046,3 +2046,47 @@ Plan deckt ausschließlich Phase 3 ab. Keine UI-Berührung, keine Schema-Migrati
 
 - Phase 4-7 der Qualitätsoffensive ausstehend.
 - `typecheck`-Script nicht in `package.json`.
+
+---
+
+## AP: Phase 4 – Testabdeckung (Qualitätsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** Testlücken für ungetestete API-Routen und Komponenten schließen.
+
+**Umfang:**
+1. QO-H9: recurrence-rules API Tests (GET/POST/PUT/DELETE)
+2. QO-H9: prefill API Tests (GET)
+3. QO-H9: assignment-modal Komponenten-Tests
+4. QO-H9: UI-Wrapper Tests (calendar, popover, date-picker)
+5. QO-L30: auth.test.ts authorize import (architektonisch nicht behebbar — `authorize` ist NextAuth-Provider-Callback)
+
+**Nicht-Ziele:** Phase 5-7.
+
+### Reviewer
+
+Plan deckt ausschließlich Phase 4 ab. Keine Produktivcode-Änderungen, nur neue Testdateien. Freigabe erteilt.
+
+### Implementierte Änderungen
+
+- **Neu:** `src/app/api/recurrence-rules/route.test.ts` — 25 Tests (GET: 5 admin/trainer/trainee/officer/auth, POST: 9 auth/role/validation/admin/trainer/no-profession/bitfield, PUT: 8 auth/role/validation/admin/trainer/ownership/weekDays/updatedById, DELETE: 8 auth/id/role/admin/trainer/not-found).
+- **Neu:** `src/app/api/reports/prefill/route.test.ts` — 17 Tests (auth, role, validation, prefill-entries, schedule-assignments, recurrence-rules+exceptions, date-range-query).
+- **Neu:** `src/components/schedule/assignment-modal.test.tsx` — 19 Tests (rendering, modes, trainee/officer-options, weekday-buttons, department-input, submit-single, submit-recurring, error-handling, backdrop-close, modal-content-click).
+- **Neu:** `src/components/ui/calendar.test.tsx` — 5 Tests.
+- **Neu:** `src/components/ui/popover.test.tsx` — 3 Tests.
+- **Neu:** `src/components/ui/date-picker.test.tsx` — 4 Tests.
+
+### Verifikation
+
+- **Tests:** 803 Tests, 48 Dateien, alle bestanden (+73 neue).
+- **Lint:** 0 Errors, 20 Warnings (vorbestehend).
+- **Build:** erfolgreich.
+- **Typecheck:** `npm run typecheck` nicht verfügbar.
+
+### Offene Risiken / Folgeaufgaben
+
+- QO-L30 (authorize import): `authorize` ist in NextAuth Credentials-Provider eingebettet, nicht separat exportierbar. Duplikat im Test ist architekturbedingt.
+- Phase 5-7 der Qualitätsoffensive ausstehend.

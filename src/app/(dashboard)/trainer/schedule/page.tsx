@@ -11,7 +11,7 @@ import {
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
 import { AssignmentModal } from "@/components/schedule/assignment-modal";
-import { computeDataBounds, clampViewToBounds } from "@/lib/schedule-bounds";
+import { computeDataBounds } from "@/lib/schedule-bounds";
 
 interface Trainee {
   id: string;

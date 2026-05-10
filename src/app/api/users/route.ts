@@ -43,8 +43,18 @@ export async function GET(req: NextRequest) {
     }
 
     if (roleFilter === "training_officer") {
+      const myTraineeIds = await prisma.user.findMany({
+        where: { role: "trainee", professionId: { in: professionIds }, deactivatedAt: null },
+        select: { id: true },
+      });
+      const tIds = myTraineeIds.map((t) => t.id);
+      const assignments = await prisma.traineeOfficerAssignment.findMany({
+        where: { traineeId: { in: tIds } },
+        select: { trainingOfficerId: true },
+      });
+      const officerIds = [...new Set(assignments.map((a) => a.trainingOfficerId))];
       const officers = await prisma.user.findMany({
-        where: { role: "training_officer", deactivatedAt: null },
+        where: { id: { in: officerIds }, deactivatedAt: null },
         select: { id: true, name: true, email: true },
       });
       return NextResponse.json(officers);

@@ -7,6 +7,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/utils", () => ({
   getIsoWeek: vi.fn(),
+  getIsoWeeksInYear: vi.fn().mockReturnValue(52),
 }));
 
 vi.mock("@/lib/prisma", () => ({

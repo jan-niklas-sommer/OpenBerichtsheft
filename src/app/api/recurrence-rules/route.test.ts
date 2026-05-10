@@ -12,6 +12,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
       findFirst: vi.fn(),
     },
+    traineeOfficerAssignment: {
+      findMany: vi.fn(),
+    },
     user: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -160,6 +163,9 @@ describe("GET /api/recurrence-rules", () => {
 
   it("returns rules for training_officer", async () => {
     mockAuth.mockResolvedValue(officerSession);
+    (prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { traineeId: "trainee-1" },
+    ]);
     mockFindMany.mockResolvedValue([sampleRule]);
     const res = await GET(makeGetRequest());
     expect(res.status).toBe(200);

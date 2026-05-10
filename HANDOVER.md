@@ -2466,3 +2466,41 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 
 - Intervall > 4 nicht in UI sichtbar (aber über API nutzbar bis max 12).
 - Interval-Zählung iteriert über alle Tage von startDate bis target — bei sehr langen Zeiträumen und vielen Regeln könnte das langsam werden. Optimierung: Nur matching Tage zählen via Modular-Arithmetik bei Bedarf.
+
+---
+
+## 2026-05-10 – Bugfix-Runde 2: 13 Bugs behoben
+
+### Planner
+
+**Ziel:** Comprehensive Codebase-Audit — systematische Suche nach Bugs in API-Routes, Datenintegrität, Logik, Sicherheit und Dead Code.
+
+### Gefundene und behobene Bugs
+
+#### HIGH (3)
+1. **Prefill ignoriert `interval`** — `prefill/route.ts` mappte `RecurrenceRule` ohne `interval`-Feld. Interval-Logik wurde nie angewendet bei Bericht-Prefill. **Fix:** `interval: r.interval ?? 1` im Mapping.
+2. **User Deaktivierung kaputt** — `updateUserSchema` nutzte `z.date()`, aber UI sendet ISO-String via JSON. `z.date()` lehnt Strings ab. **Fix:** `z.coerce.date().nullable().optional()`.
+3. **Training_officer sieht alle RecurrenceRules** — GET `/api/recurrence-rules` filterte nicht nach zugeordneten Trainees für Officer-Rolle. **Fix:** `traineeOfficerAssignment.findMany` + `traineeId: { in: [...] }` Filter.
+
+#### MEDIUM (4)
+4. **Woche 53 hardcoded als max 52** — Summary-API, Report-Editor und Navigation nutzten `> 52` statt ISO-korrektem `getIsoWeeksInYear()`. **Fix:** Neue Helper-Funktion `getIsoWeeksInYear(year)` in `utils.ts`, alle 4 Stellen korrigiert.
+5. **Count-API fehlende Rollen-Filterung** — `GET /api/reports/count` filterte nur für Trainees, andere Rollen bekamen Count über alle Berichte. **Fix:** Nicht-Admin/Nicht-Trainee Rollen werden blockiert.
+6. **Trainer sieht alle Officers** — `GET /api/users?role=training_officer` gab alle Officers im System zurück. **Fix:** Filter über `traineeOfficerAssignment` → nur Officers für eigene Trainees.
+7. **Autosave Phantom-Drafts** — Bei Wochennavigation erzeugte Autosave fälschlich neue Draft-Reports mit Default-Daten. **Fix:** `autosaveData` Memo gibt `null` zurück wenn `!dataFetched`.
+
+#### LOW (4)
+8. **Dead code** — `dayOfWeekStart` in `schedule-resolver.ts` zugewiesen aber nie gelesen. **Fix:** Entfernt.
+9. **Unused imports** — `addDays` in `export/page.tsx`, `clampViewToBounds` in `trainer/schedule/page.tsx`. **Fix:** Entfernt.
+10. **HTML-E-Mail Injection** — `name` wurde unescaped in E-Mail-Template interpoliert. **Fix:** `escapeHtml()` Helper.
+11. **UTC/local mixing in `getIsoWeek`** — `d.setHours()` (local) gemischt mit `d.getUTCDay()` (UTC). **Fix:** `d.setUTCHours(12, 0, 0, 0)`.
+
+### Verifikation
+
+- **Tests:** 876 Tests, 55 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 17 Warnings (reduziert von 20).
+- **Build:** Erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- In-Memory Rate Limiting skaliert nicht für Multi-Instance (bekannt, dokumentiert).
+- `clampViewToBounds` in `schedule-bounds.ts` wird nur im Test verwendet — könnte entfernt werden.

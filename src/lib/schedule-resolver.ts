@@ -124,7 +124,6 @@ export function resolveDay(
       const start = normalizeDate(rule.startDate);
       const target = normalizeDate(date);
       const diffDays = Math.round((target.getTime() - start.getTime()) / 86400000);
-      const dayOfWeekStart = getIsoDayOfWeek(start);
       let matchCount = 0;
       for (let d = 0; d <= diffDays; d++) {
         const checkDate = new Date(start);

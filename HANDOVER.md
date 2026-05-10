@@ -2134,3 +2134,53 @@ Plan deckt ausschließlich Phase 5 ab. Keine Datenmodell- oder API-Änderungen. 
 
 - Phase 6-7 der Qualitätsoffensive ausstehend.
 - Focus-Trap ist rudimentär (QuerySelector-basiert). Für komplexe Modals wäre `@radix-ui/react-dialog` robuster.
+
+---
+
+## AP: Phase 6 – Code-Qualität & Refactoring (Qualitätsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** Code-Qualität und Refactoring aus der Qualitätsoffensive (ausgenommen QO-M22 Gantt-Aufteilung — zu groß für dieses AP).
+
+**Umfang:**
+1. QO-M23: TraineeWithReports-Interface dedupliziert → `src/types/index.ts`
+2. QO-M24: 3 unnötige Typ-Assertions in reviewer-report-page.tsx entfernt
+3. QO-M25: Duplicate schedule type enum → `scheduleTypeSchema` importiert statt inline
+4. QO-L4: Unused `import * as React` in calendar.tsx entfernt
+5. QO-L6: `isBeforeTrainingStart` nach `src/lib/utils.ts` extrahiert (2x dedupliziert)
+6. QO-L7: `LEGEND_ITEMS`, `MODE_TABS` als Module-Level-Konstanten verschoben
+7. QO-L1: `bg-black/20` in navbar.tsx → `bg-overlay-backdrop/40`
+
+**Nicht-Ziele:** QO-M22 (Gantt aufteilen — Groß), QO-M19-M21 (Autosave/Session), QO-L2/L3/L5/L8 (kosmetisch).
+
+### Reviewer
+
+Plan deckt ausschließlich Code-Qualität ohne Funktionsänderungen ab. Keine Datenmodell- oder API-Änderungen. Freigabe erteilt.
+
+### Implementierte Änderungen
+
+- `src/types/index.ts` — Neues `TraineeWithReports` Interface
+- `reviewer-dashboard.tsx` + `reviewer-dashboard-client.tsx` — Import aus `@/types` statt lokalem Interface
+- `reviewer-report-page.tsx` — 3 `(e as { reportText?: string })` Assertions entfernt (Typ bereits korrekt)
+- `recurrence-rules/route.ts` + `schedule/route.ts` — `scheduleTypeSchema` aus `validations.ts` importiert
+- `calendar.tsx` — Unused `import * as React from "react"` entfernt
+- `utils.ts` — Neue exportierte `isBeforeTrainingStart()` Funktion
+- `report-calendar.tsx` + `year-calendar.tsx` — Import `isBeforeTrainingStart` aus utils statt lokale Duplikate
+- `year-calendar.tsx` — `LEGEND_ITEMS` von inline zu module-level verschoben
+- `assignment-modal.tsx` — `MODE_TABS` von inline zu module-level verschoben
+- `navbar.tsx` — `bg-black/20` → `bg-overlay-backdrop/40`
+
+### Verifikation
+
+- **Tests:** 803 Tests, 48 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 17 Warnings (3 weniger — unused imports entfernt).
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- QO-M22 (Gantt aufteilen) offen — großer Refactor, eigenes AP empfohlen.
+- QO-M19-M21 (Autosave Deep-Compare, Retry, Session-Refetch) offen.
+- Phase 7 (Dokumentation) ausstehend.

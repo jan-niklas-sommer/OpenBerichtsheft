@@ -7,20 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { statusDotColor, STATUS_LABELS, statusVariant } from "@/lib/utils";
 import { FileText, ChevronDown, ChevronUp, Filter } from "lucide-react";
-
-interface TraineeWithReports {
-  id: string;
-  name: string;
-  profession: string | null;
-  trainingStartDate: string | null;
-  reports: {
-    id: string;
-    calendarYear: number;
-    calendarWeek: number;
-    status: string;
-    submittedAt: string | null;
-  }[];
-}
+import type { TraineeWithReports } from "@/types";
 
 interface ReviewerDashboardClientProps {
   title: string;

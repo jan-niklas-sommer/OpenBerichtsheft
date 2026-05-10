@@ -211,7 +211,7 @@ export function Navbar({ role, userName }: NavbarProps) {
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="fixed inset-0 bg-black/20" onClick={() => setMobileOpen(false)} />
+          <div className="fixed inset-0 bg-overlay-backdrop/40" onClick={() => setMobileOpen(false)} />
           <nav className="fixed left-0 top-14 bottom-0 w-64 bg-surface-elevated p-4 shadow-lg">
             {items.map((item) => (
               <Link

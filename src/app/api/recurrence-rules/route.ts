@@ -3,11 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { weekdayToBit } from "@/lib/schedule-resolver";
-import { updateRecurrenceRuleSchema } from "@/lib/validations";
+import { updateRecurrenceRuleSchema, scheduleTypeSchema } from "@/lib/validations";
 
 const createRuleSchema = z.object({
   traineeId: z.string().uuid(),
-  scheduleType: z.enum(["department", "school", "vacation", "other"]),
+  scheduleType: scheduleTypeSchema,
   startDate: z.string(),
   endDate: z.string(),
   weekDays: z.union([

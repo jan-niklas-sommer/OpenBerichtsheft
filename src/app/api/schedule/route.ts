@@ -2,11 +2,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { updateScheduleSchema } from "@/lib/validations";
+import { updateScheduleSchema, scheduleTypeSchema } from "@/lib/validations";
 
 const createSchema = z.object({
   traineeId: z.string().uuid(),
-  scheduleType: z.enum(["department", "school", "vacation", "other"]),
+  scheduleType: scheduleTypeSchema,
   startDate: z.string(),
   endDate: z.string(),
   department: z.string().optional(),

@@ -23,6 +23,11 @@ interface OfficerOption {
 
 type ModalMode = "single" | "recurring";
 
+const MODE_TABS: { key: ModalMode; label: string }[] = [
+  { key: "single", label: "Einzeleinsatz" },
+  { key: "recurring", label: "Wiederholung" },
+];
+
 interface AssignmentModalProps {
   open: boolean;
   onClose: () => void;
@@ -184,11 +189,6 @@ export function AssignmentModal({
     }
   };
 
-  const modeTabs: { key: ModalMode; label: string }[] = [
-    { key: "single", label: "Einzeleinsatz" },
-    { key: "recurring", label: "Wiederholung" },
-  ];
-
   const inputClass =
     "h-9 w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base";
   const selectClass = inputClass;
@@ -212,7 +212,7 @@ export function AssignmentModal({
         </h3>
 
         <div className="mb-4 flex gap-1 rounded-lg border border-stroke-subtle p-1">
-          {modeTabs.map((tab) => (
+          {MODE_TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => { setMode(tab.key); setError(""); }}

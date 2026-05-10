@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getWeeksInMonth, getIsoWeek, statusColor, STATUS_LABELS } from "@/lib/utils";
+import { getWeeksInMonth, getIsoWeek, statusColor, STATUS_LABELS, isBeforeTrainingStart } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReportStatus } from "@/types";
 
@@ -52,11 +52,6 @@ export function ReportCalendar({
 
   const currentWeek = useMemo(() => getIsoWeek(new Date()), []);
 
-  const isBeforeTrainingStart = (y: number, w: number) => {
-    if (!trainingStart) return false;
-    return y < trainingStart.year || (y === trainingStart.year && w < trainingStart.week);
-  };
-
   const isCurrentWeek = (y: number, w: number) => {
     return y === currentWeek.year && w === currentWeek.week;
   };
@@ -79,7 +74,7 @@ export function ReportCalendar({
         {weeks.map((weekInfo) => {
           const key = `${weekInfo.year}-${weekInfo.week}`;
           const status = reportMap.get(key);
-          const beforeStart = isBeforeTrainingStart(weekInfo.year, weekInfo.week);
+          const beforeStart = isBeforeTrainingStart(weekInfo.year, weekInfo.week, trainingStart);
           const current = isCurrentWeek(weekInfo.year, weekInfo.week);
           const missing = !status && !beforeStart && (
             weekInfo.year < currentWeek.year ||

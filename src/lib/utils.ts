@@ -145,3 +145,12 @@ export function getWeeksInMonth(year: number, month: number): WeekInfo[] {
 
   return weeks;
 }
+
+export function isBeforeTrainingStart(
+  y: number,
+  w: number,
+  trainingStart: { year: number; week: number } | null,
+): boolean {
+  if (!trainingStart) return false;
+  return y < trainingStart.year || (y === trainingStart.year && w < trainingStart.week);
+}

@@ -85,3 +85,17 @@ export interface AssignmentData {
 export interface AppSettingsData {
   workingDays: number[];
 }
+
+export interface TraineeWithReports {
+  id: string;
+  name: string;
+  profession: string | null;
+  trainingStartDate: string | null;
+  reports: {
+    id: string;
+    calendarYear: number;
+    calendarWeek: number;
+    status: string;
+    submittedAt: string | null;
+  }[];
+}

@@ -11,10 +11,15 @@ export async function PUT(
 
   const { id } = await params;
 
-  const notification = await prisma.notification.update({
-    where: { id, userId: session.user.id },
-    data: { read: true },
-  });
+  let notification;
+  try {
+    notification = await prisma.notification.update({
+      where: { id, userId: session.user.id },
+      data: { read: true },
+    });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json(notification);
 }
@@ -28,9 +33,13 @@ export async function DELETE(
 
   const { id } = await params;
 
-  await prisma.notification.delete({
-    where: { id, userId: session.user.id },
-  });
+  try {
+    await prisma.notification.delete({
+      where: { id, userId: session.user.id },
+    });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ success: true });
 }

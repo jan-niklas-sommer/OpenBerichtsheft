@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/rate-limit";
 
+const roleCache = new Map<string, { role: string; trainingStartDate: string | null; fetchedAt: number }>();
+const ROLE_CACHE_TTL = 5 * 60 * 1000;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   trustHost: true,
@@ -52,13 +55,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
       }
       if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true, deactivatedAt: true, trainingStartDate: true },
-        });
-        if (!dbUser || dbUser.deactivatedAt) return {};
-        token.role = dbUser.role;
-        token.trainingStartDate = dbUser.trainingStartDate?.toISOString() ?? null;
+        const userId = token.id as string;
+        const cached = roleCache.get(userId);
+        if (cached && Date.now() - cached.fetchedAt < ROLE_CACHE_TTL) {
+          token.role = cached.role;
+          token.trainingStartDate = cached.trainingStartDate;
+        } else {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true, deactivatedAt: true, trainingStartDate: true },
+          });
+          if (!dbUser || dbUser.deactivatedAt) {
+            roleCache.delete(userId);
+            return {};
+          }
+          token.role = dbUser.role;
+          token.trainingStartDate = dbUser.trainingStartDate?.toISOString() ?? null;
+          roleCache.set(userId, { role: dbUser.role, trainingStartDate: token.trainingStartDate as string | null, fetchedAt: Date.now() });
+        }
       }
       return token;
     },

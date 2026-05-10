@@ -207,6 +207,10 @@ export async function DELETE(req: NextRequest) {
     }
   }
 
-  await prisma.recurrenceRule.delete({ where: { id } });
+  try {
+    await prisma.recurrenceRule.delete({ where: { id } });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   return NextResponse.json({ success: true });
 }

@@ -13,7 +13,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findMany: vi.fn() },
     weeklyReport: { findMany: vi.fn() },
-    notification: { findMany: vi.fn(), create: vi.fn() },
+    notification: { findMany: vi.fn(), create: vi.fn(), createMany: vi.fn() },
   },
 }));
 

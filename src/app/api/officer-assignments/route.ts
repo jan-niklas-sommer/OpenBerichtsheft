@@ -106,6 +106,10 @@ export async function DELETE(req: NextRequest) {
     }
   }
 
-  await prisma.traineeOfficerAssignment.delete({ where: { id } });
+  try {
+    await prisma.traineeOfficerAssignment.delete({ where: { id } });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   return NextResponse.json({ success: true });
 }

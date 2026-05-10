@@ -1,5 +1,11 @@
 import { PrismaClient, Role, ReportStatus, DayType, ReportType, ScheduleType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { getIsoWeek, getWeekDates } from "../src/lib/utils";
+
+function getIsoWeeksInYear(year: number): number {
+  const dec28 = new Date(year, 11, 28);
+  return getIsoWeek(dec28).week;
+}
 
 const prisma = new PrismaClient();
 
@@ -205,26 +211,6 @@ async function main() {
     "Versicherungsverträge analysiert. Kleingedrucktes lesen ist wie Code-Review — man findet die bösen Überraschungen erst bei genauerem Hinsehen. 🔍",
   ];
 
-  function getIsoWeekAndYear(date: Date): { year: number; week: number } {
-    const d = new Date(date.getTime());
-    d.setHours(12, 0, 0, 0);
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-    return { year: d.getUTCFullYear(), week };
-  }
-
-  function getWeekDates(year: number, week: number) {
-    const jan4 = new Date(year, 0, 4);
-    const dayOfWeek = jan4.getDay() || 7;
-    const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayOfWeek + 1 + (week - 1) * 7);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    return { start: monday, end: sunday };
-  }
-
   const statuses: ReportStatus[] = [
     ReportStatus.approved,
     ReportStatus.submitted,
@@ -243,8 +229,8 @@ async function main() {
     const startDate = new Date(traineeDefs[i].start);
     const now = new Date();
 
-    const startInfo = getIsoWeekAndYear(startDate);
-    const currentInfo = getIsoWeekAndYear(now);
+    const startInfo = getIsoWeek(startDate);
+    const currentInfo = getIsoWeek(now);
 
     let week = startInfo.week;
     let year = startInfo.year;
@@ -257,14 +243,16 @@ async function main() {
       });
       if (existingReport) {
         week++;
-        if (week > 52) { week = 1; year++; }
+        if (week > getIsoWeeksInYear(year)) { week = 1; year++; }
         continue;
       }
 
-      const { start: weekStart, end: weekEnd } = getWeekDates(year, week);
+      const weekDays = getWeekDates(year, week);
+      const weekStart = weekDays[0];
+      const weekEnd = weekDays[6];
       if (weekStart < startDate) {
         week++;
-        if (week > 52) { week = 1; year++; }
+        if (week > getIsoWeeksInYear(year)) { week = 1; year++; }
         continue;
       }
 
@@ -295,12 +283,7 @@ async function main() {
         },
       });
 
-      const days: Date[] = [];
-      for (let d = 0; d < 7; d++) {
-        const day = new Date(weekStart);
-        day.setDate(day.getDate() + d);
-        days.push(day);
-      }
+      const days = weekDays;
 
       const dayTypes: DayType[] = [
         DayType.company, DayType.company, DayType.vocational_school,

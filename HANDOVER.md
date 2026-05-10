@@ -2278,3 +2278,41 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - **Tests:** 803 Tests, 48 Dateien, alle bestanden (inkl. 13 Gantt-Tests unverändert).
 - **Lint:** 0 Errors, 17 Warnings (vorbestehend).
 - **Build:** erfolgreich.
+
+---
+
+## 2026-05-10 – Quick Wins: Today-Indicator + Seed-Cleanup
+
+### Planner
+
+**Ziel:** Drei kleine Fixes in einem Arbeitspaket:
+1. **#67** — Calendar-Today-Indikator besser sichtbar (Light + Dark Mode)
+2. **QO-M27** — Seed dupliziert `getIsoWeek`/`getWeekDates` → importieren aus `src/lib/utils`
+3. **QO-M28** — Seed Woche-53-Behandlung korrigieren (`week > 52` → `week > getIsoWeeksInYear(year)`)
+
+**Nicht-Ziele:** Keine Architektur-, Datenmodell- oder UI-Änderungen außer dem Today-Dot.
+
+### Reviewer
+
+- Plan ist schlüssig. Drei unabhängige kleine Fixes ohne Seiteneffekte.
+- Today-Dot: `after:`-Pseudo-Element ist kompatibel mit bestehendem `selected`-State (keine Kollision).
+- Seed-Import: `tsx` resolved `../src/lib/utils` direkt, kein `@/` nötig.
+- Woche-53: `getIsoWeeksInYear()` über 28.12. ist der korrekte ISO-Algorithmus.
+
+### Implementierte Änderungen
+
+1. **`src/components/ui/calendar.tsx`** — `today` class: Ring entfernt, stattdessen `font-semibold` + `after:` Dot (`bg-accent`, 4×4px, zentriert unter der Zahl).
+2. **`prisma/seed.ts`** — 19 Zeilen duplicierte Hilfsfunktionen entfernt, importiert `getIsoWeek` + `getWeekDates` aus `../src/lib/utils`. `getWeekDates`-Nutzung angepasst (returns `Date[]`, nicht `{ start, end }`). Manuelle `days[]`-Konstruktion ersetzt durch `weekDays` (bereits `Date[]`).
+3. **`prisma/seed.ts`** — Neue Hilfsfunktion `getIsoWeeksInYear(year)`, alle 3× `week > 52` ersetzt durch `week > getIsoWeeksInYear(year)`.
+
+### Verifikation
+
+- **Tests:** 803 Tests, 48 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Typecheck:** Pre-existing Fehler in Test-Dateien (settings/route.test.ts, reviewer-report-page.test.tsx, year-calendar.test.tsx, gantt-timeline.test.tsx, use-autosave.test.ts, schedule-resolver.test.ts) — nicht durch dieses AP verursacht.
+- **Build:** Nicht ausgeführt (keine Änderungen an Routen/Server-Komponenten).
+
+### Offene Risiken / Folgeaufgaben
+
+- Today-Dot sollte manuell im Light/Dark Mode visuell geprüft werden.
+- Seed-Import relativ (`../src/lib/utils`) — bei Verzeichnisumstrukturierung anzupassen.

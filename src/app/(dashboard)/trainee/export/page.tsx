@@ -55,8 +55,9 @@ const QUICK_RANGES: { label: string; getRange: () => DateRange }[] = [
 ];
 
 export default function ExportPage() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(() => QUICK_RANGES[1].getRange().from);
+  const [to, setTo] = useState(() => QUICK_RANGES[1].getRange().to);
+  const [selectedRange, setSelectedRange] = useState(1);
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -120,10 +121,11 @@ export default function ExportPage() {
     }
   };
 
-  const applyQuickRange = (getRange: () => DateRange) => {
+  const applyQuickRange = (getRange: () => DateRange, index: number) => {
     const range = getRange();
     setFrom(range.from);
     setTo(range.to);
+    setSelectedRange(index);
   };
 
   return (
@@ -140,13 +142,15 @@ export default function ExportPage() {
         <div className="space-y-6 p-6 pt-0">
           <div>
             <p className="mb-3 text-sm text-content-muted">Zeitraum wählen</p>
-            <div className="flex flex-wrap gap-2">
-              {QUICK_RANGES.map((r) => (
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Zeitraum">
+              {QUICK_RANGES.map((r, i) => (
                 <Button
                   key={r.label}
-                  variant="secondary"
+                  variant={selectedRange === i ? "primary" : "secondary"}
                   size="sm"
-                  onClick={() => applyQuickRange(r.getRange)}
+                  onClick={() => applyQuickRange(r.getRange, i)}
+                  role="radio"
+                  aria-checked={selectedRange === i}
                 >
                   {r.label}
                 </Button>

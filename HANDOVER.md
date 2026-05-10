@@ -2570,3 +2570,67 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - QO-H8/H10 (Accessibility: aria-labels, Focus-Trap) nicht in diesem AP.
 - QO-DOC* (Dokumentations-Updates) teilweise offen.
 - In-Memory Rate Limiting skaliert nicht fuer Multi-Instance (bekannt).
+
+---
+
+## 2026-05-10 – UI/UX Review Fixes: Mobile, Dark Mode, Export, Login
+
+### Planner
+
+**Ziel:** Behebung der 20 identifizierten UI/UX-Befunde aus dem visuellen Review mit Playwright-Screenshots. Schwerpunkte: Mobile Touch-Targets, Dark Mode Kontrast, Dashboard-Legenden, Export-UX und Login-Verbesserungen.
+
+### Implementierte Aenderungen
+
+#### AP1: Mobile Touch-Targets & Navbar
+- Navbar Icon-Targets: `size-7` → `size-8` (Profil, Einstellungen), Gap `gap-2` → `gap-1` fuer engere, aber touch-freundlichere Gruppierung
+- Button `sm` Hoehe: `h-8` → `h-9` (36px statt 32px)
+- Report-Editor Stunden/Minuten Input: `w-16` → `w-20` fuer besseres Touch-Target
+
+#### AP2: Dark Mode Kontrast
+- `--color-fg-subtle` im Dark Mode: `#52525b` (zinc-600, ~2.7:1 Kontrast) → `#71717a` (zinc-500, ~4.6:1 Kontrast)
+- Betrifft: Placeholder-Text in Inputs/Textareas, sekundaere UI-Texte
+
+#### AP3: Dashboard Legenden & Tooltips
+- Jahr-Kalender: Permanente Legende unter dem Kalender-Grid hinzugefuegt (6 Status-Farben + Labels)
+- Hover-Legende bleibt zusaetzlich erhalten fuer Tooltip-Details
+
+#### AP4: Export UX
+- Default-Auswahl: "Letzte 3 Monate" ist jetzt vorausgewaehlt (statt leer)
+- Selektierter Zeitraum-Button: `variant="primary"` statt `variant="secondary"` fuer visuelles Feedback
+- ARIA: `role="radiogroup"`, `role="radio"`, `aria-checked` fuer Accessibility
+
+#### AP5: Login UX
+- Passwort Sichtbarkeit-Toggle (Eye/EyeOff Icon) im Passwort-Feld
+- Custom Password-Input mit `pr-10` fuer Icon-Platz
+
+#### AP6: Misc UI Fixes
+- Gantt Monats-Labels: `text-[10px]` → `text-[11px]` fuer bessere Lesbarkeit
+- Gantt KW-Labels: `text-[9px]` → `text-[10px]`
+- Rate-Limit Test: `_reset` → `_resetAll` (Name geaendert in CR-Round-3)
+
+### Verifikation
+
+- **Tests:** 876 Tests, 55 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 18 Warnings (vorbestehend).
+- **Build:** Erfolgreich.
+
+### Betroffene Dateien
+
+- `src/app/globals.css` — Dark Mode `--color-fg-subtle` Kontrast
+- `src/components/layout/navbar.tsx` — Touch-Target Groessen
+- `src/components/ui/button.tsx` — sm Hoehe h-8 → h-9
+- `src/components/reports/year-calendar.tsx` — Permanente Legende
+- `src/app/(dashboard)/trainee/export/page.tsx` — Default selection, radio group
+- `src/app/(dashboard)/trainee/reports/[week]/page.tsx` — Input-Breite w-16 → w-20
+- `src/app/(auth)/login/page.tsx` — Password Toggle
+- `src/components/schedule/gantt-timeline.tsx` — Label-Groessen
+- `src/lib/rate-limit.ts` — `_reset` → `_resetAll`
+- Test-Dateien: `button.test.tsx`, `rate-limit.test.ts`, `year-calendar.test.tsx`
+
+### Offene Risiken / Folgeaufgaben
+
+- Mobile Gantt ist auf 390px noch sehr eng — separate Mobile-Ansicht (z.B. Listen-View) waere ideal
+- Admin Dashboard ist sehr sparsam — Quick-Actions und Charts in zukuenftigem AP
+- Officer "Aktiv" Button ist missverständlich — Status-Badge statt Button empfohlen
+- "Passwort vergessen?" Link nicht implementiert (benoetigt E-Mail-Infrastruktur)
+- Touch-Target-Vergrößerung auf 44px fuer alle Icon-Buttons (z.B. via `min-w-[44px] min-h-[44px]`) pruefen

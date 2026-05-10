@@ -193,20 +193,20 @@ export function Navbar({ role, userName }: NavbarProps) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <NotificationBell />
-            <div className="hidden sm:flex items-center justify-center h-7 w-7 rounded-full bg-surface-overlay text-xs font-semibold text-content-muted" aria-label={userName}>
+            <div className="hidden sm:flex items-center justify-center h-8 w-8 rounded-full bg-surface-overlay text-xs font-semibold text-content-muted" aria-label={userName}>
               {userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
             </div>
             <ThemeToggle />
             <Link
               href="/einstellungen"
-              className="inline-flex items-center justify-center rounded-md size-7 bg-transparent p-0 text-content-muted hover:bg-surface-overlay hover:text-content-base transition-colors"
+              className="inline-flex items-center justify-center rounded-md size-8 bg-transparent p-0 text-content-muted hover:bg-surface-overlay hover:text-content-base transition-colors"
               aria-label="Einstellungen"
             >
               <KeyRound className="h-4 w-4" />
             </Link>
-            <div className="mx-2 h-4 w-px bg-stroke-subtle" />
+            <div className="mx-1 h-4 w-px bg-stroke-subtle" />
             <Button
               variant="ghost"
               size="sm"

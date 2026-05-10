@@ -260,7 +260,7 @@ export default function SchedulePage() {
       {editItem && typeof window !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-backdrop"
-          onClick={() => setEditItem(null)}
+          onClick={(e) => { if (e.target === e.currentTarget) setEditItem(null); }}
         >
           <div
             ref={popoverRef}

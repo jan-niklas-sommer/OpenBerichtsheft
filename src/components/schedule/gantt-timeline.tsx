@@ -167,7 +167,6 @@ export function GanttTimeline({
 
   const renderBlock = (
     block: AssignmentBlock,
-    rowTop: number,
     effectiveRowHeight: number,
   ) => {
     const a = block.assignment;
@@ -186,7 +185,7 @@ export function GanttTimeline({
     const endKW = block.endIndex < workDays.length ? getIsoWeek(workDays[block.endIndex]) : startKW;
     const label = startKW === endKW ? `KW ${startKW}` : `KW ${startKW}–${endKW}`;
 
-    const barTop = rowTop + (effectiveRowHeight - barHeight) / 2;
+    const barTop = (effectiveRowHeight - barHeight) / 2;
 
     return (
       <div
@@ -307,10 +306,9 @@ export function GanttTimeline({
             />
           )}
 
-          {rows.map((row, rowIdx) => {
+          {rows.map((row) => {
             const effectiveRowHeight = singleRow ? 40 : rowHeight;
             const blocks = rowBlocks.get(row.traineeId) || [];
-            const rowTop = rowIdx * effectiveRowHeight;
 
             return (
               <div
@@ -319,7 +317,7 @@ export function GanttTimeline({
                 style={{ height: effectiveRowHeight }}
               >
                 {blocks.map((block) =>
-                  renderBlock(block, rowTop, effectiveRowHeight),
+                  renderBlock(block, effectiveRowHeight),
                 )}
               </div>
             );

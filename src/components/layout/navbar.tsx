@@ -89,7 +89,7 @@ function NotificationBell() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(!open)} className="relative">
+      <Button variant="ghost" size="sm" onClick={() => setOpen(!open)} className="relative" aria-label="Benachrichtigungen">
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
           <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-medium text-content-on-accent">
@@ -131,6 +131,7 @@ function NotificationBell() {
                   <button
                     onClick={() => markRead(n.id)}
                     className="shrink-0 rounded p-1 text-content-subtle hover:bg-surface-overlay hover:text-content-muted"
+                    aria-label="Als gelesen markieren"
                   >
                     <Check className="h-3 w-3" />
                   </button>
@@ -200,6 +201,7 @@ export function Navbar({ role, userName }: NavbarProps) {
               variant="ghost"
               size="sm"
               onClick={() => signOut({ callbackUrl: "/login" })}
+              aria-label="Abmelden"
             >
               <LogOut className="h-4 w-4" />
             </Button>

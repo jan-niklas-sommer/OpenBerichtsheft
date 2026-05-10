@@ -64,13 +64,13 @@ export function ReportCalendar({
   return (
     <div>
       <div className="mb-4 mt-6 flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onPrevMonth}>
+        <Button variant="ghost" size="sm" onClick={onPrevMonth} aria-label="Vorheriger Monat">
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-lg font-semibold text-content-base">
           {MONTH_NAMES[month]} {year}
         </h2>
-        <Button variant="ghost" size="sm" onClick={onNextMonth}>
+        <Button variant="ghost" size="sm" onClick={onNextMonth} aria-label="Nächster Monat">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

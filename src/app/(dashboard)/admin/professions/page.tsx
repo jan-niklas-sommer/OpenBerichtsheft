@@ -156,6 +156,7 @@ export default function ProfessionsPage() {
                       setEditingId(profession.id);
                       setEditingName(profession.name);
                     }}
+                    aria-label={`${profession.name} bearbeiten`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -163,6 +164,7 @@ export default function ProfessionsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(profession.id)}
+                    aria-label={`${profession.name} löschen`}
                   >
                     <Trash2 className="h-4 w-4 text-danger" />
                   </Button>

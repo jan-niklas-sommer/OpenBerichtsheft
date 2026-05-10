@@ -111,7 +111,7 @@ describe("ReviewerDashboardClient", () => {
     const user = userEvent.setup();
     render(<ReviewerDashboardClient {...defaultProps} />);
     expect(screen.queryByText("Eingereicht")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "" }).closest("button")!);
+    await user.click(screen.getByRole("button", { name: "Filter ein-/ausblenden" }));
     expect(screen.getByText("Eingereicht")).toBeInTheDocument();
     expect(screen.getByText("Alle")).toBeInTheDocument();
   });
@@ -119,7 +119,7 @@ describe("ReviewerDashboardClient", () => {
   it("filters by status", async () => {
     const user = userEvent.setup();
     render(<ReviewerDashboardClient {...defaultProps} />);
-    const filterBtn = screen.getByRole("button", { name: "" }).closest("button")!;
+    const filterBtn = screen.getByRole("button", { name: "Filter ein-/ausblenden" });
     await user.click(filterBtn);
     await user.click(screen.getByText("Abgelehnt"));
     expect(screen.queryByText("Anna Müller")).not.toBeInTheDocument();
@@ -129,7 +129,7 @@ describe("ReviewerDashboardClient", () => {
   it("shows empty state when filter yields no results", async () => {
     const user = userEvent.setup();
     render(<ReviewerDashboardClient {...defaultProps} />);
-    const filterBtn = screen.getByRole("button", { name: "" }).closest("button")!;
+    const filterBtn = screen.getByRole("button", { name: "Filter ein-/ausblenden" });
     await user.click(filterBtn);
     await user.click(screen.getByText("Abgelehnt"));
     expect(screen.getByText("Keine offenen Berichte.")).toBeInTheDocument();

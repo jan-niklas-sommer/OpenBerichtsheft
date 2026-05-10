@@ -2090,3 +2090,47 @@ Plan deckt ausschließlich Phase 4 ab. Keine Produktivcode-Änderungen, nur neue
 
 - QO-L30 (authorize import): `authorize` ist in NextAuth Credentials-Provider eingebettet, nicht separat exportierbar. Duplikat im Test ist architekturbedingt.
 - Phase 5-7 der Qualitätsoffensive ausstehend.
+
+---
+
+## AP: Phase 5 – Accessibility (Qualitätsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** 3 Accessibility-Fixes aus der Qualitätsoffensive.
+
+**Umfang:**
+1. QO-H8: aria-labels auf 8 Icon-Buttons (Navbar, Report-Calendar, Reviewer-Dashboard, Admin-Professions)
+2. QO-H8: Formular-Labels im Assignment-Modal (5 aria-labels auf selects/inputs)
+3. QO-H10: Focus-Trap + role="dialog" + aria-modal auf Assignment-Modal
+
+**Nicht-Ziele:** Phase 6-7.
+
+### Reviewer
+
+Plan deckt ausschließlich Phase 5 ab. Keine Datenmodell- oder API-Änderungen. Freigabe erteilt.
+
+### Implementierte Änderungen
+
+- **QO-H8 aria-labels:**
+  - `navbar.tsx`: Bell-Button "Benachrichtigungen", Mark-as-read "Als gelesen markieren", Logout "Abmelden"
+  - `report-calendar.tsx`: Prev "Vorheriger Monat", Next "Nächster Monat"
+  - `reviewer-dashboard-client.tsx`: Filter-Button "Filter ein-/ausblenden"
+  - `admin/professions/page.tsx`: Edit `${name} bearbeiten`, Delete `${name} löschen`
+- **QO-H8 Formular-Labels:**
+  - `assignment-modal.tsx`: 5 aria-labels auf Azubi-Select, Typ-Select, Beschreibung-Input, Abteilung-Input, Betreuer-Select
+- **QO-H10 Focus-Trap:**
+  - `assignment-modal.tsx`: `role="dialog"`, `aria-modal="true"`, `aria-labelledby="assignment-modal-title"`, Escape-Key → onClose, Tab-Focus-Trap (first/last focusable), Auto-Focus auf erstes Element beim Öffnen
+
+### Verifikation
+
+- **Tests:** 803 Tests, 48 Dateien, alle bestanden (3 Test-Assertions aktualisiert für neuen aria-label).
+- **Lint:** 0 Errors, 19 Warnings (vorbestehend).
+- **Build:** erfolgreich.
+
+### Offene Risiken / Folgeaufgaben
+
+- Phase 6-7 der Qualitätsoffensive ausstehend.
+- Focus-Trap ist rudimentär (QuerySelector-basiert). Für komplexe Modals wäre `@radix-ui/react-dialog` robuster.

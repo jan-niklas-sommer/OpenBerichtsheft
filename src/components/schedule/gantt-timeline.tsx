@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   TYPE_COLORS,
   TYPE_FG_COLORS,
@@ -43,6 +44,7 @@ interface TooltipState {
   assignment: ScheduleAssignmentView;
   x: number;
   y: number;
+  flip: boolean;
 }
 
 export function GanttTimeline({
@@ -51,14 +53,18 @@ export function GanttTimeline({
   viewStart,
   daysVisible,
   cellWidth = 6,
-  rowHeight = 36,
+  rowHeight = 48,
   mode,
   singleRow = false,
   showConflicts = false,
   onCellClick,
 }: GanttTimelineProps) {
+  const headerHeight = 48;
+  const monthRowHeight = 22;
+  const weekRowHeight = 26;
+  const barHeight = 24;
+
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const viewEnd = useMemo(() => {
@@ -134,15 +140,21 @@ export function GanttTimeline({
   const handleMouseEnter = useCallback(
     (assignment: ScheduleAssignmentView, e: React.MouseEvent) => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      const clientX = e.clientX;
+      const clientY = e.clientY;
       hoverTimerRef.current = setTimeout(() => {
-        const rect = (e.target as HTMLElement).getBoundingClientRect();
-        const containerRect = containerRef.current?.getBoundingClientRect();
-        if (!containerRect) return;
-        setTooltip({
-          assignment,
-          x: rect.left + rect.width / 2 - containerRect.left,
-          y: rect.top - containerRect.top - 8,
-        });
+        const vw = window.innerWidth;
+        const tooltipWidth = 320;
+        const tooltipHeight = 120;
+        const x = Math.min(
+          Math.max(clientX + 12, 8),
+          vw - tooltipWidth - 8,
+        );
+        const fitsAbove = clientY - tooltipHeight - 12 > 0;
+        const y = fitsAbove
+          ? clientY - 12
+          : clientY + 20;
+        setTooltip({ assignment, x, y, flip: !fitsAbove });
       }, 200);
     },
     [],
@@ -152,11 +164,6 @@ export function GanttTimeline({
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     setTooltip(null);
   }, []);
-
-  const headerHeight = 48;
-  const monthRowHeight = 22;
-  const weekRowHeight = 26;
-  const barHeight = 24;
 
   const renderBlock = (
     block: AssignmentBlock,
@@ -211,7 +218,7 @@ export function GanttTimeline({
   };
 
   const renderTooltip = () => {
-    if (!tooltip) return null;
+    if (!tooltip || typeof document === "undefined") return null;
     const a = tooltip.assignment;
     const start = new Date(a.startDate);
     const end = new Date(a.endDate);
@@ -225,13 +232,13 @@ export function GanttTimeline({
       ? `${diffWeeks} Woche${diffWeeks !== 1 ? "n" : ""}, ${diffDays} Tage`
       : `${diffDays} Tag${diffDays !== 1 ? "e" : ""}`;
 
-    return (
+    return createPortal(
       <div
-        className="pointer-events-none absolute z-30 max-w-xs rounded-md border border-stroke-subtle bg-surface-elevated px-3 py-2 shadow-md"
+        className="pointer-events-none fixed z-[9999] max-w-xs rounded-md border border-stroke-subtle bg-surface-elevated px-3 py-2 shadow-md"
         style={{
           left: tooltip.x,
           top: tooltip.y,
-          transform: "translate(-50%, -100%)",
+          transform: tooltip.flip ? "translate(0, 0)" : "translate(0, -100%)",
         }}
       >
         <div className="text-xs font-medium text-content-base">
@@ -247,7 +254,8 @@ export function GanttTimeline({
             Betreuer: {a.supervisor.name}
           </div>
         )}
-      </div>
+      </div>,
+      document.body,
     );
   };
 
@@ -255,7 +263,7 @@ export function GanttTimeline({
     const totalWidth = workDays.length * cellWidth;
 
     return (
-      <div ref={containerRef} className="relative" style={{ width: totalWidth }}>
+      <div className="relative" style={{ width: totalWidth }}>
         <div style={{ height: monthRowHeight }}>
           {monthHeaders.map((m, i) => (
             <div
@@ -272,7 +280,7 @@ export function GanttTimeline({
           {weekHeaders.map((w, i) => (
             <div
               key={i}
-              className={`absolute flex items-center text-[9px] ${
+              className={`absolute flex items-center text-[9px] px-1 ${
                 i % 2 === 0 ? "text-content-subtle" : "text-content-subtle/0"
               }`}
               style={{
@@ -286,7 +294,7 @@ export function GanttTimeline({
           ))}
         </div>
 
-        <div className="relative">
+        <div className="border-b border-stroke-subtle pb-3">
           {todayIndex >= 0 && (
             <div
               className="absolute z-10 w-0 opacity-20"
@@ -317,24 +325,28 @@ export function GanttTimeline({
             );
           })}
         </div>
-
-        {renderTooltip()}
       </div>
     );
   };
 
+  const tooltipPortal = renderTooltip();
+
   if (singleRow && rows.length === 1) {
     return (
-      <div className="overflow-x-auto">
-        {renderTimelineContent()}
-      </div>
+      <>
+        <div className="timeline-scroll overflow-x-auto">
+          {renderTimelineContent()}
+        </div>
+        {tooltipPortal}
+      </>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex">
-        <div className="sticky left-0 z-10 min-w-[140px] bg-surface-base">
+    <>
+      <div className="timeline-scroll overflow-x-auto">
+        <div className="flex">
+          <div className="sticky left-0 z-10 min-w-[140px] pr-6 bg-surface-base">
           <div
             style={{ height: headerHeight }}
             className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
@@ -357,12 +369,14 @@ export function GanttTimeline({
         {renderTimelineContent()}
       </div>
     </div>
+    {tooltipPortal}
+  </>
   );
 }
 
 export function ScheduleLegend() {
   return (
-    <div className="mt-4 flex flex-wrap gap-3">
+    <div className="mt-3 flex flex-wrap gap-3">
       {Object.entries(TYPE_LABELS).map(([type, label]) => (
         <div
           key={type}

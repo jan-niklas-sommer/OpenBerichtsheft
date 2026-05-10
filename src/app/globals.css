@@ -156,3 +156,25 @@ body {
 * {
   border-color: var(--color-border-subtle);
 }
+
+.timeline-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-base) transparent;
+}
+
+.timeline-scroll::-webkit-scrollbar {
+  height: 6px !important;
+}
+
+.timeline-scroll::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border-base) !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong) !important;
+}

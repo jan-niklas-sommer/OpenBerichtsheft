@@ -1,13 +1,19 @@
 import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
 export function Card({ className = "", children, ...props }: CardProps) {
+  const interactive = !!props.onClick;
   return (
     <div
-      className={`rounded-xl border border-stroke-subtle bg-surface-elevated p-6 ${className}`}
+      className={cn(
+        "rounded-xl border border-stroke-subtle bg-surface-elevated p-6 transition-colors hover:border-stroke-base",
+        interactive && "cursor-pointer",
+        className,
+      )}
       {...props}
     >
       {children}

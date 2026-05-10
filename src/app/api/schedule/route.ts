@@ -137,16 +137,20 @@ export async function POST(req: NextRequest) {
 
   const { traineeId, scheduleType, startDate, endDate, department, supervisorId } = parsed.data;
 
+  const targetUser = await prisma.user.findUnique({
+    where: { id: traineeId },
+    select: { role: true, professionId: true },
+  });
+  if (!targetUser || targetUser.role !== "trainee") {
+    return NextResponse.json({ error: "traineeId must reference a user with role 'trainee'" }, { status: 400 });
+  }
+
   if (role === "trainer") {
-    const trainee = await prisma.user.findUnique({
-      where: { id: traineeId },
-      select: { professionId: true },
-    });
-    if (!trainee?.professionId) {
+    if (!targetUser.professionId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const professionAssignment = await prisma.trainerProfessionAssignment.findFirst({
-      where: { trainerId: userId, professionId: trainee.professionId },
+      where: { trainerId: userId, professionId: targetUser.professionId },
     });
     if (!professionAssignment) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -125,7 +125,7 @@ describe("GET /api/reports/summary", () => {
       select: { professionId: true },
     });
     expect(mockUserFindMany).toHaveBeenNthCalledWith(1, {
-      where: { role: "trainee", professionId: { in: ["prof-1"] } },
+      where: { role: "trainee", professionId: { in: ["prof-1"] }, deactivatedAt: null },
       select: { id: true },
     });
     expect(mockUserFindMany).toHaveBeenNthCalledWith(2, {

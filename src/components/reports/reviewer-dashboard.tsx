@@ -22,7 +22,7 @@ export async function ReviewerDashboard({ userId, role, title, basePath }: Revie
     const professionIds = professionAssignments.map((a) => a.professionId);
     if (professionIds.length > 0) {
       const trainees = await prisma.user.findMany({
-        where: { role: "trainee", professionId: { in: professionIds } },
+        where: { role: "trainee", professionId: { in: professionIds }, deactivatedAt: null },
         select: { id: true, name: true, profession: { select: { name: true } }, trainingStartDate: true },
       });
       traineeIds = trainees.map((t) => t.id);

@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     weeklyReport: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       upsert: vi.fn(),
     },
     trainerProfessionAssignment: {
@@ -32,6 +33,7 @@ const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockUserFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockFindMany = prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>;
+const mockFindUnique = prisma.weeklyReport.findUnique as ReturnType<typeof vi.fn>;
 const mockUpsert = prisma.weeklyReport.upsert as ReturnType<typeof vi.fn>;
 const mockTrainerProfessionAssignments = prisma.trainerProfessionAssignment.findMany as ReturnType<typeof vi.fn>;
 const mockOfficerAssignments = prisma.traineeOfficerAssignment.findMany as ReturnType<typeof vi.fn>;
@@ -137,7 +139,7 @@ describe("GET /api/reports", () => {
       select: { professionId: true },
     });
     expect(mockUserFindMany).toHaveBeenCalledWith({
-      where: { role: "trainee", professionId: { in: ["prof-1"] } },
+      where: { role: "trainee", professionId: { in: ["prof-1"] }, deactivatedAt: null },
       select: { id: true },
     });
     expect(mockFindMany).toHaveBeenCalledWith(
@@ -352,6 +354,7 @@ describe("POST /api/reports", () => {
   it("creates report successfully as trainee", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockUserFindUnique.mockResolvedValue({ trainingStartDate: null });
+    mockFindUnique.mockResolvedValue(null);
     mockUpsert.mockResolvedValue(upsertResult);
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(200);
@@ -383,6 +386,7 @@ describe("POST /api/reports", () => {
   it("creates report without reportText", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockUserFindUnique.mockResolvedValue({ trainingStartDate: null });
+    mockFindUnique.mockResolvedValue(null);
     const bodyWithoutText = {
       calendarYear: 2025,
       calendarWeek: 10,
@@ -418,6 +422,7 @@ describe("POST /api/reports", () => {
   it("allows report on training start week", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockUserFindUnique.mockResolvedValue({ trainingStartDate: new Date("2025-03-03") });
+    mockFindUnique.mockResolvedValue(null);
     mockUpsert.mockResolvedValue(upsertResult);
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(200);
@@ -426,6 +431,7 @@ describe("POST /api/reports", () => {
   it("allows report after training start date", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockUserFindUnique.mockResolvedValue({ trainingStartDate: new Date("2025-01-06") });
+    mockFindUnique.mockResolvedValue(null);
     mockUpsert.mockResolvedValue(upsertResult);
     const res = await POST(makePostRequest(validBody));
     expect(res.status).toBe(200);
@@ -434,6 +440,7 @@ describe("POST /api/reports", () => {
   it("creates daily report with reportType", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     mockUserFindUnique.mockResolvedValue({ trainingStartDate: null });
+    mockFindUnique.mockResolvedValue(null);
     mockUpsert.mockResolvedValue({ ...upsertResult, reportType: "daily" });
     const dailyBody = {
       ...validBody,

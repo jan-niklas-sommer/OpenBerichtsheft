@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   if (session.user.role === "trainee") {
     where.traineeId = session.user.id;
   } else if (session.user.role !== "admin") {
-    where.traineeId = "__forbidden__";
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const count = await prisma.weeklyReport.count({ where });

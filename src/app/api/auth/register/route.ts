@@ -4,8 +4,15 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { sendVerificationEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const { success } = rateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
+  if (!success) {
+    return NextResponse.json({ error: "Zu viele Registrierungsversuche. Bitte später erneut versuchen." }, { status: 429 });
+  }
+
   const body = await req.json();
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
@@ -27,9 +34,8 @@ export async function POST(req: NextRequest) {
         data: { email, token, expiresAt },
       });
       await sendVerificationEmail(email, token, existing.name).catch(() => {});
-      return NextResponse.json({ message: "Verifizierung erneut gesendet" });
     }
-    return NextResponse.json({ error: "E-Mail bereits registriert" }, { status: 409 });
+    return NextResponse.json({ message: "Falls diese E-Mail noch nicht registriert ist, wurde eine Verifizierungs-E-Mail gesendet." });
   }
 
   const passwordHash = await hash(password, 12);
@@ -53,7 +59,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { message: "Registrierung erfolgreich. Bitte prüfen Sie Ihre E-Mails.", userId: user.id },
+    { message: "Falls diese E-Mail noch nicht registriert ist, wurde eine Verifizierungs-E-Mail gesendet." },
     { status: 201 },
   );
 }

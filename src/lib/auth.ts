@@ -69,9 +69,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         } else {
           const dbUser = await prisma.user.findUnique({
             where: { id: userId },
-            select: { role: true, deactivatedAt: true, trainingStartDate: true },
+            select: { role: true, deactivatedAt: true, anonymizedAt: true, trainingStartDate: true },
           });
-          if (!dbUser || dbUser.deactivatedAt) {
+          if (!dbUser || dbUser.deactivatedAt || dbUser.anonymizedAt) {
             roleCache.delete(userId);
             return {};
           }

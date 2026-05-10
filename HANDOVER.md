@@ -2504,3 +2504,69 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 
 - In-Memory Rate Limiting skaliert nicht für Multi-Instance (bekannt, dokumentiert).
 - `clampViewToBounds` in `schedule-bounds.ts` wird nur im Test verwendet — könnte entfernt werden.
+
+---
+
+## 2026-05-10 – Code Review Round 3: Qualitaetsoffensive Fixes
+
+### Planner
+
+**Ziel:** Behebung der verbleibenden Code-Review-Befunde aus der Qualitaetsoffensive (QO-Phase 1-6). Schwerpunkt: Sicherheit, Datenintegritaet, Code-Deduplizierung und Test-Konsistenz.
+
+### Implementierte Aenderungen
+
+#### Sicherheit (QO-H1, QO-H4)
+- **Rate Limiting auf Registration** — Neuen generischen `rateLimit()` in `rate-limit.ts` ergaenzt, Register-Route schuetzt mit 5 Requests/Stunde pro IP.
+- **Registration: Generic Response** — Keine User-Enumeration mehr: Einheitliche Nachricht fuer neue und existierende User. Kein 409/Conflict mehr.
+- **`anonymizedAt` Check** — JWT-Callback prueft jetzt auch `anonymizedAt`, anonymisierte User koennen sich nicht mehr anmelden.
+
+#### Datenintegritaet (QO-H2/H3, QO-H5, CR-11)
+- **Start/End-Datum Validierung** — `.refine()` auf `createSchema` (schedule) und `createRuleSchema` (recurrence-rules): `startDate <= endDate`.
+- **Report Upsert Status Check** — Nur `draft` und `needs_revision` Berichte koennen per Upsert ueberschrieben werden. `findUnique` vor `upsert` prueft den Status.
+- **Deaktivierte Trainees** — Alle Trainee-Queries in API+Dashboard filtern jetzt `deactivatedAt: null`.
+
+#### Code-Deduplizierung (QO-M22/M25/L34, QO-L27)
+- **`getIsoWeek` Duplikate entfernt** — Lokale Kopien in `gantt-timeline.tsx` und `timeline-block.tsx` durch Import aus `@/lib/utils` ersetzt (`getWeekNumber` Wrapper).
+- **Seed hardcoded 52** → `getIsoWeeksInYear(year)`.
+- **Reviewer-Dashboard hardcoded 52** → `getIsoWeeksInYear(y - 1)`.
+- **Count-API Sentinel** — `__forbidden__` String-Sentinel durch proper `403 Forbidden` ersetzt.
+
+#### Code-Qualitaet (QO-L8, QO-L32, QO-L33)
+- **TraineeCard React.memo** — Performance-Optimierung fuer Reviewer-Dashboard.
+- **Magic Numbers extrahiert** — `TOOLTIP_WIDTH`, `TOOLTIP_HEIGHT`, `TOOLTIP_DELAY_MS` als Konstanten in Gantt.
+- **AbortController** — `use-session.ts` nutzt jetzt `AbortController` in useEffect-Cleanup.
+
+#### Bugfix
+- **Reviewer-Report-Page** — `useEffect` zum Datenladen wurde versehentlich entfernt, wiederhergestellt. Error-State fuer fehlgeschlagene Review-API-Calls hinzugefuegt.
+
+### Verifikation
+
+- **Tests:** 876 Tests, 55 Dateien, alle bestanden.
+- **Lint:** 0 Errors, 18 Warnings (vorbestehend).
+- **Build:** Erfolgreich.
+
+### Betroffene Dateien
+
+- `src/lib/rate-limit.ts` — Neuer generischer `rateLimit()`
+- `src/lib/auth.ts` — `anonymizedAt` Check in JWT-Callback
+- `src/app/api/auth/register/route.ts` — Rate Limiting, Generic Response
+- `src/app/api/schedule/route.ts` — Start/End-Datum `.refine()`
+- `src/app/api/recurrence-rules/route.ts` — Start/End-Datum `.refine()`
+- `src/app/api/reports/route.ts` — Upsert Status Check, `deactivatedAt: null`
+- `src/app/api/reports/count/route.ts` — Proper 403
+- `src/app/api/reports/summary/route.ts` — `deactivatedAt: null`
+- `src/components/reports/reviewer-dashboard.tsx` — `deactivatedAt: null`
+- `src/components/reports/reviewer-dashboard-client.tsx` — `getIsoWeeksInYear`, `React.memo`
+- `src/components/reports/reviewer-report-page.tsx` — `useEffect` restauriert, Error-Handling
+- `src/components/schedule/gantt-timeline.tsx` — `getIsoWeek` Dedup, Magic Number Konstanten
+- `src/components/schedule/timeline-block.tsx` — `getIsoWeek` Dedup
+- `src/hooks/use-session.ts` — AbortController
+- `prisma/seed.ts` — `getIsoWeeksInYear` statt hardcoded 52
+- Test-Dateien: `register/route.test.ts`, `reports/route.test.ts`, `summary/route.test.ts`, `reviewer-report-page.test.tsx`
+
+### Offene Risiken / Folgeaufgaben
+
+- QO-M19-M21 (Autosave Deep-Compare, Retry, Session-Refetch) nicht in diesem AP.
+- QO-H8/H10 (Accessibility: aria-labels, Focus-Trap) nicht in diesem AP.
+- QO-DOC* (Dokumentations-Updates) teilweise offen.
+- In-Memory Rate Limiting skaliert nicht fuer Multi-Instance (bekannt).

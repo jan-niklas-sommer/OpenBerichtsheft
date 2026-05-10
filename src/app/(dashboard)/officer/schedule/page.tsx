@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   type ScheduleAssignmentView,
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
+
+function addMonths(d: Date, months: number): Date {
+  const r = new Date(d);
+  r.setMonth(r.getMonth() + months);
+  return r;
+}
 
 export default function OfficerSchedulePage() {
   const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
@@ -13,25 +18,26 @@ export default function OfficerSchedulePage() {
   const [search, setSearch] = useState("");
   const [viewStart, setViewStart] = useState<Date>(() => {
     const d = new Date();
+    d.setMonth(d.getMonth() - 3);
     d.setDate(d.getDate() - d.getDay() + 1);
     d.setHours(0, 0, 0, 0);
     return d;
   });
-
-  const daysVisible = Math.min(
-    365,
-    Math.max(60, typeof window !== "undefined" ? Math.floor(window.innerWidth / 4) : 120),
-  );
+  const [viewEnd, setViewEnd] = useState<Date>(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 3);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
 
   useEffect(() => {
-    const viewEnd = new Date(viewStart.getTime() + daysVisible * 86400000);
     fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
       .then((r) => r.json())
       .then((data) => {
         setAssignments(Array.isArray(data) ? data : []);
         setLoading(false);
       });
-  }, [viewStart, daysVisible]);
+  }, [viewStart, viewEnd]);
 
   const filtered = useMemo(() => {
     if (!search) return assignments;
@@ -50,6 +56,17 @@ export default function OfficerSchedulePage() {
       .sort((a, b) => a[1].localeCompare(b[1]));
   }, [filtered]);
 
+  const handleScrollNearEdge = useCallback(
+    (direction: "start" | "end") => {
+      if (direction === "end") {
+        setViewEnd((prev) => addMonths(prev, 3));
+      } else {
+        setViewStart((prev) => addMonths(prev, -3));
+      }
+    },
+    [],
+  );
+
   if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
@@ -58,36 +75,6 @@ export default function OfficerSchedulePage() {
         <h1 className="text-2xl font-semibold text-content-base">
           Einsatzplanung
         </h1>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              const d = new Date(viewStart);
-              d.setMonth(d.getMonth() - 1);
-              setViewStart(d);
-            }}
-          >
-            ←
-          </Button>
-          <span className="flex items-center text-sm text-content-muted">
-            {viewStart.toLocaleDateString("de-DE", {
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              const d = new Date(viewStart);
-              d.setMonth(d.getMonth() + 1);
-              setViewStart(d);
-            }}
-          >
-            →
-          </Button>
-        </div>
       </div>
 
       <input
@@ -105,8 +92,9 @@ export default function OfficerSchedulePage() {
         }))}
         assignments={filtered}
         viewStart={viewStart}
-        daysVisible={daysVisible}
+        viewEnd={viewEnd}
         mode="readonly"
+        onScrollNearEdge={handleScrollNearEdge}
       />
 
       <ScheduleLegend />

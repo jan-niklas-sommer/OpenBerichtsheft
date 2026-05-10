@@ -269,14 +269,13 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 
 **Gantt-Chart Ansicht:**
 
+- **Drag-to-Scroll**: Ziehen Sie die Timeline mit der Maus oder dem Finger (Touch), um horizontal zu scrollen
+- **Momentum**: Schnelles Wischen (Flick-Geste) scrollt mit Schwung weiter
 - Hierarchischer Header: Monatszeile (Monat + Jahr) oben, Wochenzeile (KW) darunter
 - Unter jedem Azubi-Namen wird der **Jahrgang** (JG, Ausbildungseintrittsjahr) in kleiner Schrift angezeigt
-- Wochenenden sind farblich hervorgehoben (Hellgrau / Dark Mode: dunkel)
 - Rote **Heute-Linie** markiert das aktuelle Datum
-- Wochengrenzen als gestrichelte Linien
 - Tagesgenaue Balken für jeden Auszubildenden, Farbe automatisch aus Zuweisungstyp abgeleitet
-- Bis zu 1 Jahr sichtbar, scrollbar
-- Navigieren Sie zwischen Monaten mit den Pfeiltasten
+- Die Ansicht wird automatisch erweitert, wenn Sie an den Rand scrollen
 
 **Zuweisung erstellen:**
 

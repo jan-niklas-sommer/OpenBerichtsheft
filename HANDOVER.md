@@ -1806,3 +1806,62 @@ npm run dev
 
 - Keine neuen Risiken.
 - Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI, Issue #67 (Calendar-Today-Indikator).
+
+---
+
+## 2026-05-10 – Arbeitspaket: Gantt Drag-to-Scroll + Dynamisches Nachladen
+
+### Planner
+
+- **Ziel:** Einsatzplanung modernisieren — weg von ← / → Monatsbuttons und clunky Browser-Scrollbar hin zu Drag-to-Scroll mit Momentum/Flick-Gesten und dynamischem Nachladen beim Scrollen.
+- **Umfang:**
+  1. `GanttTimeline`: Drag-to-Scroll (Maus + Touch), Momentum/Deceleration, Klick-vs-Drag-Unterscheidung (< 5px = Klick)
+  2. Props: `daysVisible` → `viewEnd` (explizites Enddatum), neuer `onScrollNearEdge` Callback
+  3. Alle 3 Schedule Pages: `viewStart`/`viewEnd` als expandierbarer State (initial ±3 Monate), ← / → Buttons entfernt, Monatslabel entfernt, dynamisches Nachladen
+  4. Cursor-Styles: `cursor-grab` / `active:cursor-grabbing` + `select-none`
+- **Nicht-Ziele:** Scroll-Snap auf Monatsgrenzen (zu restriktiv bei Drag), Infinite-Virtualisierung.
+- **Betroffene Dateien:** `gantt-timeline.tsx`, `trainer/schedule/page.tsx`, `officer/schedule/page.tsx`, `trainee/schedule/page.tsx`, `gantt-timeline.test.tsx`, `HANDBUCH.md`.
+- **Akzeptanzkriterien:** Drag-to-Scroll funktioniert (Maus+Touch), Momentum, Klick auf Blöcke funktioniert trotz Drag, dynamisches Nachladen beim Scrollen, alle Tests bestanden.
+
+### Reviewer
+
+- Freigabe. Drag-Threshold von 5px ist Standard. Momentum-Deceleration 0.95 ist konservativ genug. Touch-Handler via useRef löst Dependency-Probleme.
+
+### Implementierte Änderungen
+
+1. **`gantt-timeline.tsx`** — Kompletter Rewrite der Interaction-Logik:
+   - `daysVisible: number` → `viewEnd: Date` Prop
+   - Neuer optionaler `onScrollNearEdge?: (direction: "start" | "end") => void` Callback
+   - Drag-to-Scroll: `mousedown/move/up` mit 1:1 ScrollLeft-Mapping
+   - Touch: `touchstart/move/end` via Ref-basierte Handler (vermeidet useCallback-Dependency-Probleme)
+   - Momentum: `velocityRef` getrackt in px/ms, bei Release × 16 skaliert, Deceleration 0.95 pro Frame, Abbruch bei < 0.5
+   - Klick-vs-Drag: `DRAG_THRESHOLD = 5px`, `dragConsumedRef` wird asynchron gesetzt nach Release
+   - Block `onClick`: prüft `wasDragged()`, stoppt Propagation wenn Drag stattfand
+   - Cursor: `cursor-grab` / `active:cursor-grabbing` + `select-none`
+   - Scrollbar: bleibt `.timeline-scroll` (dezent, dünn)
+
+2. **`trainer/schedule/page.tsx`** — Navigation entfernt, dynamisches Nachladen:
+   - `viewStart` (heute -3 Monate) + `viewEnd` (heute +3 Monate) State
+   - `handleScrollNearEdge`: erweitert `viewStart`/`viewEnd` um je 3 Monate
+   - ← / → Buttons entfernt, Monatslabel entfernt
+   - `refreshData` nutzt aktuelle viewStart/viewEnd
+
+3. **`officer/schedule/page.tsx`** — Gleiche Migration wie Trainer (readonly mode)
+
+4. **`trainee/schedule/page.tsx`** — Gleiche Migration (singleRow mode)
+
+5. **Tests**: Alle `daysVisible` → `viewEnd` aktualisiert. +2 neue Tests (cursor-grab, onScrollNearEdge callback).
+
+### Verifikation
+
+- **Lint:** 0 Errors, 3 Warnings (unverändert).
+- **Tests:** 700 Tests, 41 Dateien, alle bestanden (+2 neue).
+- **Build:** erfolgreich.
+- **Typecheck:** Pre-existing TS-Fehler unverändert.
+
+### Offene Risiken / Folgeaufgaben
+
+- Touch-Momentum auf iOS könnte Safari-spezifische Edge Cases haben (nicht auf Gerät getestet).
+- Dynamisches Nachladen refetched den gesamten Zeitraum (nicht Delta) — bei sehr langen Zeiträumen könnte das langsam werden.
+- Scroll-Snap auf Monatsgrenzen wurde bewusst nicht implementiert (zu restriktiv bei freiem Drag).
+- Nächste Arbeitspakete: Frequenz-Intervall im Resolver, RecurrenceException UI, Issue #67 (Calendar-Today-Indikator).

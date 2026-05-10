@@ -1,0 +1,97 @@
+"use client";
+
+import {
+  TYPE_COLORS,
+  TYPE_FG_COLORS,
+  type ScheduleAssignmentView,
+  type AssignmentBlock,
+} from "./types";
+import { getConflictsForDay } from "./types";
+
+function getIsoWeek(date: Date): number {
+  const d = new Date(date.getTime());
+  d.setHours(12, 0, 0, 0);
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+interface TimelineBlockProps {
+  block: AssignmentBlock;
+  rowHeight: number;
+  barHeight: number;
+  workDays: Date[];
+  assignments: ScheduleAssignmentView[];
+  showConflicts: boolean;
+  mode: "edit" | "readonly";
+  wasDragged: () => boolean;
+  onCellClick?: (assignment: ScheduleAssignmentView) => void;
+  onMouseEnter: (assignment: ScheduleAssignmentView, e: React.MouseEvent) => void;
+  onMouseLeave: () => void;
+}
+
+export function TimelineBlock({
+  block,
+  rowHeight,
+  barHeight,
+  workDays,
+  assignments,
+  showConflicts,
+  mode,
+  wasDragged,
+  onCellClick,
+  onMouseEnter,
+  onMouseLeave,
+}: TimelineBlockProps) {
+  const a = block.assignment;
+  const hasConflict = (() => {
+    if (!showConflicts) return false;
+    for (let i = block.startIndex; i <= block.endIndex; i++) {
+      if (getConflictsForDay(a.traineeId, workDays[i], assignments).length > 1) {
+        return true;
+      }
+    }
+    return false;
+  })();
+
+  const showLabel = block.width > 80;
+  const startKW = getIsoWeek(workDays[block.startIndex]);
+  const endKW = block.endIndex < workDays.length ? getIsoWeek(workDays[block.endIndex]) : startKW;
+  const label = startKW === endKW ? `KW ${startKW}` : `KW ${startKW}–${endKW}`;
+
+  const barTop = (rowHeight - barHeight) / 2;
+
+  return (
+    <div
+      className={`absolute rounded-full transition-shadow ${
+        mode === "edit" && onCellClick ? "cursor-pointer" : ""
+      } ${hasConflict ? "ring-1 ring-danger ring-inset" : ""}`}
+      style={{
+        left: block.offset,
+        top: barTop,
+        width: block.width,
+        height: barHeight,
+        backgroundColor: TYPE_COLORS[a.scheduleType],
+      }}
+      onClick={(e) => {
+        if (wasDragged()) {
+          e.stopPropagation();
+          return;
+        }
+        if (mode === "edit") onCellClick?.(a);
+      }}
+      onMouseEnter={(e) => onMouseEnter(a, e)}
+      onMouseLeave={onMouseLeave}
+    >
+      {showLabel && (
+        <span
+          className="flex h-full items-center justify-center truncate px-2 text-[10px] font-medium"
+          style={{ color: TYPE_FG_COLORS[a.scheduleType] }}
+        >
+          {label}
+        </span>
+      )}
+    </div>
+  );
+}

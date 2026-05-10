@@ -2243,3 +2243,38 @@ Plan deckt ausschließlich Dokumentation ab. Keine Produktivcode-Änderungen. Fr
 ### Ergebnis
 
 **Qualitätsoffensive abgeschlossen.** Alle 7 Phasen (Phase 1–7) umgesetzt. 15 Dokumentationslücken geschlossen.
+
+---
+
+## AP: Gantt-Timeline Refactoring (QO-M22)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** 578-Zeilen gantt-timeline.tsx in 4 Module aufteilen für bessere Wartbarkeit.
+
+**Umfang:**
+1. `useDragScroll` Hook — Drag-to-Scroll-Physik, Momentum, Touch-Handling (170 Zeilen)
+2. `TimelineTooltip` — Portal-basierter Tooltip mit Typ-Label, Dauer, Betreuer (55 Zeilen)
+3. `TimelineBlock` — Einzelner Block mit Konflikt-Markierung, Label, Click-Handler (95 Zeilen)
+4. `gantt-timeline.tsx` — Hauptkomponente als Komposition (250 Zeilen, vorher 578)
+
+**Nicht-Ziele:** Funktionsänderungen, API-Änderungen, neue Features.
+
+### Reviewer
+
+Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. Gleiche Props, gleiche Exports. Freigabe erteilt.
+
+### Implementierte Änderungen
+
+- **Neu:** `src/components/schedule/use-drag-scroll.ts` — Hook mit `containerRef`, `handlePointerDown/Move/Up`, `wasDragged`, `isDragging`
+- **Neu:** `src/components/schedule/timeline-tooltip.tsx` — `TimelineTooltip` Komponente + `TooltipState` Type Export
+- **Neu:** `src/components/schedule/timeline-block.tsx` — `TimelineBlock` Komponente mit Konflikt-Check, KW-Label, Click-Handler
+- **Rewrite:** `src/components/schedule/gantt-timeline.tsx` — 578 → 250 Zeilen. Imports der 3 neuen Module. Gleiche API (`GanttTimeline`, `ScheduleLegend`).
+
+### Verifikation
+
+- **Tests:** 803 Tests, 48 Dateien, alle bestanden (inkl. 13 Gantt-Tests unverändert).
+- **Lint:** 0 Errors, 17 Warnings (vorbestehend).
+- **Build:** erfolgreich.

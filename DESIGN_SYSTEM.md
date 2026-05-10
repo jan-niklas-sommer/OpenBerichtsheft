@@ -174,9 +174,11 @@ Vier Lernort-Kategorien. Hue-Spektrum bewusst getrennt von semantischen Farben.
 **Schriftfamilien:**
 
 ```css
---font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
---font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+--font-family-base: 'Geist', system-ui, -apple-system, sans-serif;
+--font-family-mono: 'Geist Mono', ui-monospace, monospace;
 ```
+
+> **Hinweis:** Die folgenden Token-Schichten (Font-Size, Font-Weight, Line-Height) sind als Konvention definiert und werden bei Bedarf als CSS-Variablen implementiert. Sie sind derzeit nicht in `globals.css` als CSS Custom Properties vorhanden.
 
 **Größenskala (modular 1.125):**
 
@@ -211,6 +213,8 @@ Vier Lernort-Kategorien. Hue-Spektrum bewusst getrennt von semantischen Farben.
 ---
 
 ## Abstände
+
+> **Hinweis:** Die Space-Token sind als Konvention definiert und werden bei Bedarf als CSS-Variablen implementiert. Sie sind derzeit nicht in `globals.css` als CSS Custom Properties vorhanden.
 
 4px-Grid:
 
@@ -538,6 +542,8 @@ Inhalt: Icon (24px, `--color-fg-subtle`), Headline (`font-size-base`, `--color-f
 
 ## Iconographie
 
+> **Hinweis:** Die Icon-Size-Token sind als Konvention definiert und werden bei Bedarf als CSS-Variablen implementiert. Sie sind derzeit nicht in `globals.css` als CSS Custom Properties vorhanden.
+
 Icon-Library: `lucide-react`. Stroke-Width: 1.5. Default-Farbe: `currentColor`.
 
 ```css
@@ -560,6 +566,8 @@ Icon-Library: `lucide-react`. Stroke-Width: 1.5. Default-Farbe: `currentColor`.
 ---
 
 ## Animation
+
+> **Hinweis:** Die Motion-Token sind als Konvention definiert und werden bei Bedarf als CSS-Variablen implementiert. Sie sind derzeit nicht in `globals.css` als CSS Custom Properties vorhanden.
 
 Sparsam. Nur für State-Übergänge.
 

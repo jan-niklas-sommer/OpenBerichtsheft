@@ -63,31 +63,65 @@ Alle Konten verwenden das Passwort `password123`.
 - **Wochenbericht-Editor** mit 7 Tageszeilen (Tagestyp, Stunden, Minuten)
 - **Autosave** mit Debounce – keine Datenverluste
 - **Statusmodell**: Entwurf → Eingereicht → Genehmigt / Zurückgegeben / Abgelehnt
+- **PDF-Export** generierter Wochenberichte pro Bericht
+- **Einsatzplanung** mit interaktivem Gantt-Chart und Drag-Unterstützung
+- **Wiederholungsregeln** für wiederkehrende Einsätze (Betrieb, Berufsschule, etc.)
+- **Bericht-Prefill** – Vorwocheninhalt automatisch übernehmen
+- **Benachrichtigungen** – Prüfer bei Einreichung benachrichtigen, Azubis bei Review
+- **Ausbildungsberufe** – Verwaltung von Berufen (FiAE, FiSi, KVF) mit Zuordnung
+- **Fortschritts-Dashboard** – Übersicht über Berichtserstellungs- und Genehmigungsstatus
+- **Anonymisierung (DSGVO)** – Benutzerdaten anonymisieren statt löschen
+- **Year-Calendar** – Jahresübersicht aller Berichtswochen mit Heatmap
 - **Prüfer-Dashboards** für Ausbilder und Ausbildungsbeauftragte
-- **Admin-Bereich** für Benutzerverwaltung und Zuordnungen
-- **Dark Mode / Light Mode** mit Systemerkennung
+- **Admin-Bereich** für Benutzerverwaltung, Zuordnungen und Berufe
+- **Design-System** mit Token-Architektur, Dark/Light Mode und Systemerkennung
 - **Responsive** – Desktop und Smartphone
-- **Serverseitige Autorisierung** auf allen API-Routen und Seiten
+- **Rate-Limiting** auf API-Routen zum Missbrauchsschutz
+- **Zugriffsschutz** – Serverseitige Autorisierung auf allen API-Routen und Seiten
 
 ## Projektstruktur
 
 ```text
 src/
 ├── app/
-│   ├── (auth)/login/          # Login-Seite
+│   ├── (auth)/login/                  # Login-Seite
 │   ├── (dashboard)/
-│   │   ├── admin/             # Benutzer- und Zuordnungsverwaltung
-│   │   ├── trainer/           # Ausbilder-Dashboard + Review
-│   │   ├── officer/           # Ausbildungsbeauftragten-Dashboard + Review
-│   │   └── trainee/           # Azubi-Dashboard + Berichtseditor
-│   └── api/                   # REST-API-Routen
+│   │   ├── admin/
+│   │   │   ├── users/                 # Benutzerverwaltung
+│   │   │   ├── assignments/           # Azubi-Ausbilder-Zuordnungen
+│   │   │   ├── professions/           # Ausbildungsberufe verwalten
+│   │   │   ├── progress/              # Fortschritts-Dashboard
+│   │   │   └── settings/              # Systemeinstellungen
+│   │   ├── trainer/
+│   │   │   ├── schedule/              # Einsatzplanung (Gantt)
+│   │   │   ├── officers/              # Ausbildungsbeauftragte verwalten
+│   │   │   └── report/[id]/           # Bericht prüfen
+│   │   ├── officer/
+│   │   │   ├── schedule/              # Einsatzplanung
+│   │   │   └── report/[id]/           # Bericht prüfen
+│   │   └── trainee/
+│   │       ├── schedule/              # Eigene Einsatzplanung
+│   │       ├── reports/               # Berichtsliste + Year-Calendar
+│   │       └── reports/[week]/        # Berichtseditor
+│   └── api/
+│       ├── auth/                      # NextAuth (Auth.js)
+│       ├── reports/                   # CRUD + submit + review + pdf + prefill
+│       ├── schedule/                  # Einsatzplanung-API
+│       ├── assignments/               # Zuordnungs-API
+│       ├── officer-assignments/       # Beauftragten-Zuordnungen
+│       ├── recurrence-rules/          # Wiederholungsregeln
+│       ├── notifications/             # Benachrichtigungen
+│       ├── professions/               # Ausbildungsberufe
+│       ├── users/                     # Benutzerverwaltung + Anonymisierung
+│       └── settings/                  # Systemeinstellungen
 ├── components/
-│   ├── ui/                    # Button, Card, Input, Select, Badge, etc.
-│   ├── layout/                # Navbar
-│   └── reports/               # Gemeinsame Dashboard- und Review-Komponenten
-├── hooks/                     # useAutosave, useSession
-├── lib/                       # auth.ts, prisma.ts, validations.ts, utils.ts
-└── types/                     # TypeScript-Typen + next-auth Declarations
+│   ├── ui/                            # Button, Card, Input, Select, Badge, Modal, etc.
+│   ├── layout/                        # Navbar, ThemeProvider
+│   ├── reports/                       # Dashboard- und Review-Komponenten
+│   └── schedule/                      # Gantt-Chart, Timeline-Komponenten
+├── hooks/                             # useAutosave, useSession
+├── lib/                               # auth.ts, prisma.ts, validations.ts, utils.ts, rate-limit.ts
+└── types/                             # TypeScript-Typen + next-auth Declarations
 ```
 
 ## NPM Scripts
@@ -98,17 +132,24 @@ src/
 | `npm run build` | Production-Build |
 | `npm run start` | Production-Server |
 | `npm run lint` | ESLint ausführen |
+| `npm test` | Vitest Unit/API/Component Tests |
+| `npm run test:watch` | Vitest im Watch-Modus |
+| `npm run test:coverage` | Vitest mit Coverage-Report |
+| `npm run test:e2e` | Playwright E2E Tests |
 | `npm run docker:up` | PostgreSQL starten |
 | `npm run docker:down` | PostgreSQL stoppen |
 | `npm run db:migrate` | Migration ausführen |
 | `npm run db:seed` | Testdaten laden |
 | `npm run db:studio` | Prisma Studio öffnen |
 
+> **Hinweis:** Es gibt kein `npm run typecheck`-Script. Für einen TypeScript-Check ohne Emit nutze `npx tsc --noEmit`.
+
 ## Dokumentation
 
 | Datei | Inhalt |
 |-------|--------|
 | `ARCHITECTURE.md` | Architektur, Datenmodell, API-Routen, Auth, Designsystem |
+| `DESIGN_SYSTEM.md` | Design-System mit Token-Schichten, Komponenten-Spezifikation |
 | `HANDBUCH.md` | Benutzerhandbuch für alle Rollen |
 | `HANDOVER.md` | Übergabeprotokoll zwischen Arbeitspaketen |
 | `CODE_REVIEW.md` | Code-Review-Ergebnisse mit Issue-Tracking |

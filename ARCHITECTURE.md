@@ -4,7 +4,7 @@
 
 | Schicht | Technologie | Version |
 |---------|-------------|---------|
-| Framework | Next.js (App Router) | 15.x |
+| Framework | Next.js (App Router) | 16.x |
 | Sprache | TypeScript | 5.x |
 | Styling | Tailwind CSS | 4.x |
 | Datenbank | PostgreSQL | 16.x |
@@ -25,7 +25,7 @@
 
 ---
 
-## Projektstruktur (geplant)
+## Projektstruktur
 
 ```text
 open-berichtsheft/
@@ -100,17 +100,17 @@ open-berichtsheft/
 | createdAt | DateTime | Erstellungszeitpunkt |
 | updatedAt | DateTime | Letzte Änderung |
 
-### TraineeTrainerAssignment
+### TrainerProfessionAssignment
 
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | id | String (UUID) | Primärschlüssel |
-| traineeId | String (FK → User) | Auszubildender |
 | trainerId | String (FK → User) | Ausbilder |
+| professionId | String (FK → TrainingProfession) | Ausbildungsberuf |
 | createdAt | DateTime | Erstellungszeitpunkt |
 | updatedAt | DateTime | Letzte Änderung |
 
-Unique Constraint: `(traineeId, trainerId)`
+Unique Constraint: `(trainerId, professionId)`
 
 ### TraineeOfficerAssignment
 
@@ -168,9 +168,22 @@ Unique Constraint: `(traineeId, calendarYear, calendarWeek)`
 | id | String (UUID) | Primärschlüssel |
 | weeklyReportId | String (FK → WeeklyReport) | Zugehöriger Bericht |
 | actorId | String (FK → User) | Handelnder Nutzer |
-| action | Enum | `created`, `autosaved`, `submitted`, `approved`, `needs_revision`, `rejected` |
+| action | Enum | `created`, `autosaved`, `submitted`, `approved`, `needs_revision`, `rejected`, `withdrawn` |
 | comment | String? | Kommentar |
 | createdAt | DateTime | Zeitstempel |
+
+### Notification
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| id | String (UUID) | Primärschlüssel |
+| userId | String (FK → User) | Empfänger |
+| type | String | Benachrichtigungstyp (z.B. `report_missing`, `report_reviewed`) |
+| message | String | Anzeigetext |
+| read | Boolean | Gelesen-Status (default: `false`) |
+| createdAt | DateTime | Erstellungszeitpunkt |
+
+Index: `(userId, read)`, `(userId)`
 
 ### AppSetting
 
@@ -243,8 +256,9 @@ Unique Constraint: keine (mehrere Zuweisungen pro Tag möglich, Layering beachte
 
 ```text
 draft → submitted → approved
-                  → needs_revision → submitted (erneut)
-                  → rejected
+                   → needs_revision → submitted (erneut)
+                   → rejected
+                   → draft (zurückgezogen / withdraw)
 ```
 
 | Status | Bearbeitbar durch Trainee | Sichtbar für Prüfer |
@@ -275,6 +289,9 @@ draft → submitted → approved
 - **Session-Inhalt**: `userId`, `email`, `name`, `role`.
 - **Middleware**: Next.js Middleware prüft Auth für geschützte Routen und leitet bei Bedarf um.
 - **Passwort-Hashing**: bcrypt via `bcryptjs`.
+- **Rate Limiting**: Max. 5 fehlgeschlagene Login-Versuche pro E-Mail-Adresse, danach 15-minütige Sperre (`src/lib/rate-limit.ts`).
+- **JWT-Cache**: Rollen- und Startdatum-Informationen werden im JWT-Token mitgeführt und mit einem serverseitigen Cache (5 Min TTL) zwischengespeichert, um Datenbankzugriffe zu reduzieren.
+- **CRON-Schutz**: Der Endpoint `/api/notifications/check` erfordert ein `CRON_SECRET`-Header, um unbefugte Aufrufe zu verhindern.
 
 ---
 
@@ -310,7 +327,7 @@ draft → submitted → approved
 
 ---
 
-## Wichtige API-Routen (geplant)
+## Wichtige API-Routen
 
 | Methode | Route | Beschreibung | Rollen |
 |---------|-------|-------------|--------|
@@ -322,6 +339,7 @@ draft → submitted → approved
 | GET | `/api/reports/[id]/pdf` | Bericht als PDF-Download | Besitzer oder zugeordneter Prüfer |
 | PUT | `/api/reports/[id]` | Bericht aktualisieren (Autosave) | trainee (nur draft/needs_revision) |
 | POST | `/api/reports/[id]/submit` | Bericht einreichen | trainee (nur draft) |
+| PUT | `/api/reports/[id]/submit` | Bericht zurückziehen (withdraw → draft) | trainee (nur submitted) |
 | POST | `/api/reports/[id]/review` | Bericht prüfen (approve/revise/reject) | trainer, training_officer, admin |
 | GET | `/api/notifications` | Eigene Benachrichtigungen | Alle |
 | PUT | `/api/notifications/[id]` | Benachrichtigung als gelesen | Alle |
@@ -337,6 +355,10 @@ draft → submitted → approved
 | DELETE | `/api/professions/[id]` | Ausbildungsberuf löschen | admin |
 | GET | `/api/assignments` | Zuordnungen abrufen | admin, trainer |
 | POST | `/api/assignments` | Zuordnung erstellen | admin, trainer |
+| GET | `/api/officer-assignments` | Officer-Zuordnungen abrufen | admin, trainer |
+| POST | `/api/officer-assignments` | Officer-Zuordnung erstellen | admin, trainer |
+| PUT | `/api/officer-assignments` | Officer-Zuordnung aktualisieren | admin, trainer |
+| DELETE | `/api/officer-assignments` | Officer-Zuordnung löschen | admin |
 | GET | `/api/settings` | App-Einstellungen abrufen | Alle (auth) |
 | PUT | `/api/settings` | App-Einstellungen aktualisieren | admin |
 | GET | `/api/schedule` | Einsatzplanung abrufen | admin, trainer, training_officer |
@@ -474,7 +496,6 @@ src/
 
 - ReviewEvent-Schema wird für MVP nur vorbereitet, nicht vollständig genutzt.
 - Keine E-Mail-Verifikation bei Registrierung (admin-gesteuerte Benutzeranlage).
-- Kein Rate-Limiting für API-Routes (für Produktivbetrieb nötig).
 - Kein Drag-Resize in der Gantt-Timeline (bewusst excluded, Phase 2+).
 - Kein Schulferien-Import (bewusst excluded).
 - Keine vollständige RRULE-Komplexität (bewusst auf eigene RecurrenceRule-Tabelle begrenzt).

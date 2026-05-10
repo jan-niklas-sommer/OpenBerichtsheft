@@ -2184,3 +2184,62 @@ Plan deckt ausschließlich Code-Qualität ohne Funktionsänderungen ab. Keine Da
 - QO-M22 (Gantt aufteilen) offen — großer Refactor, eigenes AP empfohlen.
 - QO-M19-M21 (Autosave Deep-Compare, Retry, Session-Refetch) offen.
 - Phase 7 (Dokumentation) ausstehend.
+
+---
+
+## AP: Phase 7 – Dokumentation (Qualitätsoffensive)
+
+**Datum:** 2026-05-10
+
+### Planner
+
+**Ziel:** 15 Dokumentationslücken aus der Qualitätsoffensive beheben.
+
+**Umfang:**
+1. QO-DOC1-DOC6: ARCHITECTURE.md aktualisieren
+2. QO-DOC7-DOC10: HANDBUCH.md aktualisieren
+3. QO-DOC11-DOC12: DESIGN_SYSTEM.md korrigieren
+4. QO-DOC13-DOC15: README.md aktualisieren
+
+**Nicht-Ziele:** Code-Änderungen.
+
+### Reviewer
+
+Plan deckt ausschließlich Dokumentation ab. Keine Produktivcode-Änderungen. Freigabe erteilt.
+
+### Implementierte Änderungen
+
+**ARCHITECTURE.md (QO-DOC1-DOC6):**
+- TraineeTrainerAssignment → TrainerProfessionAssignment aktualisiert
+- Notification-Modell dokumentiert
+- "(geplant)" entfernt
+- Next.js 15.x → 16.x korrigiert
+- Withdraw-Statusübergang (submitted → draft) ergänzt
+- officer-assignments API-Route dokumentiert
+- Rate Limiting, JWT Cache, CRON_SECRET in Auth-Sektion dokumentiert
+
+**HANDBUCH.md (QO-DOC7-DOC10):**
+- Testzugangs-Tabelle aktualisiert (37 User mit Mustern)
+- Zuordnungsmodell auf TrainerProfessionAssignment aktualisiert
+- Officer-UI als implementiert dokumentiert (/trainer/officers/)
+- Trainee-Schedule-View (/trainee/schedule/) dokumentiert
+- Rate-Limiting im Login-Abschnitt ergänzt
+
+**DESIGN_SYSTEM.md (QO-DOC11-DOC12):**
+- Font Family korrigiert: Inter → Geist, JetBrains Mono → Geist Mono
+- Konventions-Notes für nicht-implementierte Token-Schichten ergänzt
+
+**README.md (QO-DOC13-DOC15):**
+- Features-Liste von 8 auf 18 Items erweitert
+- Projektstruktur aktualisiert
+- Typecheck-Hinweis ergänzt (`npx tsc --noEmit`)
+
+### Verifikation
+
+- **Tests:** 803 Tests, 48 Dateien, alle bestanden (keine Code-Änderungen).
+- **Lint:** 0 Errors (nur Markdown-Änderungen).
+- **Build:** nicht erneut nötig (keine Code-Änderungen).
+
+### Ergebnis
+
+**Qualitätsoffensive abgeschlossen.** Alle 7 Phasen (Phase 1–7) umgesetzt. 15 Dokumentationslücken geschlossen.

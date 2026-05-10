@@ -1,6 +1,6 @@
 # Benutzerhandbuch – OpenBerichtsheft
 
-Letzte Aktualisierung: 2026-05-09
+Letzte Aktualisierung: 2026-05-10
 
 ---
 
@@ -47,6 +47,10 @@ Ein Administrator erstellt Ihren Zugang und teilt Ihnen E-Mail-Adresse und Initi
 3. Klicken Sie auf **Anmelden**.
 
 Nach der Anmeldung werden Sie automatisch in die Ihrem Rolle entsprechende Übersicht weitergeleitet.
+
+### Login-Schutz (Rate Limiting)
+
+Nach **5 fehlgeschlagenen Anmeldeversuchen** wird der Login für **15 Minuten gesperrt**. Warten Sie die Sperrzeit ab und versuchen Sie es erneut. Bei anhaltenden Problemen wenden Sie sich an den Administrator.
 
 ### Passwort ändern
 
@@ -207,6 +211,22 @@ Wenn ein Prüfer Ihren Bericht zur Überarbeitung zurückgibt:
 3. Das PDF enthält alle Daten: Name, Ausbildungsberuf, KW, Tageseinträge, Berichtstext, Status und ggf. Prüferkommentar.
 
 **Hinweis:** Der PDF-Export ist nur verfügbar, wenn der Bericht bereits gespeichert wurde.
+
+### 4.9 Einsatzplanung einsehen
+
+Unter **Planung** (Navigation, `/trainee/schedule/`) sehen Sie Ihre persönliche Einsatzplanung als **read-only Gantt-Timeline**.
+
+**Funktionen:**
+
+- **Drag-to-Scroll**: Ziehen Sie die Timeline mit der Maus oder dem Finger (Touch), um horizontal zu scrollen
+- **Momentum**: Schnelles Wischen (Flick-Geste) scrollt mit Schwung weiter
+- **Hierarchischer Header**: Monatszeile oben, Wochenzeile (KW) darunter
+- **Rote Heute-Linie** markiert das aktuelle Datum
+- **Tagesgenaue Balken**, Farbe automatisch aus Zuweisungstyp abgeleitet (Abteilung, Schule, Urlaub, Sonstiges)
+- Die Ansicht wird automatisch erweitert, wenn Sie an den Rand scrollen
+- **Legende** unterhalb der Timeline erklärt die Farbcodierung
+
+**Hinweis:** Sie können die Einsatzplanung nur einsehen. Änderungen werden durch Ihren Ausbilder vorgenommen (siehe Abschnitt 5.5).
 
 ---
 
@@ -378,15 +398,15 @@ Aktuell erfolgt die Rollenänderung über den Bearbeiten-Button beim jeweiligen 
 
 ### 7.3 Zuordnungen verwalten
 
-Unter **Zuordnungen** (Navigation) verwalten Sie die Beziehungen zwischen Auszubildenden und Ausbildern.
+Unter **Zuordnungen** (Navigation) verwalten Sie die Zuordnung von Ausbildern zu Ausbildungsberufen. Ein Ausbilder, der einem Beruf zugeordnet ist, sieht alle Auszubildenden dieses Berufs in seinem Dashboard und kann deren Berichte prüfen.
 
-#### Ausbilder einem Auszubildenden zuordnen
+#### Ausbilder einem Beruf zuordnen
 
-1. Wählen Sie den **Auszubildenden** aus dem Dropdown.
-2. Wählen Sie den **Ausbilder** aus dem Dropdown.
+1. Wählen Sie den **Ausbilder** aus dem Dropdown.
+2. Wählen Sie den **Ausbildungsberuf** aus dem Dropdown.
 3. Klicken Sie auf **Zuordnung erstellen**.
 
-Die Zuordnung erscheint in der Liste darunter.
+Die Zuordnung erscheint in der Liste darunter (z.B. "Max Mustermann → Fachinformatiker für Anwendungsentwicklung").
 
 #### Zuordnung entfernen
 
@@ -394,7 +414,9 @@ Die Zuordnung erscheint in der Liste darunter.
 
 ### 7.4 Ausbildungsbeauftragte zuordnen
 
-Ausbildungsbeauftragte können durch Administratoren oder Ausbilder zugeordnet werden. Die Zuordnung erfolgt über die Officer-Assignment-API, die in zukünftigen Versionen eine eigene Oberfläche erhalten wird.
+Ausbildungsbeauftragte können durch Ausbilder zugeordnet werden. Die Zuordnung erfolgt über die Seite **Beauftragte** in der Ausbilder-Navigation (`/trainer/officers/`). Dort wählt der Ausbilder den Auszubildenden, den Ausbildungsbeauftragten und den Zeitraum (Gültig von/bis).
+
+Administratoren können Ausbildungsbeauftragte ebenfalls über die API zuordnen.
 
 ### 7.5 Ausbildungsberufe verwalten
 
@@ -526,10 +548,10 @@ Wenn Sie die App zum ersten Mal öffnen, wird automatisch Ihre Systemeinstellung
 - Nur Administratoren können Benutzer erstellen.
 - Navigieren Sie zu **Benutzer** und klicken Sie auf **Benutzer erstellen**.
 
-### Wie ordne ich einen Ausbilder einem Auszubildenden zu?
+### Wie ordne ich einen Ausbilder zu?
 
-- Nur Administratoren können diese Zuordnung erstellen.
-- Navigieren Sie zu **Zuordnungen** und wählen Sie Azubi und Ausbilder aus.
+- Administratoren ordnen Ausbilder Ausbildungsberufen zu unter **Zuordnungen**.
+- Ein zugeordneter Ausbilder sieht alle Auszubildenden dieses Berufs in seinem Dashboard.
 
 ### Ist die Anwendung auch auf dem Smartphone nutzbar?
 
@@ -545,12 +567,24 @@ Ja, die Anwendung ist responsive und für mobile Geräte optimiert. Die Navigati
 
 ## Testzugänge (nur Entwicklung)
 
-| Rolle | E-Mail | Passwort | Beruf |
-|-------|--------|----------|-------|
-| Administrator | admin@example.com | password123 | – |
-| Ausbilder | trainer@example.com | password123 | – |
-| Ausbildungsbeauftragte(r) | officer@example.com | password123 | – |
-| Auszubildende(r) | trainee@example.com | password123 | Fachinformatiker für Anwendungsentwicklung |
-| Auszubildende(r) | trainee2@example.com | password123 | Fachinformatiker für Systemintegration |
+Alle Zugänge verwenden das Passwort **password123**. Das E-Mail-Schema folgt dem Muster `<rolle>@example.com` bzw. `<rolle><nummer>@example.com`.
+
+### Übersicht
+
+| Rolle | Anzahl | E-Mail-Muster | Beispiele |
+|-------|--------|---------------|-----------|
+| Administrator | 1 | `admin@example.com` | admin@example.com |
+| Ausbilder | 4 | `trainer@example.com` / `trainer2–4@example.com` | trainer@example.com (Max Mustermann), trainer2@example.com (Dr. Katharina Weber), trainer3@example.com (Stefan Krüger), trainer4@example.com (Petra Hoffmann) |
+| Ausbildungsbeauftragte(r) | 10 | `officer@example.com` / `officer2–10@example.com` | officer@example.com (Erika Mustermann), officer2@example.com (Thomas Schmidt), …, officer10@example.com (Holger Richter) |
+| Auszubildende(r) | 22 | `trainee@example.com` / `trainee2–22@example.com` | trainee@example.com (Anna Schulz, FIAE), trainee2@example.com (Ben Müller, FISI), …, trainee22@example.com (Vera Lange, KvF) |
+
+### Auszubildende – Berufe und Eintrittsdaten
+
+| E-Mail | Name | Ausbildungsberuf | Eintrittsdatum |
+|--------|------|-------------------|----------------|
+| trainee@example.com | Anna Schulz | Fachinformatiker für Anwendungsentwicklung | 05.01.2026 |
+| trainee2@example.com | Ben Müller | Fachinformatiker für Systemintegration | 01.03.2026 |
+| trainee6@example.com | Felix Wagner | Kaufmann/-frau für Versicherungen und Finanzanlagen | 01.09.2025 |
+| trainee22@example.com | Vera Lange | Kaufmann/-frau für Versicherungen und Finanzanlagen | 01.03.2026 |
 
 **Achtung:** Diese Zugänge sind nur für die Entwicklungsumgebung gedacht. In der Produktion müssen sichere Passwörter verwendet werden.

@@ -17,7 +17,7 @@ function makeAssignment(overrides: Partial<ScheduleAssignmentView> & { id: strin
 }
 
 const mockViewStart = new Date("2026-05-04");
-const mockDaysVisible = 28;
+const mockViewEnd = new Date("2026-06-01");
 
 describe("GanttTimeline", () => {
   it("renders without crashing", () => {
@@ -26,7 +26,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -41,7 +41,7 @@ describe("GanttTimeline", () => {
         ]}
         assignments={[]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -56,7 +56,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "" }]}
         assignments={[]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
         singleRow
       />,
@@ -77,7 +77,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[assignment]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -99,7 +99,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[assignment]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         cellWidth={10}
         mode="readonly"
       />,
@@ -123,7 +123,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[assignment]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         cellWidth={6}
         mode="readonly"
       />,
@@ -142,7 +142,7 @@ describe("GanttTimeline", () => {
         ]}
         assignments={[]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -157,7 +157,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Alice", sublabel: null }]}
         assignments={[]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -172,7 +172,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -193,7 +193,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[assignment]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="edit"
         onCellClick={() => {}}
       />,
@@ -216,7 +216,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[assignment]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
       />,
     );
@@ -245,7 +245,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[a1, a2]}
         viewStart={mockViewStart}
-        daysVisible={mockDaysVisible}
+        viewEnd={mockViewEnd}
         mode="readonly"
         showConflicts
       />,
@@ -268,7 +268,7 @@ describe("GanttTimeline", () => {
         rows={[{ traineeId: "t1", label: "Test" }]}
         assignments={[assignment]}
         viewStart={mockViewStart}
-        daysVisible={7}
+        viewEnd={new Date("2026-05-11")}
         cellWidth={10}
         mode="readonly"
       />,
@@ -277,6 +277,36 @@ describe("GanttTimeline", () => {
     const pill = container.querySelector(".rounded-full") as HTMLElement;
     expect(pill).toBeTruthy();
     expect(pill.style.width).toBe("50px");
+  });
+
+  it("renders with cursor-grab class for drag", () => {
+    const { container } = render(
+      <GanttTimeline
+        rows={[{ traineeId: "t1", label: "Test" }]}
+        assignments={[]}
+        viewStart={mockViewStart}
+        viewEnd={mockViewEnd}
+        mode="readonly"
+      />,
+    );
+
+    const scrollContainer = container.querySelector(".cursor-grab");
+    expect(scrollContainer).toBeInTheDocument();
+  });
+
+  it("calls onScrollNearEdge callback", () => {
+    const onScrollNearEdge = vi.fn();
+    render(
+      <GanttTimeline
+        rows={[{ traineeId: "t1", label: "Test" }]}
+        assignments={[]}
+        viewStart={mockViewStart}
+        viewEnd={mockViewEnd}
+        mode="readonly"
+        onScrollNearEdge={onScrollNearEdge}
+      />,
+    );
+    expect(onScrollNearEdge).not.toHaveBeenCalled();
   });
 });
 

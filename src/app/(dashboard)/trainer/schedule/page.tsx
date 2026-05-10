@@ -25,6 +25,12 @@ interface Officer {
   email: string;
 }
 
+function addMonths(d: Date, months: number): Date {
+  const r = new Date(d);
+  r.setMonth(r.getMonth() + months);
+  return r;
+}
+
 export default function SchedulePage() {
   const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
   const [trainees, setTrainees] = useState<Trainee[]>([]);
@@ -34,7 +40,14 @@ export default function SchedulePage() {
   const [professionFilter, setProfessionFilter] = useState("");
   const [viewStart, setViewStart] = useState<Date>(() => {
     const d = new Date();
+    d.setMonth(d.getMonth() - 3);
     d.setDate(d.getDate() - d.getDay() + 1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+  const [viewEnd, setViewEnd] = useState<Date>(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 3);
     d.setHours(0, 0, 0, 0);
     return d;
   });
@@ -50,14 +63,9 @@ export default function SchedulePage() {
   });
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const daysVisible = Math.min(
-    365,
-    Math.max(60, typeof window !== "undefined" ? Math.floor(window.innerWidth / 4) : 120),
-  );
-
   useEffect(() => {
     Promise.all([
-      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${new Date(viewStart.getTime() + daysVisible * 86400000).toISOString()}`).then((r) => r.json()),
+      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
       fetch("/api/users?role=trainee").then((r) => r.json()),
       fetch("/api/users?role=training_officer").then((r) => r.json()),
     ]).then(([sched, tr, off]) => {
@@ -66,7 +74,7 @@ export default function SchedulePage() {
       setOfficers(Array.isArray(off) ? off : []);
       setLoading(false);
     });
-  }, [viewStart, daysVisible]);
+  }, [viewStart, viewEnd]);
 
   useEffect(() => {
     if (!editItem) return;
@@ -148,12 +156,23 @@ export default function SchedulePage() {
   }, [traineeRows, filteredAssignments]);
 
   const refreshData = useCallback(() => {
-    Promise.all([
-      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${new Date(viewStart.getTime() + daysVisible * 86400000).toISOString()}`).then((r) => r.json()),
-    ]).then(([sched]) => {
-      setAssignments(Array.isArray(sched) ? sched : []);
-    });
-  }, [viewStart, daysVisible]);
+    fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
+      .then((r) => r.json())
+      .then((sched) => {
+        setAssignments(Array.isArray(sched) ? sched : []);
+      });
+  }, [viewStart, viewEnd]);
+
+  const handleScrollNearEdge = useCallback(
+    (direction: "start" | "end") => {
+      if (direction === "end") {
+        setViewEnd((prev) => addMonths(prev, 3));
+      } else {
+        setViewStart((prev) => addMonths(prev, -3));
+      }
+    },
+    [],
+  );
 
   const handleUpdate = async () => {
     if (!editItem) return;
@@ -198,12 +217,6 @@ export default function SchedulePage() {
     });
   };
 
-  const navigateMonths = (dir: number) => {
-    const d = new Date(viewStart);
-    d.setMonth(d.getMonth() + dir);
-    setViewStart(d);
-  };
-
   if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
@@ -213,18 +226,6 @@ export default function SchedulePage() {
           Einsatzplanung
         </h1>
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => navigateMonths(-1)}>
-            ←
-          </Button>
-          <span className="flex items-center text-sm text-content-muted">
-            {viewStart.toLocaleDateString("de-DE", {
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <Button variant="secondary" size="sm" onClick={() => navigateMonths(1)}>
-            →
-          </Button>
           <Button size="sm" onClick={() => setShowModal(true)}>
             Eintrag hinzufügen
           </Button>
@@ -374,10 +375,11 @@ export default function SchedulePage() {
         }))}
         assignments={filteredAssignments}
         viewStart={viewStart}
-        daysVisible={daysVisible}
+        viewEnd={viewEnd}
         mode="edit"
         showConflicts={hasConflicts}
         onCellClick={openEdit}
+        onScrollNearEdge={handleScrollNearEdge}
       />
 
       <ScheduleLegend />

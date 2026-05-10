@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   TYPE_COLORS,
@@ -23,13 +23,14 @@ interface GanttTimelineProps {
   rows: GanttRow[];
   assignments: ScheduleAssignmentView[];
   viewStart: Date;
-  daysVisible: number;
+  viewEnd: Date;
   cellWidth?: number;
   rowHeight?: number;
   mode: "edit" | "readonly";
   singleRow?: boolean;
   showConflicts?: boolean;
   onCellClick?: (assignment: ScheduleAssignmentView) => void;
+  onScrollNearEdge?: (direction: "start" | "end") => void;
 }
 
 function getIsoWeek(date: Date): number {
@@ -48,17 +49,22 @@ interface TooltipState {
   flip: boolean;
 }
 
+const DRAG_THRESHOLD = 5;
+const DECELERATION = 0.95;
+const MIN_VELOCITY = 0.5;
+
 export function GanttTimeline({
   rows,
   assignments,
   viewStart,
-  daysVisible,
+  viewEnd,
   cellWidth = 6,
   rowHeight = 48,
   mode,
   singleRow = false,
   showConflicts = false,
   onCellClick,
+  onScrollNearEdge,
 }: GanttTimelineProps) {
   const headerHeight = 48;
   const monthRowHeight = 22;
@@ -67,12 +73,156 @@ export function GanttTimeline({
 
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
+  const dragMovedRef = useRef(false);
+  const lastPosRef = useRef({ x: 0, time: 0 });
+  const velocityRef = useRef(0);
+  const animFrameRef = useRef<number>(0);
+  const dragConsumedRef = useRef(false);
 
-  const viewEnd = useMemo(() => {
-    const d = new Date(viewStart);
-    d.setDate(d.getDate() + daysVisible);
-    return d;
-  }, [viewStart, daysVisible]);
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
+
+  const momentumLoopRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    momentumLoopRef.current = () => {
+      const el = containerRef.current;
+      if (!el || Math.abs(velocityRef.current) < MIN_VELOCITY) {
+        velocityRef.current = 0;
+        return;
+      }
+      el.scrollLeft += velocityRef.current;
+      velocityRef.current *= DECELERATION;
+
+      if (onScrollNearEdge && el.scrollLeft < el.clientWidth * 0.3) {
+        onScrollNearEdge("start");
+      }
+      if (
+        onScrollNearEdge &&
+        el.scrollLeft + el.clientWidth > el.scrollWidth - el.clientWidth * 0.3
+      ) {
+        onScrollNearEdge("end");
+      }
+
+      animFrameRef.current = requestAnimationFrame(momentumLoopRef.current);
+    };
+  }, [onScrollNearEdge]);
+
+  const touchMoveHandlerRef = useRef<(e: TouchEvent) => void>(() => {});
+  const touchEndHandlerRef = useRef<(e: Event) => void>(() => {});
+
+  useEffect(() => {
+    touchMoveHandlerRef.current = (e: TouchEvent) => {
+      const clientX = e.touches[0].clientX;
+      const el = containerRef.current;
+      if (!el) return;
+
+      const dx = clientX - dragStartRef.current.x;
+      if (Math.abs(dx) > DRAG_THRESHOLD) {
+        isDraggingRef.current = true;
+        dragMovedRef.current = true;
+        e.preventDefault();
+      }
+
+      if (isDraggingRef.current) {
+        el.scrollLeft = dragStartRef.current.scrollLeft - dx;
+      }
+
+      const now = Date.now();
+      const dt = now - lastPosRef.current.time;
+      if (dt > 0) {
+        velocityRef.current = (clientX - lastPosRef.current.x) / dt;
+      }
+      lastPosRef.current = { x: clientX, time: now };
+    };
+
+    touchEndHandlerRef.current = (e: Event) => {
+      const target = e.target as HTMLElement;
+      target.removeEventListener("touchmove", touchMoveHandlerRef.current);
+      target.removeEventListener("touchend", touchEndHandlerRef.current);
+      target.removeEventListener("touchcancel", touchEndHandlerRef.current);
+
+      if (isDraggingRef.current && Math.abs(velocityRef.current) > MIN_VELOCITY) {
+        velocityRef.current *= 16;
+        animFrameRef.current = requestAnimationFrame(momentumLoopRef.current);
+      }
+      setTimeout(() => {
+        dragConsumedRef.current = isDraggingRef.current;
+        isDraggingRef.current = false;
+      }, 0);
+    };
+  }, [onScrollNearEdge]);
+
+  const handlePointerDown = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      velocityRef.current = 0;
+
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const el = containerRef.current;
+      if (!el) return;
+
+      isDraggingRef.current = false;
+      dragMovedRef.current = false;
+      dragConsumedRef.current = false;
+      dragStartRef.current = { x: clientX, scrollLeft: el.scrollLeft };
+      lastPosRef.current = { x: clientX, time: Date.now() };
+
+      if ("touches" in e) {
+        e.currentTarget.addEventListener("touchmove", touchMoveHandlerRef.current as EventListener, {
+          passive: false,
+        });
+        e.currentTarget.addEventListener("touchend", touchEndHandlerRef.current as EventListener);
+        e.currentTarget.addEventListener("touchcancel", touchEndHandlerRef.current as EventListener);
+      }
+    },
+    [],
+  );
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const dx = e.clientX - dragStartRef.current.x;
+    if (Math.abs(dx) > DRAG_THRESHOLD) {
+      isDraggingRef.current = true;
+      dragMovedRef.current = true;
+    }
+
+    if (isDraggingRef.current) {
+      el.scrollLeft = dragStartRef.current.scrollLeft - dx;
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      setTooltip(null);
+    }
+
+    const now = Date.now();
+    const dt = now - lastPosRef.current.time;
+    if (dt > 0) {
+      velocityRef.current = (e.clientX - lastPosRef.current.x) / dt;
+    }
+    lastPosRef.current = { x: e.clientX, time: now };
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (isDraggingRef.current && Math.abs(velocityRef.current) > MIN_VELOCITY) {
+      velocityRef.current *= 16;
+      animFrameRef.current = requestAnimationFrame(momentumLoopRef.current);
+    }
+    setTimeout(() => {
+      dragConsumedRef.current = isDraggingRef.current;
+      isDraggingRef.current = false;
+    }, 0);
+  }, []);
+
+  const wasDragged = useCallback(() => {
+    return dragConsumedRef.current;
+  }, []);
 
   const workDays = useMemo(() => generateWorkDays(viewStart, viewEnd), [viewStart, viewEnd]);
 
@@ -201,7 +351,13 @@ export function GanttTimeline({
           height: barHeight,
           backgroundColor: TYPE_COLORS[a.scheduleType],
         }}
-        onClick={() => mode === "edit" && onCellClick?.(a)}
+        onClick={(e) => {
+          if (wasDragged()) {
+            e.stopPropagation();
+            return;
+          }
+          if (mode === "edit") onCellClick?.(a);
+        }}
         onMouseEnter={(e) => handleMouseEnter(a, e)}
         onMouseLeave={handleMouseLeave}
       >
@@ -333,7 +489,17 @@ export function GanttTimeline({
   if (singleRow && rows.length === 1) {
     return (
       <>
-        <div className="timeline-scroll overflow-x-auto">
+        <div
+          ref={containerRef}
+          className="timeline-scroll cursor-grab overflow-x-auto active:cursor-grabbing select-none"
+          onMouseDown={handlePointerDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={() => {
+            if (isDraggingRef.current) handleMouseUp();
+          }}
+          onTouchStart={handlePointerDown}
+        >
           {renderTimelineContent()}
         </div>
         {tooltipPortal}
@@ -343,38 +509,48 @@ export function GanttTimeline({
 
   return (
     <>
-      <div className="timeline-scroll overflow-x-auto">
+      <div
+        ref={containerRef}
+        className="timeline-scroll cursor-grab overflow-x-auto active:cursor-grabbing select-none"
+        onMouseDown={handlePointerDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={() => {
+          if (isDraggingRef.current) handleMouseUp();
+        }}
+        onTouchStart={handlePointerDown}
+      >
         <div className="flex">
           <div className="sticky left-0 z-10 min-w-[160px] pr-6 bg-surface-base">
-          <div
-            style={{ height: headerHeight }}
-            className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
-          >
-            Azubi
-          </div>
-          {rows.map((row) => (
             <div
-              key={row.traineeId}
-              className="flex flex-col justify-center px-3"
-              style={{ height: rowHeight }}
+              style={{ height: headerHeight }}
+              className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
             >
-              <span className="truncate text-xs font-medium text-content-base">
-                {row.label}
-              </span>
-              {row.sublabel && (
-                <span className="truncate text-[10px] text-content-subtle">
-                  {row.sublabel}
-                </span>
-              )}
+              Azubi
             </div>
-          ))}
-        </div>
+            {rows.map((row) => (
+              <div
+                key={row.traineeId}
+                className="flex flex-col justify-center px-3"
+                style={{ height: rowHeight }}
+              >
+                <span className="truncate text-xs font-medium text-content-base">
+                  {row.label}
+                </span>
+                {row.sublabel && (
+                  <span className="truncate text-[10px] text-content-subtle">
+                    {row.sublabel}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
 
-        {renderTimelineContent()}
+          {renderTimelineContent()}
+        </div>
       </div>
-    </div>
-    {tooltipPortal}
-  </>
+      {tooltipPortal}
+    </>
   );
 }
 

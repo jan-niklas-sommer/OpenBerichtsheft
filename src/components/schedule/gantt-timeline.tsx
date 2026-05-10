@@ -270,43 +270,43 @@ export function GanttTimeline({
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className="timeline-scroll cursor-grab overflow-x-auto active:cursor-grabbing select-none"
-        onMouseDown={handlePointerDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={() => {
-          if (isDraggingRef.current) handleMouseUp();
-        }}
-        onTouchStart={handlePointerDown}
-      >
-        <div className="flex">
-          <div className="sticky left-0 z-10 min-w-[160px] pr-6 bg-surface-base">
-            <div
-              style={{ height: headerHeight }}
-              className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
-            >
-              Azubi
-            </div>
-            {rows.map((row) => (
-              <div
-                key={row.traineeId}
-                className="flex flex-col justify-center px-3"
-                style={{ height: rowHeight }}
-              >
-                <span className="truncate text-xs font-medium text-content-base">
-                  {row.label}
-                </span>
-                {row.sublabel && (
-                  <span className="truncate text-[10px] text-content-subtle">
-                    {row.sublabel}
-                  </span>
-                )}
-              </div>
-            ))}
+      <div className="flex">
+        <div className="flex-shrink-0 w-[160px] border-r border-stroke-subtle bg-surface-base">
+          <div
+            style={{ height: headerHeight }}
+            className="flex items-end px-3 pb-1 text-xs font-medium text-content-muted"
+          >
+            Azubi
           </div>
+          {rows.map((row) => (
+            <div
+              key={row.traineeId}
+              className="flex flex-col justify-center px-3"
+              style={{ height: rowHeight }}
+            >
+              <span className="truncate text-xs font-medium text-content-base">
+                {row.label}
+              </span>
+              {row.sublabel && (
+                <span className="truncate text-[10px] text-content-subtle">
+                  {row.sublabel}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
 
+        <div
+          ref={containerRef}
+          className="timeline-scroll min-w-0 cursor-grab overflow-x-auto active:cursor-grabbing select-none"
+          onMouseDown={handlePointerDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={() => {
+            if (isDraggingRef.current) handleMouseUp();
+          }}
+          onTouchStart={handlePointerDown}
+        >
           {renderTimelineContent()}
         </div>
       </div>

@@ -1,26 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { getIsoWeek } from "@/lib/utils";
 import { ReviewerDashboardClient } from "./reviewer-dashboard-client";
+import type { TraineeWithReports } from "@/types";
 
 interface ReviewerDashboardProps {
   userId: string;
   role: "trainer" | "training_officer";
   title: string;
   basePath: string;
-}
-
-interface TraineeWithReports {
-  id: string;
-  name: string;
-  profession: string | null;
-  trainingStartDate: string | null;
-  reports: {
-    id: string;
-    calendarYear: number;
-    calendarWeek: number;
-    status: string;
-    submittedAt: string | null;
-  }[];
 }
 
 export async function ReviewerDashboard({ userId, role, title, basePath }: ReviewerDashboardProps) {

@@ -85,17 +85,17 @@ export function ReviewerReportPage({ basePath }: ReviewerReportPageProps) {
           <CardTitle>{report.reportType === "daily" ? "Tagesbericht" : "Wochenbericht"}</CardTitle>
         </CardHeader>
         {report.reportType === "daily" ? (
-          report.dailyEntries.some((e) => (e as { reportText?: string }).reportText) ? (
+          report.dailyEntries.some((e) => e.reportText) ? (
             <div className="space-y-4">
               {report.dailyEntries
-                .filter((e) => (e as { reportText?: string }).reportText)
+                .filter((e) => e.reportText)
                 .map((entry) => (
                   <div key={entry.id || entry.date}>
                     <p className="mb-1 text-sm font-medium text-content-base">
                       {formatDate(new Date(entry.date))} &middot; {DAY_TYPE_LABELS[entry.dayType]}
                     </p>
                     <p className="whitespace-pre-wrap text-sm text-content-muted">
-                      {(entry as { reportText?: string }).reportText}
+                      {entry.reportText}
                     </p>
                   </div>
                 ))}

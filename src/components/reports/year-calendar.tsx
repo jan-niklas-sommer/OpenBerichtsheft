@@ -2,8 +2,17 @@
 
 import { useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { getIsoWeek, statusDotColor, STATUS_LABELS, getWeekDates, formatDate, getWeeksInMonth } from "@/lib/utils";
+import { getIsoWeek, statusDotColor, STATUS_LABELS, getWeekDates, formatDate, getWeeksInMonth, isBeforeTrainingStart } from "@/lib/utils";
 import type { ReportStatus } from "@/types";
+
+const LEGEND_ITEMS = [
+  { status: "draft", label: "Entwurf" },
+  { status: "submitted", label: "Eingereicht" },
+  { status: "approved", label: "Genehmigt" },
+  { status: "rejected", label: "Abgelehnt" },
+  { status: "needs_revision", label: "Überarbeitung" },
+  { status: "missing", label: "Fehlt" },
+];
 
 interface ReportSummary {
   calendarYear: number;
@@ -43,11 +52,6 @@ export function YearCalendar({
   }, [trainingStartDate]);
 
   const currentWeek = useMemo(() => getIsoWeek(new Date()), []);
-
-  const isBeforeTrainingStart = (y: number, w: number) => {
-    if (!trainingStart) return false;
-    return y < trainingStart.year || (y === trainingStart.year && w < trainingStart.week);
-  };
 
   const weeks = useMemo(() => {
     const result: { week: number; year: number; month: number }[] = [];
@@ -89,7 +93,7 @@ export function YearCalendar({
 
   const getStatusColor = (w: number) => {
     const status = reportMap.get(`${year}-${w}`);
-    const beforeStart = isBeforeTrainingStart(year, w);
+    const beforeStart = isBeforeTrainingStart(year, w, trainingStart);
     const isPast = year < currentWeek.year || (year === currentWeek.year && w <= currentWeek.week);
 
     if (beforeStart) return "bg-surface-sunken/40";
@@ -100,7 +104,7 @@ export function YearCalendar({
 
   const getTooltip = (w: number) => {
     const status = reportMap.get(`${year}-${w}`);
-    const beforeStart = isBeforeTrainingStart(year, w);
+    const beforeStart = isBeforeTrainingStart(year, w, trainingStart);
     const dates = getWeekDates(year, w);
     const range = `${formatDate(dates[0])} – ${formatDate(dates[6])}`;
 
@@ -110,7 +114,7 @@ export function YearCalendar({
   };
 
   const getWeekHref = (w: number) => {
-    const beforeStart = isBeforeTrainingStart(year, w);
+    const beforeStart = isBeforeTrainingStart(year, w, trainingStart);
     return beforeStart ? "#" : `/trainee/reports/${year}-${w}`;
   };
 
@@ -121,15 +125,6 @@ export function YearCalendar({
     const y = e.clientY - rect.top;
     setLegendPos({ x, y, containerWidth: rect.width });
   }, []);
-
-  const LEGEND_ITEMS = [
-    { status: "draft", label: "Entwurf" },
-    { status: "submitted", label: "Eingereicht" },
-    { status: "approved", label: "Genehmigt" },
-    { status: "rejected", label: "Abgelehnt" },
-    { status: "needs_revision", label: "Überarbeitung" },
-    { status: "missing", label: "Fehlt" },
-  ];
 
   return (
     <div
@@ -157,7 +152,7 @@ export function YearCalendar({
         {weeks.map((w) => {
           const colorClass = getStatusColor(w.week);
           const isSelectedMonth = monthWeeks.has(w.week) && w.month === month;
-          const beforeStart = isBeforeTrainingStart(year, w.week);
+          const beforeStart = isBeforeTrainingStart(year, w.week, trainingStart);
           const href = getWeekHref(w.week);
 
           return (

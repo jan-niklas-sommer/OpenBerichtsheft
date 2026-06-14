@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
-import { GET, POST, DELETE } from "./route";
+import { GET, POST } from "./route";
 
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -216,52 +216,5 @@ describe("POST /api/assignments", () => {
         profession: { select: { id: true, name: true } },
       },
     });
-  });
-});
-
-describe("DELETE /api/assignments", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("returns 401 without session", async () => {
-    mockAuth.mockResolvedValue(null);
-    const res = await DELETE(makeDeleteRequest("assign-1"));
-    expect(res.status).toBe(401);
-    const json = await res.json();
-    expect(json.error).toBe("Unauthorized");
-  });
-
-  it("returns 403 for trainer role", async () => {
-    mockAuth.mockResolvedValue(trainerSession);
-    const res = await DELETE(makeDeleteRequest("assign-1"));
-    expect(res.status).toBe(403);
-    const json = await res.json();
-    expect(json.error).toBe("Forbidden");
-  });
-
-  it("returns 403 for trainee role", async () => {
-    mockAuth.mockResolvedValue(traineeSession);
-    const res = await DELETE(makeDeleteRequest("assign-1"));
-    expect(res.status).toBe(403);
-  });
-
-  it("returns 400 for missing id", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    const req = new NextRequest("http://localhost:3000/api/assignments", { method: "DELETE" });
-    const res = await DELETE(req);
-    expect(res.status).toBe(400);
-    const json = await res.json();
-    expect(json.error).toBe("Missing id");
-  });
-
-  it("deletes assignment successfully as admin", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    mockDelete.mockResolvedValue(undefined);
-    const res = await DELETE(makeDeleteRequest("assign-1"));
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.success).toBe(true);
-    expect(mockDelete).toHaveBeenCalledWith({ where: { id: "assign-1" } });
   });
 });

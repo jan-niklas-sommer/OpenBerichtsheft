@@ -80,7 +80,6 @@ export const officerAssignmentSchema = z.object({
 export const scheduleTypeSchema = z.enum(["department", "school", "vacation", "other"]);
 
 export const updateScheduleSchema = z.object({
-  id: z.string().uuid(),
   scheduleType: scheduleTypeSchema.optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
@@ -89,7 +88,6 @@ export const updateScheduleSchema = z.object({
 });
 
 export const updateRecurrenceRuleSchema = z.object({
-  id: z.string().uuid(),
   scheduleType: scheduleTypeSchema.optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),

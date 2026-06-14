@@ -63,21 +63,3 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(assignment, { status: 201 });
 }
 
-export async function DELETE(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const role = session.user.role;
-  if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-  const url = new URL(req.url);
-  const id = url.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
-
-  try {
-    await prisma.trainerProfessionAssignment.delete({ where: { id } });
-  } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  return NextResponse.json({ success: true });
-}

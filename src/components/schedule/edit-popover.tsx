@@ -95,11 +95,10 @@ export function EditAssignmentPopover({
   const handleUpdate = async () => {
     if (item.ruleId) {
       const weekDaysBitfield = form.weekDays.reduce((acc, d) => acc | weekdayToBit(d), 0);
-      const res = await fetch("/api/recurrence-rules", {
+      const res = await fetch(`/api/recurrence-rules/${item.ruleId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: item.ruleId,
           scheduleType: form.scheduleType,
           startDate: form.startDate,
           endDate: form.endDate,
@@ -115,11 +114,10 @@ export function EditAssignmentPopover({
       }
       return;
     }
-    const res = await fetch("/api/schedule", {
+    const res = await fetch(`/api/schedule/${item.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id: item.id,
         scheduleType: form.scheduleType,
         startDate: form.startDate,
         endDate: form.endDate,
@@ -135,14 +133,14 @@ export function EditAssignmentPopover({
 
   const handleDelete = async () => {
     if (item.ruleId) {
-      const res = await fetch(`/api/recurrence-rules?id=${item.ruleId}`, { method: "DELETE" });
+      const res = await fetch(`/api/recurrence-rules/${item.ruleId}`, { method: "DELETE" });
       if (res.ok) {
         onSaved();
         onClose();
       }
       return;
     }
-    const res = await fetch(`/api/schedule?id=${item.id}`, { method: "DELETE" });
+    const res = await fetch(`/api/schedule/${item.id}`, { method: "DELETE" });
     if (res.ok) {
       onSaved();
       onClose();

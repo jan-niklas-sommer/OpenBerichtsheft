@@ -2980,3 +2980,11 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - **Ziel:** ~200-Zeilen-inline-Popover-Monolith (Single-Edit + Regel-Edit + Exceptions) aus der Trainer-Page in eigene, testbare Komponente auslagern.
 - **Umsetzung:** Neu `src/components/schedule/edit-popover.tsx` (`<EditAssignmentPopover>` mit eigener Form-State, Handlern, Outside-Click, `buildForm`-Helper). Trainer-Page 420→180 Zeilen; `onCellClick={setEditItem}` direkt. 4 Component-Tests (single/recurring-Mode, Exception-disabled, Weekday-Toggle).
 - **Verifier:** typecheck 0, lint 0, **938/938 Tests** (+4), build ✓.
+
+## 2026-06-14 – Refactor AP3: API-ID-Konventionen vereinheitlicht
+
+- **Ziel:** DELETE/PUT von Query-/Body-ID auf einheitliche REST `[id]`-Pfade bringen (wie users/professions/notifications).
+- **Umsetzung:** Neue `[id]/route.ts` für `schedule` (PUT+DELETE), `recurrence-rules` (PUT+DELETE), `assignments` (DELETE), `officer-assignments` (DELETE). Flat-Routes behalten nur GET+POST. `updateScheduleSchema`/`updateRecurrenceRuleSchema` ohne `id` (kommt aus Pfad). Frontend (`edit-popover`, `admin/assignments`, `trainer/officers`) auf `[id]`-Pfade umgestellt. Tests in neue `[id]/route.test.ts` verlagert.
+- **Test-Count-Hinweis:** 938→924 (alte flat DELETE/PUT-Tests durch fokussiertere `[id]`-Tests ersetzt; kritische Pfade 401/403/Ownership/Validierung/Success/404 bleiben abgedeckt).
+- **Verifier:** typecheck 0, lint 0, 924/924 Tests, build ✓.
+- **Verbleibend:** `recurrence-rules/[id]/exceptions` nutzt noch `?exceptionId=` (eigene Sub-Ressource, bewusst so).

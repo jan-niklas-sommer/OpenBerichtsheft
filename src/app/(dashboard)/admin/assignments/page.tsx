@@ -48,7 +48,7 @@ export default function AssignmentsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/assignments?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/assignments/${id}`, { method: "DELETE" });
     if (res.ok) {
       setAssignments((prev) => prev.filter((a) => a.id !== id));
     }

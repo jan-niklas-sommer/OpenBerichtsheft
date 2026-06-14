@@ -2688,3 +2688,41 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - **Pre-existing tsc-Fehler:** vitest-Globals (`describe`/`it`/`vi`) werden von `tsc --noEmit` in mehreren Testdateien nicht erkannt (tsconfig-Vitest-Types). Separates Tooling-AP empfohlen.
 - **Pre-existing Test-Failure:** `schedule-bounds.test.ts` (datumsabhaengig) — separat zu pruefen.
 - "Passwort vergessen?" weiterhin nicht implementiert (benötigt E-Mail-Infrastruktur).
+
+---
+
+## 2026-06-14 – Arbeitspaket: Navbar-Brand-Konsistenz (Folge-AP)
+
+### Planner
+
+- **Ziel:** Navbar-Logo von `Shield` auf das neue `NotebookPen`-Brand ueberfuehren (Folge-Risiko aus Login-Redesign-AP). Eine gemeinsame `BrandMark`-Komponente als Single Source of Truth fuer das Markenzeichen.
+- **Umfang:**
+  - `brand-lockup.tsx` um `BrandMark`-Export erweitern (Icon-in-Akzent-Quadrat, sizes `sm`/`md`); `BrandLockup` nutzt `BrandMark` intern.
+  - `navbar.tsx`: `<Shield>` durch `<BrandMark size="sm" />` ersetzen, ungenutzten `Shield`-Import entfernen.
+- **Nicht-Ziele:** Mobile-Menu-Logo, Wordmark-Aenderung, Layout-Verschiebungen der Navbar.
+- **Akzeptanzkriterien:** Navbar zeigt `NotebookPen`-Mark; Login/Register unveraendert; nur Design-Token; Tests + Build gruen.
+
+### Reviewer
+
+- Keine Auth-/Datenmodell-/Statusaenderung — unkritisch.
+- Navbar-Test prueft Wordmark-Text ("OpenBerichtsheft"), nicht das Icon → bleibt gruen.
+- `BrandMark` bekommt `shrink-0`, damit es im flex-Layout nicht gequetscht wird.
+- **Entscheidung: Freigabe erteilt.**
+
+### Implementer
+
+- `src/components/layout/brand-lockup.tsx`: neuer Export `BrandMark` (`bg-accent`/`text-accent-fg`, `rounded-xl`, `shadow-sm`, `shrink-0`), genutzt von `BrandLockup`.
+- `src/components/layout/navbar.tsx`: `Shield`-Import entfernt, `BrandMark size="sm"` im Header-Link.
+
+### Verifier
+
+- **Typecheck:** navbar/brand-lockup 0 Fehler.
+- **Lint:** 0 Errors (19 pre-existing Warnings, unveraendert).
+- **Tests:** navbar 22/22, login 5/5 → 27/27 bestanden.
+- **Build:** ✓ Compiled successfully, 41/41 static pages.
+
+### Offene Risiken / Folgeaufgaben
+
+- Folge-Risiko aus Login-Redesign-AP (Navbar-Shield-Inkonsistenz) ist **aufgeloest**.
+- Mobile-Menu (Slide-in) zeigt kein Brand-Logo — bei Bedarf separates AP.
+- Pre-existing tsc-Fehler (vitest-Globals) und `schedule-bounds.test.ts` weiterhin offen (siehe Vor-AP).

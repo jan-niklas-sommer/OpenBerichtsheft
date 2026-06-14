@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/layout/brand-lockup";
 import {
   LayoutDashboard,
   Users,
   UserCheck,
-  Shield,
   LogOut,
   Menu,
   X,
@@ -171,7 +171,7 @@ export function Navbar({ role, userName }: NavbarProps) {
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <Link href="/" className="flex items-center gap-2 font-semibold text-content-base">
-              <Shield className="h-5 w-5" />
+              <BrandMark size="sm" />
               <span className="hidden sm:inline">OpenBerichtsheft</span>
             </Link>
           </div>

@@ -137,3 +137,13 @@ export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token erforderlich"),
   password: z.string().min(8, "Mindestens 8 Zeichen"),
 });
+
+export const adminResetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Mindestens 8 Zeichen").optional(),
+    sendEmail: z.boolean().optional(),
+  })
+  .refine((data) => !!data.password || data.sendEmail === true, {
+    message: "Entweder ein neues Passwort oder sendEmail ist erforderlich",
+    path: ["sendEmail"],
+  });

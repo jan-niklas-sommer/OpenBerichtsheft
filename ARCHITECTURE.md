@@ -365,6 +365,7 @@ draft → submitted → approved
 | GET | `/api/users` | Benutzerliste | admin |
 | POST | `/api/users` | Benutzer erstellen | admin |
 | PUT | `/api/users/[id]` | Benutzer bearbeiten | admin |
+| POST | `/api/users/[id]/reset-password` | Admin setzt Passwort direkt ODER löst Reset-Mail aus | admin |
 | PUT | `/api/users/me/password` | Eigenes Passwort ändern | alle (eingeloggt) |
 | POST | `/api/users/[id]/anonymize` | Benutzer anonymisieren (DSGVO) | admin |
 | GET | `/api/professions` | Ausbildungsberufe-Liste | admin |

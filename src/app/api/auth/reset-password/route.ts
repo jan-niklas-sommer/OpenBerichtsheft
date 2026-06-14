@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { resetPasswordSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { hashPassword } from "@/lib/password";
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const passwordHash = await hash(password, 12);
+  const passwordHash = await hashPassword(password);
 
   await prisma.$transaction([
     prisma.user.update({

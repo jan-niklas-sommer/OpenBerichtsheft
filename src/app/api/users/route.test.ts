@@ -25,22 +25,21 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("bcryptjs", () => ({
-  default: {
-    hash: vi.fn().mockResolvedValue("hashed-password"),
-  },
+vi.mock("@/lib/password", () => ({
+  hashPassword: vi.fn().mockResolvedValue("hashed-password"),
+  verifyPassword: vi.fn(),
 }));
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 
 const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockCreate = prisma.user.create as ReturnType<typeof vi.fn>;
 const mockFindUnique = prisma.user.findUnique as ReturnType<typeof vi.fn>;
 const mockUpdate = prisma.user.update as ReturnType<typeof vi.fn>;
-const mockHash = bcrypt.hash as ReturnType<typeof vi.fn>;
+const mockHash = hashPassword as ReturnType<typeof vi.fn>;
 const mockTrainerProfessions = prisma.trainerProfessionAssignment.findMany as ReturnType<typeof vi.fn>;
 
 const adminSession = {
@@ -248,7 +247,7 @@ describe("POST /api/users", () => {
     expect(res.status).toBe(201);
     const json = await res.json();
     expect(json).toEqual(createdUser);
-    expect(mockHash).toHaveBeenCalledWith("12345678", 12);
+    expect(mockHash).toHaveBeenCalledWith("12345678");
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
         email: "new@test.de",
@@ -416,7 +415,7 @@ describe("PUT /api/users/[id]", () => {
     const { req, params } = makePutRequest("user-1", { password: "newpassword123" });
     const res = await PUT(req, { params });
     expect(res.status).toBe(200);
-    expect(mockHash).toHaveBeenCalledWith("newpassword123", 12);
+    expect(mockHash).toHaveBeenCalledWith("newpassword123");
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "user-1" },
       data: expect.objectContaining({

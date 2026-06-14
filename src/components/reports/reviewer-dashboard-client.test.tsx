@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReviewerDashboardClient } from "./reviewer-dashboard-client";
+import type { TraineeWithReports } from "@/types";
 
 vi.mock("next/link", () => ({
   default: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
@@ -9,7 +10,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const trainees = [
+const trainees: TraineeWithReports[] = [
   {
     id: "t-1",
     name: "Anna Müller",

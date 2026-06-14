@@ -14,10 +14,8 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("bcryptjs", () => ({
-  default: {
-    hash: vi.fn().mockResolvedValue("hashed-pw"),
-  },
+vi.mock("@/lib/password", () => ({
+  hashPassword: vi.fn().mockResolvedValue("hashed-pw"),
 }));
 
 import { auth } from "@/lib/auth";
@@ -94,8 +92,8 @@ describe("PUT /api/users/[id]", () => {
     mockUpdate.mockResolvedValue(updatedUser);
     const res = await PUT(makeRequest({ password: "newpassword123" }), makeParams());
     expect(res.status).toBe(200);
-    const { default: bcrypt } = await import("bcryptjs");
-    expect(bcrypt.hash).toHaveBeenCalledWith("newpassword123", 12);
+    const { hashPassword } = await import("@/lib/password");
+    expect(hashPassword).toHaveBeenCalledWith("newpassword123");
   });
 
   it("updates trainingStartDate", async () => {

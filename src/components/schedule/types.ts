@@ -28,7 +28,8 @@ export const TYPE_LABELS: Record<string, string> = {
 
 export const LAYER_ORDER = ["school", "vacation", "other", "department"];
 
-export type ScheduleType = "department" | "school" | "vacation" | "other";
+export type { ScheduleType } from "@/lib/schedule-resolver";
+import type { ScheduleType } from "@/lib/schedule-resolver";
 
 export interface ScheduleAssignmentView {
   id: string;

@@ -95,7 +95,7 @@ export interface TraineeWithReports {
     id: string;
     calendarYear: number;
     calendarWeek: number;
-    status: string;
+    status: ReportStatus;
     submittedAt: string | null;
   }[];
 }

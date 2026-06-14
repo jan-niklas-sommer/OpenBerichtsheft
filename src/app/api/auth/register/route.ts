@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hash } from "bcryptjs";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { sendVerificationEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
+import { hashPassword } from "@/lib/password";
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Falls diese E-Mail noch nicht registriert ist, wurde eine Verifizierungs-E-Mail gesendet." });
   }
 
-  const passwordHash = await hash(password, 12);
+  const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
     data: { name, email, passwordHash, role: "trainee" },
   });

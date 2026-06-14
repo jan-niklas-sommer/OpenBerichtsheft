@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { verifyPassword } from "@/lib/password";
 import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/rate-limit";
 
 const roleCache = new Map<string, { role: string; trainingStartDate: string | null; fetchedAt: number }>();
@@ -35,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw err;
         }
 
-        const valid = await bcrypt.compare(
+        const valid = await verifyPassword(
           credentials.password as string,
           user.passwordHash
         );

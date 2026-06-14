@@ -2988,3 +2988,10 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - **Test-Count-Hinweis:** 938→924 (alte flat DELETE/PUT-Tests durch fokussiertere `[id]`-Tests ersetzt; kritische Pfade 401/403/Ownership/Validierung/Success/404 bleiben abgedeckt).
 - **Verifier:** typecheck 0, lint 0, 924/924 Tests, build ✓.
 - **Verbleibend:** `recurrence-rules/[id]/exceptions` nutzt noch `?exceptionId=` (eigene Sub-Ressource, bewusst so).
+
+## 2026-06-14 – Refactor AP4: Magic Numbers + Typ-Konsolidierung
+
+- **bcrypt:** Neu `src/lib/password.ts` (`BCRYPT_ROUNDS`, `hashPassword`, `verifyPassword`); 8 Call-Sites (auth, register, reset-password, users CRUD, anonymize, me/password) migriert; entsprechende Tests mocken jetzt `@/lib/password`.
+- **ScheduleType:** Duplikat aus `components/schedule/types.ts` entfernt, re-exportiert nun aus `lib/schedule-resolver.ts` (eine Kanonik, lib ← components Layering).
+- **Typ-Sicherheit:** `TraineeWithReports.reports[].status` jetzt `ReportStatus` statt `string` (QO-L11 behoben); Test-Fixture typisiert.
+- **Verifier:** typecheck 0, lint 0, 924/924 Tests, build ✓.

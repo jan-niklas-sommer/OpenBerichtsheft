@@ -2974,3 +2974,9 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - **Ziel:** Drei nahezu identische Schedule-Pages (trainer/officer/trainee) + 4× duplizierte Date-Helper konsolidieren.
 - **Umsetzung:** Neu `src/lib/date-utils.ts` (`MS_PER_DAY`, `addMonths`, `addDays`, `toMonday`, `toSunday`); neu `src/components/schedule/use-schedule-view.ts` (State, Fetch, `expandRulesToViews`-Merge, Bounds-Snap, `scrollNearEdge`, `refresh`). `schedule-bounds.ts` nutzt nun Shared-Helper. Export-Page importiert `addMonths`. Trainee-Page 130→41, Officer-Page 150→56, Trainer-Page 633→420 Zeilen (Popover bleibt, AP2). Trainer nutzt nach Mutationen `refresh()` statt lokalem State-Mutation.
 - **Verifier:** typecheck 0, lint 0, 934/934 Tests, build ✓.
+
+## 2026-06-14 – Refactor AP2: Trainer-Edit-Popover extrahiert
+
+- **Ziel:** ~200-Zeilen-inline-Popover-Monolith (Single-Edit + Regel-Edit + Exceptions) aus der Trainer-Page in eigene, testbare Komponente auslagern.
+- **Umsetzung:** Neu `src/components/schedule/edit-popover.tsx` (`<EditAssignmentPopover>` mit eigener Form-State, Handlern, Outside-Click, `buildForm`-Helper). Trainer-Page 420→180 Zeilen; `onCellClick={setEditItem}` direkt. 4 Component-Tests (single/recurring-Mode, Exception-disabled, Weekday-Toggle).
+- **Verifier:** typecheck 0, lint 0, **938/938 Tests** (+4), build ✓.

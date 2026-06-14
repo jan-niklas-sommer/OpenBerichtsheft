@@ -9,11 +9,15 @@ Diese Review stammt vom **2026-05-10**. Seitdem sind zahlreiche Issues durch Fol
 | QO-H4 (CRON_SECRET-Bypass) | Erledigt | `notifications/check/route.ts:13` prüft `!process.env.CRON_SECRET` zuerst |
 | QO-H1 (Rate Limiting) | Erledigt | `src/lib/rate-limit.ts` aktiv auf Login/Register/Password-Reset |
 | QO-M17 (cn ohne twMerge) | Erledigt | `src/lib/utils.ts` nutzt `twMerge(clsx(...))` |
+| QO-M22 (Gantt 578 Zeilen) | Erledigt | Aufteilung in TimelineBlock/Tooltip/useDragScroll (337 Zeilen) |
+| QO-M23 (TraineeWithReports dupliziert) | Erledigt | Zentral in `src/types/index.ts`; ScheduleAssignmentView in `components/schedule/types.ts` |
+| QO-L11 (status: string) | Erledigt | `TraineeWithReports.reports[].status` nun `ReportStatus` |
 | QO-DOC4 (Next.js-Version) | Erledigt | ARCHITECTURE.md führt 16.x |
 | tsc-Fehler in Testdateien | Erledigt | `npm run typecheck` läuft mit 0 Fehlern (vitest-Globals + Test-Typfixes) |
 | `schedule-bounds.test.ts` (datumsabhängig) | Erledigt | Test auf relative Daten umgestellt |
+| 3fache Schedule-Pages / API-ID-Konventionen / Popover-Monolith | Erledigt (Refactor 2026-06-14) | `useScheduleView`-Hook, `[id]`-REST-Pfade, `EditAssignmentPopover` |
 
-> **Hinweis:** Dies ist eine **partielle** Reconciliation der in dieser Session berührten/verifizierten Punkte. Eine vollständige Neu-Auditierung aller untenstehenden Issues (insbesondere MITTEL/NIEDRIG) steht noch aus. Die Tabellen unten spiegeln daher weiterhin weitgehend den Stand vom 2026-05-10.
+> **Hinweis:** Teil-Reconciliation der verifizierten Punkte. **Noch offen** (verifiziert): QO-L9 (`as ScheduleType`-Casts, `assignment-modal.tsx`/`edit-popover.tsx`), QO-L10 (`NavbarProps.role: string`), QO-L12 (NotificationBell eigene Datei), QO-M19–M21 (Autosave/Session), sowie N+1 (QO-M8/M9) und weitere MITTEL/NIEDRIG-Items — eine vollständige Neu-Auditierung steht aus.
 
 ---
 

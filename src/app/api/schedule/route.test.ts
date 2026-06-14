@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
-import { GET, POST, PUT, DELETE } from "./route";
+import { GET, POST } from "./route";
 
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -217,58 +217,5 @@ describe("POST /api/schedule", () => {
         trainingOfficerId: officerId,
       }),
     });
-  });
-});
-
-describe("PUT /api/schedule", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("returns 401 without session", async () => {
-    mockAuth.mockResolvedValue(null);
-    const res = await PUT(makePutRequest({ id: "sa-1" }));
-    expect(res.status).toBe(401);
-  });
-
-  it("updates assignment as admin", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    mockScheduleUpdate.mockResolvedValue({ id: "sa-1", department: "HR" });
-    const res = await PUT(makePutRequest({ id: "550e8400-e29b-41d4-a716-446655440000", department: "HR" }));
-    expect(res.status).toBe(200);
-  });
-
-  it("returns 400 for invalid id", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    const res = await PUT(makePutRequest({ id: "bad", department: "HR" }));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 400 for invalid scheduleType", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    const res = await PUT(makePutRequest({ id: "550e8400-e29b-41d4-a716-446655440000", scheduleType: "invalid" }));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 403 for trainer not owner", async () => {
-    mockAuth.mockResolvedValue(trainerSession);
-    mockScheduleFindUnique.mockResolvedValue({ id: "550e8400-e29b-41d4-a716-446655440000", createdBy: "other-trainer" });
-    const res = await PUT(makePutRequest({ id: "550e8400-e29b-41d4-a716-446655440000", department: "HR" }));
-    expect(res.status).toBe(403);
-  });
-});
-
-describe("DELETE /api/schedule", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("returns 401 without session", async () => {
-    mockAuth.mockResolvedValue(null);
-    const res = await DELETE(makeDeleteRequest("sa-1"));
-    expect(res.status).toBe(401);
-  });
-
-  it("deletes assignment as admin", async () => {
-    mockAuth.mockResolvedValue(adminSession);
-    mockScheduleDelete.mockResolvedValue({ id: "sa-1" });
-    const res = await DELETE(makeDeleteRequest("sa-1"));
-    expect(res.status).toBe(200);
   });
 });

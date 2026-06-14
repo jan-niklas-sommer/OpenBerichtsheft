@@ -688,7 +688,6 @@ describe("officerAssignmentSchema", () => {
 describe("updateScheduleSchema", () => {
   it("accepts valid input with all fields", () => {
     const input = {
-      id: "550e8400-e29b-41d4-a716-446655440000",
       scheduleType: "department",
       startDate: "2026-01-05",
       endDate: "2026-01-09",
@@ -698,48 +697,30 @@ describe("updateScheduleSchema", () => {
     expect(updateScheduleSchema.parse(input)).toEqual(input);
   });
 
-  it("accepts id only", () => {
-    const input = { id: "550e8400-e29b-41d4-a716-446655440000" };
-    expect(updateScheduleSchema.parse(input)).toEqual(input);
-  });
-
-  it("rejects missing id", () => {
-    expect(() => updateScheduleSchema.parse({ department: "IT" })).toThrow();
-  });
-
-  it("rejects non-UUID id", () => {
-    expect(() => updateScheduleSchema.parse({ id: "bad" })).toThrow();
+  it("accepts empty object (id comes from path)", () => {
+    expect(updateScheduleSchema.parse({})).toEqual({});
   });
 
   it("rejects invalid scheduleType", () => {
-    expect(() =>
-      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", scheduleType: "invalid" })
-    ).toThrow();
+    expect(() => updateScheduleSchema.parse({ scheduleType: "invalid" })).toThrow();
   });
 
   it("accepts null department", () => {
-    expect(
-      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", department: null })
-    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", department: null });
+    expect(updateScheduleSchema.parse({ department: null })).toEqual({ department: null });
   });
 
   it("accepts null supervisorId", () => {
-    expect(
-      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", supervisorId: null })
-    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", supervisorId: null });
+    expect(updateScheduleSchema.parse({ supervisorId: null })).toEqual({ supervisorId: null });
   });
 
   it("rejects non-UUID supervisorId", () => {
-    expect(() =>
-      updateScheduleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", supervisorId: "bad" })
-    ).toThrow();
+    expect(() => updateScheduleSchema.parse({ supervisorId: "bad" })).toThrow();
   });
 });
 
 describe("updateRecurrenceRuleSchema", () => {
   it("accepts valid input with all fields", () => {
     const input = {
-      id: "550e8400-e29b-41d4-a716-446655440000",
       scheduleType: "school",
       startDate: "2026-01-05",
       endDate: "2026-06-30",
@@ -751,59 +732,36 @@ describe("updateRecurrenceRuleSchema", () => {
     expect(updateRecurrenceRuleSchema.parse(input)).toEqual(input);
   });
 
-  it("accepts id only", () => {
-    const input = { id: "550e8400-e29b-41d4-a716-446655440000" };
-    expect(updateRecurrenceRuleSchema.parse(input)).toEqual(input);
+  it("accepts empty object (id comes from path)", () => {
+    expect(updateRecurrenceRuleSchema.parse({})).toEqual({});
   });
 
   it("accepts weekDays as bitfield number", () => {
-    expect(
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: 31 })
-    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: 31 });
-  });
-
-  it("rejects missing id", () => {
-    expect(() => updateRecurrenceRuleSchema.parse({ scheduleType: "school" })).toThrow();
-  });
-
-  it("rejects non-UUID id", () => {
-    expect(() => updateRecurrenceRuleSchema.parse({ id: "bad" })).toThrow();
+    expect(updateRecurrenceRuleSchema.parse({ weekDays: 31 })).toEqual({ weekDays: 31 });
   });
 
   it("rejects invalid scheduleType", () => {
-    expect(() =>
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", scheduleType: "invalid" })
-    ).toThrow();
+    expect(() => updateRecurrenceRuleSchema.parse({ scheduleType: "invalid" })).toThrow();
   });
 
   it("rejects empty weekDays array", () => {
-    expect(() =>
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", weekDays: [] })
-    ).toThrow();
+    expect(() => updateRecurrenceRuleSchema.parse({ weekDays: [] })).toThrow();
   });
 
   it("accepts valid interval", () => {
-    expect(
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 2 })
-    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 2 });
+    expect(updateRecurrenceRuleSchema.parse({ interval: 2 })).toEqual({ interval: 2 });
   });
 
   it("rejects interval < 1", () => {
-    expect(() =>
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 0 })
-    ).toThrow();
+    expect(() => updateRecurrenceRuleSchema.parse({ interval: 0 })).toThrow();
   });
 
   it("rejects interval > 12", () => {
-    expect(() =>
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 13 })
-    ).toThrow();
+    expect(() => updateRecurrenceRuleSchema.parse({ interval: 13 })).toThrow();
   });
 
   it("accepts interval = 1", () => {
-    expect(
-      updateRecurrenceRuleSchema.parse({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 1 })
-    ).toEqual({ id: "550e8400-e29b-41d4-a716-446655440000", interval: 1 });
+    expect(updateRecurrenceRuleSchema.parse({ interval: 1 })).toEqual({ interval: 1 });
   });
 });
 

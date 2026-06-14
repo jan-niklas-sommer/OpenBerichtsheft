@@ -76,7 +76,7 @@ export default function TrainerOfficersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/officer-assignments?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/officer-assignments/${id}`, { method: "DELETE" });
     if (res.ok) {
       setAssignments((prev) => prev.filter((a) => a.id !== id));
     }

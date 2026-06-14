@@ -254,6 +254,7 @@ Unter **Planung** (Navigation, `/trainee/schedule/`) sehen Sie Ihre persönliche
 - **Hierarchischer Header**: Monatszeile oben, Wochenzeile (KW) darunter
 - **Rote Heute-Linie** markiert das aktuelle Datum
 - **Tagesgenaue Balken**, Farbe automatisch aus Zuweisungstyp abgeleitet (Abteilung, Schule, Urlaub, Sonstiges)
+- **Wiederholungsregeln** werden als einzelne Tages-Balken an ihren jeweiligen Terminen angezeigt (erkennbar am **↻-Symbol**)
 - Die Ansicht wird automatisch erweitert, wenn Sie an den Rand scrollen
 - **Legende** unterhalb der Timeline erklärt die Farbcodierung
 
@@ -360,9 +361,14 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 
 **Wiederholungsregeln** gelten für alle Tage im gewählten Zeitraum, die den konfigurierten Wochentagen entsprechen. Das **Intervall** steuert die Frequenz: "Jede Woche" (Standard), "Alle 2 Wochen", "Alle 3 Wochen" oder "Alle 4 Wochen".
 
+**Sichtbarkeit von Wiederholungsregeln:** Wiederholungsregeln werden als einzelne Tages-Balken an ihren jeweiligen Terminen im Gantt-Chart angezeigt und sind an einem kleinen **↻-Symbol** erkennbar. So sehen Sie sofort, an welchen Tagen eine Regel greift.
+
 **Hinweis:** Wenn Sie einen Ausbildungsbeauftragten als Betreuer auswählen, wird dieser automatisch für den Zeitraum dem Auszubildenden zugeordnet.
 
-**Zuweisung bearbeiten/löschen:** Klicken Sie auf eine Zuweisung im Gantt-Chart, um sie zu bearbeiten oder zu löschen.
+**Zuweisung bearbeiten/löschen:** Klicken Sie auf einen Balken im Gantt-Chart, um ihn zu bearbeiten oder zu löschen.
+
+- Bei einem **Einzeleinsatz** ändern Sie Typ, Zeitraum, Abteilung oder Betreuer.
+- Bei einer **Wiederholungsregel** (↻) können Sie zusätzlich die **Wochentage** und das **Intervall** anpassen. Die Änderung wirkt auf alle Termine der Regel. Das Löschen entfernt die gesamte Regel.
 
 ---
 
@@ -386,7 +392,7 @@ Die Prüfung funktioniert identisch zum Ausbilder (siehe Abschnitt 5.2 und 5.3).
 
 ### 6.3 Einsatzplanung einsehen
 
-Unter **Planung** (Navigation) sehen Sie eine read-only Ansicht der Einsatzplanung für Ihre zugeordneten Auszubildenden. Sie können die Planungen einsehen, aber nicht bearbeiten.
+Unter **Planung** (Navigation) sehen Sie eine read-only Ansicht der Einsatzplanung für Ihre zugeordneten Auszubildenden. Sie können die Planungen einsehen, aber nicht bearbeiten. Wiederholungsregeln werden als einzelne Tages-Balken (↻-Symbol) dargestellt.
 
 ---
 

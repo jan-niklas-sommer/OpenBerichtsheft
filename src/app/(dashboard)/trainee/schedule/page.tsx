@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   type ScheduleAssignmentView,
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
+import { expandRulesToViews, type RecurrenceRuleExpandInput } from "@/components/schedule/expand-rules";
 import { computeDataBounds } from "@/lib/schedule-bounds";
 
 function addMonths(d: Date, months: number): Date {
@@ -33,6 +34,7 @@ function toSunday(d: Date): Date {
 
 export default function TraineeSchedulePage() {
   const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
+  const [rules, setRules] = useState<RecurrenceRuleExpandInput[]>([]);
   const [loading, setLoading] = useState(true);
   const boundsRef = useRef<{ minBound: Date; maxBound: Date } | null>(null);
   const initialSnapRef = useRef(false);
@@ -50,24 +52,31 @@ export default function TraineeSchedulePage() {
   const traineeId = assignments.length > 0 ? assignments[0].traineeId : "self";
 
   useEffect(() => {
-    fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const arr = Array.isArray(data) ? data : [];
-        setAssignments(arr);
-        setLoading(false);
+    Promise.all([
+      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
+      fetch("/api/recurrence-rules").then((r) => r.json()),
+    ]).then(([data, ruleData]) => {
+      const arr = Array.isArray(data) ? data : [];
+      setAssignments(arr);
+      setRules(Array.isArray(ruleData) ? ruleData : []);
+      setLoading(false);
 
-        if (!initialSnapRef.current && arr.length > 0) {
-          const bounds = computeDataBounds(arr);
-          if (bounds) {
-            boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
-            setViewStart(bounds.start);
-            setViewEnd(bounds.end);
-          }
-          initialSnapRef.current = true;
+      if (!initialSnapRef.current && arr.length > 0) {
+        const bounds = computeDataBounds(arr);
+        if (bounds) {
+          boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
+          setViewStart(bounds.start);
+          setViewEnd(bounds.end);
         }
-      });
+        initialSnapRef.current = true;
+      }
+    });
   }, [viewStart, viewEnd]);
+
+  const allViews = useMemo<ScheduleAssignmentView[]>(
+    () => [...assignments, ...expandRulesToViews(rules, viewStart, viewEnd)],
+    [assignments, rules, viewStart, viewEnd],
+  );
 
   const handleScrollNearEdge = useCallback(
     (direction: "start" | "end") => {
@@ -101,7 +110,7 @@ export default function TraineeSchedulePage() {
 
       <GanttTimeline
         rows={[{ traineeId, label: "" }]}
-        assignments={assignments}
+        assignments={allViews}
         viewStart={viewStart}
         viewEnd={viewEnd}
         mode="readonly"
@@ -111,7 +120,7 @@ export default function TraineeSchedulePage() {
 
       <ScheduleLegend />
 
-      {assignments.length === 0 && (
+      {allViews.length === 0 && (
         <p className="mt-6 text-sm text-content-subtle">
           Noch keine Einsatzplanung vorhanden.
         </p>

@@ -1,6 +1,6 @@
 # Design-System – OpenBerichtsheft
 
-Letzte Aktualisierung: 2026-05-09
+Letzte Aktualisierung: 2026-06-14
 
 ---
 
@@ -556,7 +556,7 @@ Icon-Library: `lucide-react`. Stroke-Width: 1.5. Default-Farbe: `currentColor`.
 
 | Kontext | Icon |
 |---------|------|
-| Logo | Zu prüfen — Alternative: Kalender, Klemmbrett |
+| Logo | `NotebookPen` (Berichtsheft-Mappe) — in markantem Akzent-Quadrat (`bg-accent`/`text-accent-fg`, `radius-md`) als Brand-Lockup mit Wordmark und Claim |
 | Übersicht | `LayoutGrid` |
 | Planung | `Calendar` |
 | Beauftragte | `Users` |

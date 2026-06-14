@@ -48,6 +48,17 @@ Ein Administrator erstellt Ihren Zugang und teilt Ihnen E-Mail-Adresse und Initi
 
 Nach der Anmeldung werden Sie automatisch in die Ihrem Rolle entsprechende Übersicht weitergeleitet.
 
+**Hilfen auf der Anmeldeseite:**
+
+- Über dem Anmeldeformular erscheint das **OpenBerichtsheft-Logo** (Notizbuch-Symbol) mit dem Untertitel *Digitale Ausbildungsdokumentation*.
+- Das **Augen-Symbol** rechts im Passwortfeld blendet das Passwort ein oder aus.
+- Oben rechts kann der **Dark-/Light-Mode** über das Sonne-/Mond-Symbol auch vor der Anmeldung gewechselt werden.
+- Bei fehlerhaften Anmeldedaten erscheint eine Hinweisbox mit dem Fehlergrund.
+
+### Registrieren (Selbstregistrierung)
+
+Über den Link *Noch kein Konto? Jetzt registrieren* unter dem Anmeldeformular können sich Auszubildende selbst ein Konto anlegen. Nach der Registrierung erhalten Sie eine E-Mail mit einem Verifizierungslink (24 Stunden gültig), den Sie bestätigen müssen, bevor die Anmeldung möglich ist.
+
 ### Login-Schutz (Rate Limiting)
 
 Nach **5 fehlgeschlagenen Anmeldeversuchen** wird der Login für **15 Minuten gesperrt**. Warten Sie die Sperrzeit ab und versuchen Sie es erneut. Bei anhaltenden Problemen wenden Sie sich an den Administrator.

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { BrandLockup } from "@/components/layout/brand-lockup";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -38,38 +39,35 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <Shield className="mx-auto mb-4 h-10 w-10 text-content-base" />
-        <h1 className="text-2xl font-semibold text-content-base">
-          Registrierung erfolgreich
-        </h1>
-        <p className="mt-4 text-sm text-content-muted">
-          Wir haben eine E-Mail an <strong className="text-content-base">{email}</strong> gesendet.
-          Bitte klicken Sie auf den Link in der E-Mail, um Ihr Konto zu aktivieren.
-        </p>
-        <p className="mt-2 text-xs text-content-subtle">
-          Der Link ist 24 Stunden gültig.
-        </p>
-        <a href="/login" className="mt-6 inline-block text-sm text-accent underline">
-          Zur Anmeldung
-        </a>
+      <div className="w-full max-w-sm">
+        <Card className="space-y-4 p-8 text-center shadow-md hover:border-stroke-subtle">
+          <BrandLockup showClaim={false} />
+          <p className="text-sm text-content-muted">
+            Wir haben eine E-Mail an{" "}
+            <strong className="text-content-base">{email}</strong> gesendet.
+            Bitte klicken Sie auf den Link in der E-Mail, um Ihr Konto zu
+            aktivieren.
+          </p>
+          <p className="text-xs text-content-subtle">
+            Der Link ist 24 Stunden gültig.
+          </p>
+          <a
+            href="/login"
+            className="inline-block text-sm font-medium text-accent underline underline-offset-2 hover:opacity-80"
+          >
+            Zur Anmeldung
+          </a>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-sm">
-      <div className="mb-8 text-center">
-        <Shield className="mx-auto mb-4 h-10 w-10 text-content-base" />
-        <h1 className="text-2xl font-semibold text-content-base">
-          Konto erstellen
-        </h1>
-        <p className="mt-2 text-sm text-content-muted">
-          Registrieren Sie sich als Auszubildende(r)
-        </p>
-      </div>
+      <Card className="space-y-6 p-8 shadow-md hover:border-stroke-subtle">
+        <BrandLockup showClaim={false} />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Name"
           value={name}
@@ -105,12 +103,17 @@ export default function RegisterPage() {
           Registrieren
         </Button>
       </form>
+      </Card>
 
-      <div className="mt-6 text-center">
-        <a href="/login" className="text-sm text-accent underline">
-          Bereits ein Konto? Anmelden
+      <p className="mt-6 text-center text-sm text-content-muted">
+        Bereits ein Konto?{" "}
+        <a
+          href="/login"
+          className="font-medium text-accent underline underline-offset-2 hover:opacity-80"
+        >
+          Anmelden
         </a>
-      </div>
+      </p>
     </div>
   );
 }

@@ -370,6 +370,8 @@ Unter **Planung** (Navigation) können Sie die Einsatzplanung für Ihre Auszubil
 - Bei einem **Einzeleinsatz** ändern Sie Typ, Zeitraum, Abteilung oder Betreuer.
 - Bei einer **Wiederholungsregel** (↻) können Sie zusätzlich die **Wochentage** und das **Intervall** anpassen. Die Änderung wirkt auf alle Termine der Regel. Das Löschen entfernt die gesamte Regel.
 
+**Einzelne Termine einer Regel ausnehmen:** Wenn eine Wiederholungsregel an einem bestimmten Tag nicht greifen soll (z.B. an einem Feiertag), klicken Sie den entsprechenden ↻-Block an und wählen **„Termin am … ausblenden"**. Nur dieser eine Termin wird ausgeblendet, die Regel selbst bleibt unverändert. Unter **„Ausgenommene Termine"** lassen sich Ausnahmen mit **„wiederherstellen"** einzeln zurücknehmen.
+
 ---
 
 ## 6. Rolle: Ausbildungsbeauftragte(r)

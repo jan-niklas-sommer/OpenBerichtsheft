@@ -388,6 +388,8 @@ draft → submitted → approved
 | POST | `/api/recurrence-rules` | Wiederholungsregel erstellen | admin, trainer |
 | PUT | `/api/recurrence-rules` | Wiederholungsregel aktualisieren | admin, trainer (eigene) |
 | DELETE | `/api/recurrence-rules` | Wiederholungsregel löschen | admin, trainer (eigene) |
+| POST | `/api/recurrence-rules/[id]/exceptions` | Ausnahme für einzelnen Termin anlegen | admin, trainer (eigene) |
+| DELETE | `/api/recurrence-rules/[id]/exceptions?exceptionId=` | Ausnahme entfernen (Termin wiederherstellen) | admin, trainer (eigene) |
 | GET | `/api/reports/prefill` | Prefill-Daten für Bericht abrufen | trainee |
 
 ---

@@ -324,6 +324,36 @@ export default function SchedulePage() {
     });
   };
 
+  const handleAddException = async (ruleId: string, date: string) => {
+    const res = await fetch(`/api/recurrence-rules/${ruleId}/exceptions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date }),
+    });
+    if (res.ok) {
+      setEditItem(null);
+      refreshData();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Ausnahme konnte nicht erstellt werden");
+    }
+  };
+
+  const handleRemoveException = async (ruleId: string, exceptionId: string) => {
+    const res = await fetch(
+      `/api/recurrence-rules/${ruleId}/exceptions?exceptionId=${exceptionId}`,
+      { method: "DELETE" },
+    );
+    if (res.ok) refreshData();
+  };
+
+  const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
   if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
@@ -505,6 +535,56 @@ export default function SchedulePage() {
                   </option>
                 ))}
               </select>
+              {editItem.recurring && editItem.ruleId && (() => {
+                const editRule = rules.find((r) => r.id === editItem.ruleId);
+                const exceptions = editRule?.exceptions ?? [];
+                const clickedDate = editItem.startDate;
+                const alreadyExcepted = exceptions.some(
+                  (ex) => new Date(ex.date).toISOString().slice(0, 10) === clickedDate,
+                );
+                return (
+                  <div className="rounded-lg border border-stroke-subtle bg-surface-overlay p-3">
+                    <p className="mb-1.5 text-xs font-medium text-content-muted">
+                      Ausnahme für diesen Termin
+                    </p>
+                    <p className="mb-2 text-xs text-content-subtle">
+                      Termine, die an einem bestimmten Tag nicht greifen sollen (z.B. Feiertag), lassen sich einzeln ausblenden.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      disabled={alreadyExcepted}
+                      onClick={() => handleAddException(editItem.ruleId!, clickedDate)}
+                    >
+                      {alreadyExcepted
+                        ? "Termin bereits ausgeblendet"
+                        : `Termin am ${fmtDate(clickedDate)} ausblenden`}
+                    </Button>
+                    {exceptions.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-content-subtle">Ausgenommene Termine:</p>
+                        {exceptions.map((ex) => (
+                          <div
+                            key={ex.id}
+                            className="flex items-center justify-between gap-2 text-xs text-content-muted"
+                          >
+                            <span>{fmtDate(new Date(ex.date).toISOString().slice(0, 10))}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveException(editItem.ruleId!, ex.id)}
+                              className="text-accent underline underline-offset-2 hover:opacity-80"
+                            >
+                              wiederherstellen
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               <div className="flex items-center justify-between border-t border-stroke-subtle pt-3">
                 <Button
                   variant="danger"

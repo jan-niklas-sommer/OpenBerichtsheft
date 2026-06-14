@@ -12,7 +12,7 @@ export interface RecurrenceRuleExpandInput {
   department?: string | null;
   trainee: { id: string; name: string; profession?: { name: string } | null };
   supervisor?: { id: string; name: string } | null;
-  exceptions?: { ruleId: string; date: Date | string }[];
+  exceptions?: { id: string; ruleId: string; date: Date | string }[];
 }
 
 function toLocalIsoDay(d: Date): string {

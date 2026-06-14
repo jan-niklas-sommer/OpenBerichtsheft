@@ -9,6 +9,7 @@ function makeAssignment(start: string, end: string) {
     startDate: start,
     endDate: end,
     department: null,
+    color: null,
     supervisor: null,
     createdBy: "a1",
     createdAt: new Date().toISOString(),
@@ -63,7 +64,11 @@ describe("computeDataBounds", () => {
   });
 
   it("minBound is before start and maxBound is after end", () => {
-    const result = computeDataBounds([makeAssignment("2026-03-02", "2026-05-29")]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const past = new Date(today.getTime() - 90 * 86400000).toISOString().slice(0, 10);
+    const future = new Date(today.getTime() + 90 * 86400000).toISOString().slice(0, 10);
+    const result = computeDataBounds([makeAssignment(past, future)]);
     expect(result!.minBound < result!.start).toBe(true);
     expect(result!.maxBound > result!.end).toBe(true);
   });

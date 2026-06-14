@@ -1,6 +1,8 @@
 # Erweiterungspfade – OpenBerichtsheft
 
-Stand: 2026-05-10
+Stand: 2026-06-14
+
+> **Reconciliation 2026-06-14:** Die unten als „Erledigt" markierten Punkte wurden bei der Überprüfung als bereits implementiert festgestellt. „Nicht zutreffend" bedeutet, dass das Item zur tatsächlichen Architektur nicht passt (siehe Begründung).
 
 ---
 
@@ -19,39 +21,27 @@ Stand: 2026-05-10
 
 ### 1.1 Frequenz-Intervall im Resolver
 
-**Status:** Bereit
+**Status:** Erledigt (2026-06-14)
 
-Wiederholungsregeln unterstützen aktuell nur wöchentliche Ausführung. Ein Intervall-Feld (z.B. "alle 2 Wochen") erweitert die Einsatzplanung deutlich.
-
-- **Umfang:** `RecurrenceRule` um `interval`-Feld erweitern, Resolver anpassen, UI-Feld im Wiederholungs-Modal
-- **Aufwand:** Mittel (Resolver + UI + Migration + Tests)
+`RecurrenceRule.interval` ist im Schema, Resolver (`ruleAppliesOnDate`/`expandRuleToDays`), der API (`POST/PUT /api/recurrence-rules`) und der UI (Assignment-Modal + Trainer-Edit-Popover) vollständig umgesetzt.
 
 ### 1.2 Passwort-Änderung durch User
 
-**Status:** Bereit
+**Status:** Erledigt
 
-Aktuell können Passwörter nur durch Administratoren geändert werden. User sollten ihr eigenes Passwort ändern können.
-
-- **Umfang:** Neue Seite `/settings`, API-Route `PUT /api/users/me/password`, UI in Navbar
-- **Aufwand:** Klein (1 API-Route + 1 Seite)
+Umgesetzt via `/einstellungen` (Seite) + `PUT /api/users/me/password` + Schüssel-Symbol in der Navbar.
 
 ### 1.3 E-Mail-Verifikation bei Registrierung
 
-**Status:** Bereit
+**Status:** Erledigt
 
-In ARCHITECTURE.md als technische Schuld dokumentiert. Aktuell erstellt der Admin Accounts — bei Self-Registration wäre Verifikation nötig.
-
-- **Umfang:** E-Mail-Provider (Resend/SendGrid), Verifikations-Flow, Token-Generierung
-- **Aufwand:** Mittel (Auth-Flow + Mail-Integration + UI)
+Verifizierungs-Flow (`/api/auth/register`, `/api/auth/verify`, `/api/auth/resend-verification`, `VerificationToken`) inkl. `sendVerificationEmail` umgesetzt. Zusätzlich (2026-06-14) eigenständiger **Passwort-Wiederherstellungs-Flow** (`PasswordResetToken`, `/api/auth/request-password-reset`, `/api/auth/reset-password`, `/forgot-password`, `/reset-password`).
 
 ### 1.4 PDF-Export-Menü mit Batch-Export
 
-**Status:** Bereit
+**Status:** Erledigt
 
-Aktuell: Einzelterteinreichung → Ein PDF. Ziel: Menü-gesteuerter Export mit Zeitraum-Auswahl oder ganzer Historie. Einzel-Export bleibt als Convenience-Feature.
-
-- **Umfang:** Neue Export-Seite `/trainee/export`, API `GET /api/reports/export?from=...&to=...` (ZIP mit PDFs oder ein Sammel-PDF), Zeitraum-Picker, "Gesamte Historie"-Button
-- **Aufwand:** Mittel (1 Seite + 1 API-Route + PDF-Generierung für Batch)
+Umgesetzt via `/trainee/export` (Seite mit Zeitraum-Auswahl) + `GET /api/reports/export` (Batch-PDF/ZIP) + `/api/reports/count` (Vorschau).
 
 ### 1.5 Bericht-Vorlagen / Templates
 
@@ -74,9 +64,9 @@ Noch offene Phasen aus CODE_REVIEW.md.
 
 ### 2.2 Offene Initial-Review Issues
 
-**Status:** Bereit
+**Status:** Teilweise offen
 
-- #1: Paginierung auf GET /api/reports
+- #1: Paginierung auf GET /api/reports — **Nicht zutreffend** (2026-06-14): der Endpunkt wird ausschließlich vom Trainee-Jahreskalender konsumiert, der alle Berichte benötigt. Reviewer laden serverseitig direkt via Prisma. Paginierung würde den Kalender kaputt machen; der echte Skalierungshebel wäre ein Jahres-Filter / Lazy-Loading im Reviewer-Dashboard.
 - #4: Nicht-atomarer Upsert (deleteMany + create)
 - #39: Report-Editor zu groß (UX-Redesign)
 - #40: Hartkodierte 52-Wochen-Grenze
@@ -85,15 +75,15 @@ Noch offene Phasen aus CODE_REVIEW.md.
 
 ### 2.3 RecurrenceException UI
 
-**Status:** Vorbereitet
+**Status:** Tragfähig (2026-06-14)
 
-Schema und Resolver existieren. UI zum Anlegen/Bearbeiten von Ausnahmen fehlt.
+Schema + Resolver + API-Inklusion bestehen seit Längerem. Seit 2026-06-14 sind RecurrenceRules im Gantt sichtbar + editierbar, sodass ein Ausnahme-UI direkt am Regel-Block anknüpfen kann (z.B. Rechts-Klick → „Ausnahme hinzufügen" → POST an eine neue Exception-API). Letzteres ist noch offen.
 
 ### 2.4 typecheck-Script
 
-**Status:** Bereit
+**Status:** Erledigt (2026-06-14)
 
-`npm run typecheck` existiert nicht in `package.json`. Sollte `"typecheck": "tsc --noEmit"` ergänzt werden.
+`npm run typecheck` (`tsc --noEmit`) ergänzt; `tsc` läuft nach Fix der vitest-Globals und mehrerer Test-Typfehler mit **0 Fehlern**.
 
 ---
 

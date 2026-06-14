@@ -12,7 +12,11 @@ const prisma = new PrismaClient();
 function upsertUser(email: string, name: string, role: Role, passwordHash: string, extra: Record<string, unknown> = {}) {
   return prisma.user.upsert({
     where: { email },
-    update: {},
+    // Wird auch beim Update gesetzt, damit ein Re-Seed existierende (ggf. vor der
+    // Email-Verification-Migration angelegte) Konten repariert: emailVerified darf
+    // nicht NULL bleiben (sonst schlägt der Login mit "EmailNotVerified" fehl) und
+    // das Passwort wird auf das dokumentierte Test-Passwort zurückgesetzt.
+    update: { emailVerified: new Date(), passwordHash },
     create: { email, name, role, passwordHash, emailVerified: new Date(), ...extra },
   });
 }

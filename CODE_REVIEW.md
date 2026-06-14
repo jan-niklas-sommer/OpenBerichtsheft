@@ -1,5 +1,22 @@
 # Code Review – OpenBerichtsheft
 
+## Reconciliation-Stand 2026-06-14
+
+Diese Review stammt vom **2026-05-10**. Seitdem sind zahlreiche Issues durch Folge-Commits (Code-Review-Runden, UI/UX-Fixes, Login-/Auth-APs) erledigt worden, ohne dass die Tabelle unten aktuell gehalten wurde. Bei der Durchsicht am 2026-06-14 **verifiziert erledigt**:
+
+| Issue | Status | Nachweis |
+|-------|--------|---------|
+| QO-H4 (CRON_SECRET-Bypass) | Erledigt | `notifications/check/route.ts:13` prüft `!process.env.CRON_SECRET` zuerst |
+| QO-H1 (Rate Limiting) | Erledigt | `src/lib/rate-limit.ts` aktiv auf Login/Register/Password-Reset |
+| QO-M17 (cn ohne twMerge) | Erledigt | `src/lib/utils.ts` nutzt `twMerge(clsx(...))` |
+| QO-DOC4 (Next.js-Version) | Erledigt | ARCHITECTURE.md führt 16.x |
+| tsc-Fehler in Testdateien | Erledigt | `npm run typecheck` läuft mit 0 Fehlern (vitest-Globals + Test-Typfixes) |
+| `schedule-bounds.test.ts` (datumsabhängig) | Erledigt | Test auf relative Daten umgestellt |
+
+> **Hinweis:** Dies ist eine **partielle** Reconciliation der in dieser Session berührten/verifizierten Punkte. Eine vollständige Neu-Auditierung aller untenstehenden Issues (insbesondere MITTEL/NIEDRIG) steht noch aus. Die Tabellen unten spiegeln daher weiterhin weitgehend den Stand vom 2026-05-10.
+
+---
+
 ## Review-Historie
 
 | Datum | Review | Basis |

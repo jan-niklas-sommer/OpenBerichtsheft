@@ -63,10 +63,11 @@ Alle Konten verwenden das Passwort `password123`.
 - **Wochenbericht-Editor** mit 7 Tageszeilen (Tagestyp, Stunden, Minuten)
 - **Autosave** mit Debounce – keine Datenverluste
 - **Statusmodell**: Entwurf → Eingereicht → Genehmigt / Zurückgegeben / Abgelehnt
-- **PDF-Export** generierter Wochenberichte pro Bericht
+- **PDF-Export** generierter Wochenberichte pro Bericht + Batch-Export je Zeitraum
 - **Einsatzplanung** mit interaktivem Gantt-Chart und Drag-Unterstützung
-- **Wiederholungsregeln** für wiederkehrende Einsätze (Betrieb, Berufsschule, etc.)
+- **Wiederholungsregeln** für wiederkehrende Einsätze (Betrieb, Berufsschule, etc.) – mit Intervall, im Gantt sichtbar (↻) und bearbeitbar
 - **Bericht-Prefill** – Vorwocheninhalt automatisch übernehmen
+- **Self-Service Passwort-Wiederherstellung** – Token-basierter Reset-Flow per E-Mail
 - **Benachrichtigungen** – Prüfer bei Einreichung benachrichtigen, Azubis bei Review
 - **Ausbildungsberufe** – Verwaltung von Berufen (FiAE, FiSi, KVF) mit Zuordnung
 - **Fortschritts-Dashboard** – Übersicht über Berichtserstellungs- und Genehmigungsstatus
@@ -131,6 +132,7 @@ src/
 | `npm run dev` | Dev-Server starten |
 | `npm run build` | Production-Build |
 | `npm run start` | Production-Server |
+| `npm run typecheck` | TypeScript-Check ohne Emit (`tsc --noEmit`) |
 | `npm run lint` | ESLint ausführen |
 | `npm test` | Vitest Unit/API/Component Tests |
 | `npm run test:watch` | Vitest im Watch-Modus |
@@ -141,8 +143,6 @@ src/
 | `npm run db:migrate` | Migration ausführen |
 | `npm run db:seed` | Testdaten laden |
 | `npm run db:studio` | Prisma Studio öffnen |
-
-> **Hinweis:** Es gibt kein `npm run typecheck`-Script. Für einen TypeScript-Check ohne Emit nutze `npx tsc --noEmit`.
 
 ## Dokumentation
 

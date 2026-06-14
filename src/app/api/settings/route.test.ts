@@ -68,7 +68,7 @@ describe("PUT /api/settings", () => {
       method: "PUT",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
-    });
+    }) as never;
   }
 
   beforeEach(() => {

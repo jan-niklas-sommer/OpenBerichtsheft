@@ -2839,3 +2839,36 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - Officer haben Phase-1 theoretisch Edit-Rechte, die Schedule-UI bleibt dort aber read-only (konsistent mit bisherigem Stand) — ggf. Folge-AP.
 - Performance: bei sehr vielen Regeln × langem Zeitraum steigt die Anzahl synthetischer Views linear — ggf. später virtualisieren (siehe ARCHITECTURE-Todo).
 - Pre-existing: `schedule-bounds.test.ts`, vitest-Globals-tsc-Fehler.
+
+---
+
+## 2026-06-14 – Arbeitspaket: Doku-Aufräumen + typecheck-Script + Test-Fixes
+
+### Planner
+
+- **Ziel:** Meta-Dokumente mit Ist-Stand abgleichen; `npm run typecheck` nutzbar machen; langlebige Test-Fehler beseitigen.
+- **Umfang:** ROADMAP/README/CODE_REVIEW Reconciliation; `typecheck`-Script; vitest-Globals-Deklaration; Test-Typfehler-Fixes; schedule-bounds Datumrobustheit.
+- **Nicht-Ziele:** Vollständige Neu-Auditierung aller CODE_REVIEW-Issues (nur verifizierte werden abgehakt).
+
+### Implementer
+
+- `src/vitest-globals.d.ts` (neu): `/// <reference types="vitest/globals" />` → deklariert `describe/it/vi/beforeEach` global fuer `tsc`.
+- `package.json`: `"typecheck": "tsc --noEmit"` ergänzt.
+- Test-Typfixes: `schedule-bounds.test.ts` (`color: null` im Fixture), `settings/route.test.ts` (`as never` fuer Request→NextRequest), `schedule-resolver.test.ts` (`priority` entfernt — Resolver nutzt Layer+createdAt), `use-autosave.test.ts` (Callback `| null`), `reviewer-report-page.test.tsx` (`global.fetch`-Cast).
+- `schedule-bounds.test.ts` "minBound/maxBound"-Test auf **relative Daten** umgestellt (war datumsabhaengig und brach, sobald "heute" über die Daten hinauswanderte).
+- `ROADMAP.md`: 1.1/1.2/1.3/1.4/2.4 → Erledigt; 2.2 #1 → Nicht zutreffend; 2.3 → Tragfähig; Reconciliation-Header.
+- `README.md`: Features (Passwort-Reset, Recurrence-Sichtbarkeit, Batch-PDF) + `typecheck` in NPM-Scripts.
+- `CODE_REVIEW.md`: Reconciliation-Tabelle fuer verifizierte Items (QO-H4, QO-H1, QO-M17, QO-DOC4, tsc, schedule-bounds) + ehrlicher Hinweis auf ausstehende Voll-Auditierung.
+
+### Verifier
+
+- **Typecheck (`npm run typecheck`):** **0 Fehler** (vorher 58).
+- **Lint:** 0 Errors (19 pre-existing Warnings).
+- **Tests (`npm test`):** **913/913 bestanden** — erstmals komplett gruen (der langlebige `schedule-bounds`-Failure ist behoben).
+- **Build:** ✓ Compiled successfully, 45/45 static pages.
+
+### Offene Risiken / Folgeaufgaben
+
+- CODE_REVIEW: MITTEL/NIEDRIG-Items sind **nicht** neu auditiert — nur die verifizierten HOCH/Docs-Items wurden abgehakt. Voll-Auditierung empfohlen.
+- `RecurrenceException`-UI (ROADMAP 2.3) offen (jetzt tragfähig).
+- Reviewer-Dashboard-Skalierung (ROADMAP 2.2 #1 Alternative) offen.

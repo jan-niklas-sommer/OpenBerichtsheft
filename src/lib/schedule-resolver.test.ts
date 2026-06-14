@@ -232,7 +232,6 @@ describe("resolveWeek", () => {
       startDate: new Date("2024-01-01"),
       endDate: new Date("2025-12-31"),
       weekDays: weekdayToBit(1),
-      priority: 0,
       createdAt: new Date("2024-01-01"),
     };
     const results = resolveWeek(2024, 52, noAssignments, [rule], noExceptions);

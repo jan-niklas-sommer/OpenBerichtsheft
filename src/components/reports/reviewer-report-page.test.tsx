@@ -38,7 +38,7 @@ let fetchMock: ReturnType<typeof vi.fn>;
 describe("ReviewerReportPage", () => {
   beforeEach(() => {
     fetchMock = vi.fn();
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof fetch;
     mockPush.mockClear();
   });
 

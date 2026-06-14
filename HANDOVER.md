@@ -2940,3 +2940,29 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 
 - Migration liegt bereit, muss aber noch auf der Zieldatenbank ausgeführt werden.
 - Langfristig: `update: {}`-Muster in weiteren Seeds prüfen (Professions o.Ä.), falls ähnliche Idempotenz-Lücken bestehen.
+
+---
+
+## 2026-06-14 – Arbeitspaket: Proxy-Rename (Next.js 16) + RecurrenceException-UI
+
+### AP1: middleware → proxy
+
+- **Ziel:** Next.js 16 Deprecation-Warning ("middleware is deprecated, use proxy") beseitigen.
+- **Umsetzung:** `src/middleware.ts` → `src/proxy.ts`, Export `middleware` → `proxy` (Funktionalität identisch laut Next.js 16 Doku `01-app/01-getting-started/16-proxy.md`). Matcher, NextResponse/NextRequest unverändert.
+- **Verifier:** typecheck 0, lint 0, build ✓ ("ƒ Proxy (Middleware)"), Runtime: unauth `/trainee` → 307 zu `/login`, `/login` → 200, keine Warnung mehr.
+
+### AP2: RecurrenceException-UI
+
+- **Ziel:** Einzelne Termine einer Wiederholungsregel ausnehmbar machen (z.B. Feiertag). Baut auf der seit dem Recurrence-Sichtbarkeits-AP vorhandenen Klickbarkeit der ↻-Blöcke auf.
+- **Umfang:**
+  - `POST/DELETE /api/recurrence-rules/[id]/exceptions` (admin/trainer, Ownership-Check, Unique-Conflict → 409).
+  - `createExceptionSchema` (date + optional reason).
+  - Trainer-Edit-Popover: "Termin ausblenden"-Aktion für den angeklickten Tag + Liste bestehender Ausnahmen mit "wiederherstellen".
+  - Expansion respektiert Ausnahmen bereits (`expandRuleToDays`); nach Refetch verschwindet/erscheint der Block automatisch.
+- **Verifier:** typecheck 0, lint 0, **934/934 Tests** (+12 Exception-API-Tests), build ✓, Live: Route resolves (404 bei Fake-Regel, unauth → 307 geschützt).
+- **Implementer:** `src/lib/validations.ts`, `src/app/api/recurrence-rules/[id]/exceptions/route.ts` (+test), `src/components/schedule/expand-rules.ts` (exceptions-Typ um `id`), `src/app/(dashboard)/trainer/schedule/page.tsx` (Handler + UI-Sektion), HANDBUCH/ARCHITECTURE.
+
+### Offene Risiken / Folgeaufgaben
+
+- Exception-Reason ist reiner Freitext (kein Enum wie "Feiertag"/"Krankheit") — bei Bedarf migrierbar (Phase-2).
+- Ausnahme-UI nur in der Trainer-View (Admin nutzt dieselbe Seite via Rolle? — Admin hat keinen Schedule-Nav; ggf. Folge-AP).

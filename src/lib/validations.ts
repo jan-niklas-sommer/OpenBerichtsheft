@@ -147,3 +147,8 @@ export const adminResetPasswordSchema = z
     message: "Entweder ein neues Passwort oder sendEmail ist erforderlich",
     path: ["sendEmail"],
   });
+
+export const createExceptionSchema = z.object({
+  date: z.string().min(1, "Datum erforderlich"),
+  reason: z.string().max(500).optional(),
+});

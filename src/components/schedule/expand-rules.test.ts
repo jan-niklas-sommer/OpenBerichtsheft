@@ -52,7 +52,7 @@ describe("expandRulesToViews", () => {
     const views = expandRulesToViews(
       [makeRule({
         weekDays: 0b0000001,
-        exceptions: [{ ruleId: "r1", date: new Date("2025-01-13") }],
+        exceptions: [{ id: "e1", ruleId: "r1", date: new Date("2025-01-13") }],
       })],
       new Date("2025-01-01"),
       new Date("2025-01-31"),

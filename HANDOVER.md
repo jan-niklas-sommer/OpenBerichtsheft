@@ -2634,3 +2634,57 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - Officer "Aktiv" Button ist missverständlich — Status-Badge statt Button empfohlen
 - "Passwort vergessen?" Link nicht implementiert (benoetigt E-Mail-Infrastruktur)
 - Touch-Target-Vergrößerung auf 44px fuer alle Icon-Buttons (z.B. via `min-w-[44px] min-h-[44px]`) pruefen
+
+---
+
+## 2026-06-14 – Arbeitspaket: Login-Redesign (On-System Polish)
+
+### Planner
+
+- **Ziel:** Login-Page visuell und in der UX anheben, klares Brand-Identity, konform mit `DESIGN_SYSTEM.md`, ohne Polish-First (kein Split-Screen, keine Deko-Paneels).
+- **Umfang:**
+  - Card-Wrapper um das Formular (`bg-elevated`, `border-subtle`, `radius-md`).
+  - Neues Brand-Lockup (`NotebookPen` in Akzent-Quadrat + Wordmark + Claim "Digitale Ausbildungsdokumentation") als geteilte Komponente.
+  - Alerts (verified, token_expired, invalid_token, form-error) mit semantischen Icons (`CheckCircle2`, `Info`, `AlertTriangle`, `AlertCircle`).
+  - Theme-Toggle oben rechts im Auth-Layout (vor Anmeldung nutzbar).
+  - Konsistenz: Register-Page erhält dasselbe Brand-Lockup und Card-Shell.
+- **Nicht-Ziele:** Split-Screen; Passwort-vergessen/Remember-Me (keine API); Navbar-Logo (Folge-AP); Aenderung der Auth-Logik/Verification-Flows.
+- **Akzeptanzkriterien:** Form in Card; Brand-Lockup mit `NotebookPen`; Alerts mit Icons; Theme-Toggle verfuegbar; nur Design-Token (keine Hardcodes); Dark+Light korrekt; neue + bestehende Tests gruen; Build gruen.
+- **Betroffene Dateien:** `src/components/layout/brand-lockup.tsx` (neu), `src/app/(auth)/layout.tsx`, `src/app/(auth)/login/page.tsx`, `src/app/(auth)/register/page.tsx`, `src/app/(auth)/login/page.test.tsx` (neu), `HANDBUCH.md`, `DESIGN_SYSTEM.md`.
+
+### Reviewer
+
+- Plan prueft Rollen-/Statusmodell nicht (keine Auth-Logikaenderung) — unkritisch.
+- Keine Seiteneffekte auf Datenintegritaet oder API.
+- Mobile Nutzbarkeit gewahrt (`max-w-sm`, `px-4`, Touch-Ziele ≥40px durch `p-2` Theme-Toggle und `h-10` Inputs).
+- Risiko: Navbar nutzt weiterhin `Shield` als Logo → Inkonsistenz mit neuem `NotebookPen`-Brand. Als Folge-AP dokumentiert.
+- **Entscheidung: Freigabe erteilt.**
+
+### Implementer
+
+- `src/components/layout/brand-lockup.tsx` neu: `NotebookPen` in `bg-accent`/`text-accent-fg` Quadrat (`radius-md`, `shadow-sm`), Wordmark + Claim, Groessen `sm`/`md`, Token-basiert.
+- `src/app/(auth)/layout.tsx`: Theme-Toggle absolut oben rechts (`right-3 top-3` mobil / `sm:right-4 sm:top-4`), vertikales Padding.
+- `src/app/(auth)/login/page.tsx`: Form in `Card` (`p-8`, `shadow-md`, statischer Border via `hover:border-stroke-subtle`), Brand-Lockup als Header, lokale `Alert`-Komponente mit Ton-Map (success/info/warning/danger) + Icons, "Noch kein Konto?" Link unterhalb Card. Logik (signIn, resend, EmailNotVerified) unveraendert.
+- `src/app/(auth)/register/page.tsx`: gleiches Brand-Lockup (`showClaim={false}`), Card-Shell fuer Formular und Success-State, "Bereits ein Konto?" Link unterhalb Card.
+- Keine Hardcodes, keine semantischen/kategorialen Farben zweckentfremdet.
+
+### Verifier
+
+- **Typecheck (`npx tsc --noEmit`):** Eigene Dateien 0 Fehler. 58 verbleibende Fehler sind pre-existing (vitest-Globals in diversen `*.test.ts`, auf Baseline reproduzierbar) — nicht durch dieses AP verursacht.
+- **Lint (`npm run lint`):** 0 Errors, 19 Warnings (alle pre-existing, keine in geaenderten Dateien).
+- **Tests (`npm test`):** 880/881 bestanden. Neue Login-Tests: 5/5 bestanden. 1 Failure in `src/lib/schedule-bounds.test.ts` ist pre-existing (datumsabhaengig, auf Baseline via `git stash` reproduziert) und inhaltlich unabh. von diesem AP.
+- **Build (`npm run build`):** ✓ Compiled successfully, 41/41 static pages, Routen `/login` und `/register` gebaut.
+- **Manuell:** Dark/Light via Theme-Toggle auf Loginpage schaltbar; Brand-Lockup + Alerts token-basiert; mobil zentriert.
+
+### Fixer
+
+- Fix 1: `mockResolvedValue({ error })` in `login/page.test.tsx` war unvollstaendig typisiert (SignInResponse benoetigt `code/status/ok/url`) → vollstaendiges Response-Objekt ergaenzt, Typfehler behoben.
+- Fix 2: Ungenutzter `XCircle`-Import im Login entfernt.
+- Fix 3: Card-Hover-Border (interaktiv) fuer statische Login/Register-Card via `hover:border-stroke-subtle` deaktiviert.
+
+### Offene Risiken / Folgeaufgaben
+
+- **Navbar-Logo-Inkonsistenz:** Navbar (`src/components/layout/navbar.tsx:174`) nutzt weiterhin `Shield`-Icon. Empfehlung: Folge-AP zur Migration auf `NotebookPen` bzw. gemeinsame `BrandLockup`-Komponente (size `sm`).
+- **Pre-existing tsc-Fehler:** vitest-Globals (`describe`/`it`/`vi`) werden von `tsc --noEmit` in mehreren Testdateien nicht erkannt (tsconfig-Vitest-Types). Separates Tooling-AP empfohlen.
+- **Pre-existing Test-Failure:** `schedule-bounds.test.ts` (datumsabhaengig) — separat zu pruefen.
+- "Passwort vergessen?" weiterhin nicht implementiert (benötigt E-Mail-Infrastruktur).

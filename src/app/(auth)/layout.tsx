@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default async function AuthLayout({
   children,
@@ -18,7 +19,10 @@ export default async function AuthLayout({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-base px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-surface-base px-4 py-10">
+      <div className="absolute right-3 top-3 sm:right-4 sm:top-4">
+        <ThemeToggle />
+      </div>
       {children}
     </div>
   );

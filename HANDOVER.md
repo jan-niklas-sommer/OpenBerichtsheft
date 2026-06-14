@@ -2995,3 +2995,9 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - **ScheduleType:** Duplikat aus `components/schedule/types.ts` entfernt, re-exportiert nun aus `lib/schedule-resolver.ts` (eine Kanonik, lib ← components Layering).
 - **Typ-Sicherheit:** `TraineeWithReports.reports[].status` jetzt `ReportStatus` statt `string` (QO-L11 behoben); Test-Fixture typisiert.
 - **Verifier:** typecheck 0, lint 0, 924/924 Tests, build ✓.
+
+## 2026-06-14 – Refactor AP5: Stale-Docs-Cleanup
+
+- `CODE_REVIEW.md` Reconciliation-Tabelle erweitert: QO-M22 (Gantt-Split), QO-M23 (Typ-Zentralisierung), QO-L11 (status-Typ) sowie die Refactor-APs 1–3 als erledigt markiert; verbleibend offene (QO-L9/L10/L12, QO-M19–M21, N+1) explizit aufgeführt.
+- `original_prompt.md` aus Repo-Root nach `docs/` verschoben.
+- **Bewusst nicht in dieser Session gemacht** (geringeres Leverage / bewusst zurückgestellt): `validations.ts`-Domain-Split, `useApi`-Data-Fetch-Hook, `as ScheduleType`-Cast-Removal, NotificationBell-Extraktion — eigenständige APs bei Bedarf.

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createUserSchema } from "@/lib/validations";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { email, name, role: userRole, password, professionId, trainingStartDate } = parsed.data;
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await hashPassword(password);
 
   const user = await prisma.user.create({
     data: {

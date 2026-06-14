@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateUserSchema } from "@/lib/validations";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -23,7 +23,7 @@ export async function PUT(
 
   const data: Record<string, unknown> = { ...parsed.data };
   if (parsed.data.password) {
-    data.passwordHash = await bcrypt.hash(parsed.data.password, 12);
+    data.passwordHash = await hashPassword(parsed.data.password);
     delete data.password;
   }
   if (parsed.data.trainingStartDate !== undefined) {

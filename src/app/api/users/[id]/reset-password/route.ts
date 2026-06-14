@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { hash } from "bcryptjs";
 import { randomBytes } from "crypto";
 import { adminResetPasswordSchema } from "@/lib/validations";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { hashPassword } from "@/lib/password";
 
 export async function POST(
   req: NextRequest,
@@ -46,7 +46,7 @@ export async function POST(
   const { password, sendEmail } = parsed.data;
 
   if (password) {
-    const passwordHash = await hash(password, 12);
+    const passwordHash = await hashPassword(password);
     await prisma.$transaction([
       prisma.user.update({ where: { id }, data: { passwordHash } }),
       prisma.passwordResetToken.deleteMany({ where: { email: user.email } }),

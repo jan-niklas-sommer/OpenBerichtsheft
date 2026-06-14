@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { changePasswordSchema } from "@/lib/validations";
-import bcrypt from "bcryptjs";
+import { hashPassword, verifyPassword } from "@/lib/password";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const valid = await bcrypt.compare(parsed.data.currentPassword, user.passwordHash);
+  const valid = await verifyPassword(parsed.data.currentPassword, user.passwordHash);
   if (!valid) {
     return NextResponse.json(
       { error: "Aktuelles Passwort ist falsch" },
@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  const newHash = await bcrypt.hash(parsed.data.newPassword, 12);
+  const newHash = await hashPassword(parsed.data.newPassword);
   await prisma.user.update({
     where: { id: session.user.id },
     data: { passwordHash: newHash },

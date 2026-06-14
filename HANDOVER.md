@@ -2906,3 +2906,37 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 
 - Mail-Modus braucht konfiguriertes SMTP (sonst 500 → Admin kann auf Direkt-Set ausweichen).
 - Keine Audit-Log-Einträge für Admin-Reset (ggf. Folge-AP mit ReviewEvent-ähnlichem Audit-Modell).
+
+---
+
+## 2026-06-14 – Fix: Login kaputt für Konten ohne emailVerified (DB-Integrität)
+
+### Planner
+
+- **Problem:** Bestimmte Logins (z.B. `trainer@example.com`) schlagen fehl, während andere (z.B. `trainer2@example.com`) funktionieren.
+- **Ursache:** `src/lib/auth.ts:32` wirft `EmailNotVerified`, wenn `user.emailVerified` NULL ist. Die Email-Verification-Migration (20260510) fügte die Spalte nullable hinzu — alle damals existierenden Konten bekamen NULL. Der Seed (`prisma/seed.ts`) setzte `emailVerified` nur im `create`-Zweig, der `update`-Zweig war leer (`update: {}`). Ein Re-Seed reparierte bestehende Konten also nicht. Wer vor/nach dieser Migration angelegt wurde, bestimmte, ob der Login klappt.
+- **Fix:**
+  1. **Backfill-Migration** `20260614150000_backfill_email_verified`: setzt `emailVerified = NOW()` für alle nicht-anonymisierten Konten beim Migrieren (sofort-Fix, kein Re-Seed nötig). Konsistent, da Admin-/Seed-Konten per Konstruktion verifiziert sind (`users/route.ts:88`).
+  2. **Seed-Fix**: `upsertUser` setzt `emailVerified` + `passwordHash` nun auch im `update`-Zweig → Re-Seeds bleiben korrekt und Test-Logins sind verlässlich.
+- **Nicht-Ziele:** Änderung der Auth-Logik; Aufheben der Verifizierungspflicht für Self-Registration.
+
+### Verifier
+
+- **Typecheck:** 0 Fehler (inkl. `prisma/seed.ts`).
+- **DB-Ausführung NICHT möglich:** Docker/OrbStack-Daemon war während der Session nicht erreichbar → Migration und Re-Seed konnten nicht lokal angewendet werden. Vom User auszuführen (siehe "Offene Schritte").
+
+### Offene Schritte (vom User nach Docker-Start auszuführen)
+
+```bash
+docker compose up -d              # Postgres starten
+npx prisma migrate deploy         # alle offenen Migrationen anwenden (inkl. PasswordResetToken + Backfill)
+# Optional, um Passwörter/Seed-Daten zu synchronisieren:
+npm run db:seed
+```
+
+Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins funktionieren wieder.
+
+### Offene Risiken / Folgeaufgaben
+
+- Migration liegt bereit, muss aber noch auf der Zieldatenbank ausgeführt werden.
+- Langfristig: `update: {}`-Muster in weiteren Seeds prüfen (Professions o.Ä.), falls ähnliche Idempotenz-Lücken bestehen.

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+// Next.js 16: "Middleware" heißt nun "Proxy" (gleiche Funktionalität, neuer Name).
+export function proxy(request: NextRequest) {
   const token =
     request.cookies.get("authjs.session-token")?.value ||
     request.cookies.get("__Secure-authjs.session-token")?.value;

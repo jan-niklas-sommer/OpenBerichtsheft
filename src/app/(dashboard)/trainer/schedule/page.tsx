@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -11,8 +11,7 @@ import {
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
 import { AssignmentModal } from "@/components/schedule/assignment-modal";
-import { expandRulesToViews, type RecurrenceRuleExpandInput } from "@/components/schedule/expand-rules";
-import { computeDataBounds } from "@/lib/schedule-bounds";
+import { useScheduleView } from "@/components/schedule/use-schedule-view";
 import { weekdayToBit, bitfieldContainsWeekday } from "@/lib/schedule-resolver";
 
 interface Trainee {
@@ -28,50 +27,12 @@ interface Officer {
   email: string;
 }
 
-function addMonths(d: Date, months: number): Date {
-  const r = new Date(d);
-  r.setMonth(r.getMonth() + months);
-  return r;
-}
-
-function toMonday(d: Date): Date {
-  const r = new Date(d);
-  const day = r.getDay();
-  const offset = day === 0 ? -6 : 1 - day;
-  r.setDate(r.getDate() + offset);
-  r.setHours(0, 0, 0, 0);
-  return r;
-}
-
-function toSunday(d: Date): Date {
-  const r = new Date(d);
-  const day = r.getDay();
-  const offset = day === 0 ? 0 : 7 - day;
-  r.setDate(r.getDate() + offset);
-  r.setHours(0, 0, 0, 0);
-  return r;
-}
-
 export default function SchedulePage() {
-  const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
-  const [rules, setRules] = useState<RecurrenceRuleExpandInput[]>([]);
+  const { viewStart, viewEnd, allViews, rules, loading, refresh, scrollNearEdge } = useScheduleView();
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [professionFilter, setProfessionFilter] = useState("");
-  const boundsRef = useRef<{ minBound: Date; maxBound: Date } | null>(null);
-  const initialSnapRef = useRef(false);
-  const [viewStart, setViewStart] = useState<Date>(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() - 6);
-    return toMonday(d);
-  });
-  const [viewEnd, setViewEnd] = useState<Date>(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 6);
-    return toSunday(d);
-  });
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<ScheduleAssignmentView | null>(null);
   const [form, setForm] = useState({
@@ -88,29 +49,13 @@ export default function SchedulePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
-      fetch("/api/recurrence-rules").then((r) => r.json()),
       fetch("/api/users?role=trainee").then((r) => r.json()),
       fetch("/api/users?role=training_officer").then((r) => r.json()),
-    ]).then(([sched, ruleData, tr, off]) => {
-      const data = Array.isArray(sched) ? sched : [];
-      setAssignments(data);
-      setRules(Array.isArray(ruleData) ? ruleData : []);
+    ]).then(([tr, off]) => {
       setTrainees(Array.isArray(tr) ? tr : []);
       setOfficers(Array.isArray(off) ? off : []);
-      setLoading(false);
-
-      if (!initialSnapRef.current && data.length > 0) {
-        const bounds = computeDataBounds(data);
-        if (bounds) {
-          boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
-          setViewStart(bounds.start);
-          setViewEnd(bounds.end);
-        }
-        initialSnapRef.current = true;
-      }
     });
-  }, [viewStart, viewEnd]);
+  }, []);
 
   useEffect(() => {
     if (!editItem) return;
@@ -123,23 +68,14 @@ export default function SchedulePage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [editItem]);
 
-  const allViews = useMemo<ScheduleAssignmentView[]>(() => {
-    const expanded = expandRulesToViews(rules, viewStart, viewEnd);
-    return [...assignments, ...expanded];
-  }, [assignments, rules, viewStart, viewEnd]);
-
   const filteredAssignments = useMemo(() => {
     let filtered = allViews;
     if (search) {
       const s = search.toLowerCase();
-      filtered = filtered.filter((a) =>
-        a.trainee.name.toLowerCase().includes(s),
-      );
+      filtered = filtered.filter((a) => a.trainee.name.toLowerCase().includes(s));
     }
     if (professionFilter) {
-      filtered = filtered.filter(
-        (a) => a.trainee.profession?.name === professionFilter,
-      );
+      filtered = filtered.filter((a) => a.trainee.profession?.name === professionFilter);
     }
     return filtered;
   }, [allViews, search, professionFilter]);
@@ -150,16 +86,16 @@ export default function SchedulePage() {
       .filter((t) => {
         if (!search && !professionFilter) return true;
         const matchesSearch = !search || t.name.toLowerCase().includes(search.toLowerCase());
-        const matchesProfession = !professionFilter || filteredAssignments.some(
-          (a) => a.traineeId === t.id && a.trainee.profession?.name === professionFilter,
-        );
+        const matchesProfession =
+          !professionFilter ||
+          filteredAssignments.some(
+            (a) => a.traineeId === t.id && a.trainee.profession?.name === professionFilter,
+          );
         return matchesSearch && matchesProfession;
       })
       .filter((t) => assignmentTraineeIds.has(t.id))
       .map((t) => {
-        const jg = t.trainingStartDate
-          ? new Date(t.trainingStartDate).getFullYear()
-          : null;
+        const jg = t.trainingStartDate ? new Date(t.trainingStartDate).getFullYear() : null;
         return [t.id, { name: t.name, sublabel: jg ? `JG ${jg}` : null }] as [
           string,
           { name: string; sublabel: string | null },
@@ -178,58 +114,21 @@ export default function SchedulePage() {
 
   const hasConflicts = useMemo(() => {
     for (const [traineeId] of traineeRows) {
-      const traineeAssignments = filteredAssignments.filter(
-        (a) => a.traineeId === traineeId,
-      );
+      const traineeAssignments = filteredAssignments.filter((a) => a.traineeId === traineeId);
       for (let i = 0; i < traineeAssignments.length; i++) {
         for (let j = i + 1; j < traineeAssignments.length; j++) {
           const a = traineeAssignments[i];
           const b = traineeAssignments[j];
-          const aStart = new Date(a.startDate);
-          const aEnd = new Date(a.endDate);
-          const bStart = new Date(b.startDate);
-          const bEnd = new Date(b.endDate);
-          if (aStart <= bEnd && bStart <= aEnd) return true;
+          if (
+            new Date(a.startDate) <= new Date(b.endDate) &&
+            new Date(b.startDate) <= new Date(a.endDate)
+          )
+            return true;
         }
       }
     }
     return false;
   }, [traineeRows, filteredAssignments]);
-
-  const refreshData = useCallback(() => {
-    Promise.all([
-      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
-      fetch("/api/recurrence-rules").then((r) => r.json()),
-    ]).then(([sched, ruleData]) => {
-      const data = Array.isArray(sched) ? sched : [];
-      setAssignments(data);
-      setRules(Array.isArray(ruleData) ? ruleData : []);
-      const bounds = computeDataBounds(data);
-      if (bounds) {
-        boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
-      }
-    });
-  }, [viewStart, viewEnd]);
-
-  const handleScrollNearEdge = useCallback(
-    (direction: "start" | "end") => {
-      const bounds = boundsRef.current;
-      if (direction === "end") {
-        setViewEnd((prev) => {
-          const next = addMonths(prev, 1);
-          const limit = bounds ? bounds.maxBound : addMonths(new Date(), 24);
-          return next > limit ? limit : next;
-        });
-      } else {
-        setViewStart((prev) => {
-          const next = addMonths(prev, -1);
-          const limit = bounds ? bounds.minBound : addMonths(new Date(), -24);
-          return next < limit ? limit : next;
-        });
-      }
-    },
-    [],
-  );
 
   const handleUpdate = async () => {
     if (!editItem) return;
@@ -251,7 +150,7 @@ export default function SchedulePage() {
       });
       if (res.ok) {
         setEditItem(null);
-        refreshData();
+        refresh();
       }
       return;
     }
@@ -268,11 +167,8 @@ export default function SchedulePage() {
       }),
     });
     if (res.ok) {
-      const updated = await res.json();
-      setAssignments((prev) =>
-        prev.map((a) => (a.id === updated.id ? updated : a)),
-      );
       setEditItem(null);
+      refresh();
     }
   };
 
@@ -280,15 +176,15 @@ export default function SchedulePage() {
     if (item.ruleId) {
       const res = await fetch(`/api/recurrence-rules?id=${item.ruleId}`, { method: "DELETE" });
       if (res.ok) {
-        setRules((prev) => prev.filter((r) => r.id !== item.ruleId));
         setEditItem(null);
+        refresh();
       }
       return;
     }
     const res = await fetch(`/api/schedule?id=${item.id}`, { method: "DELETE" });
     if (res.ok) {
-      setAssignments((prev) => prev.filter((a) => a.id !== item.id));
       setEditItem(null);
+      refresh();
     }
   };
 
@@ -332,7 +228,7 @@ export default function SchedulePage() {
     });
     if (res.ok) {
       setEditItem(null);
-      refreshData();
+      refresh();
     } else {
       const data = await res.json().catch(() => ({}));
       alert(data.error || "Ausnahme konnte nicht erstellt werden");
@@ -344,24 +240,18 @@ export default function SchedulePage() {
       `/api/recurrence-rules/${ruleId}/exceptions?exceptionId=${exceptionId}`,
       { method: "DELETE" },
     );
-    if (res.ok) refreshData();
+    if (res.ok) refresh();
   };
 
   const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString("de-DE", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
   if (loading) return <div className="text-content-muted">Laden...</div>;
 
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-content-base">
-          Einsatzplanung
-        </h1>
+        <h1 className="text-2xl font-semibold text-content-base">Einsatzplanung</h1>
         <div className="flex gap-2">
           <Button size="sm" onClick={() => setShowModal(true)}>
             Eintrag hinzufügen
@@ -398,7 +288,7 @@ export default function SchedulePage() {
         onClose={() => setShowModal(false)}
         onCreated={() => {
           setShowModal(false);
-          refreshData();
+          refresh();
         }}
         trainees={trainees.map((t) => ({ id: t.id, name: t.name }))}
         officers={officers.map((o) => ({ id: o.id, name: o.name }))}
@@ -425,9 +315,7 @@ export default function SchedulePage() {
             <div className="space-y-3">
               <select
                 value={form.scheduleType}
-                onChange={(e) =>
-                  setForm({ ...form, scheduleType: e.target.value as ScheduleType })
-                }
+                onChange={(e) => setForm({ ...form, scheduleType: e.target.value as ScheduleType })}
                 className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
               >
                 {Object.entries(TYPE_LABELS).map(([k, v]) => (
@@ -439,9 +327,7 @@ export default function SchedulePage() {
               {editItem.recurring && (
                 <>
                   <div>
-                    <label className="mb-1 block text-xs text-content-muted">
-                      Wochentage
-                    </label>
+                    <label className="mb-1 block text-xs text-content-muted">Wochentage</label>
                     <div className="flex gap-1">
                       {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((name, i) => {
                         const day = i + 1;
@@ -471,14 +357,10 @@ export default function SchedulePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-content-muted">
-                      Intervall
-                    </label>
+                    <label className="mb-1 block text-xs text-content-muted">Intervall</label>
                     <select
                       value={form.interval}
-                      onChange={(e) =>
-                        setForm({ ...form, interval: Number(e.target.value) })
-                      }
+                      onChange={(e) => setForm({ ...form, interval: Number(e.target.value) })}
                       className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
                     >
                       <option value={1}>Jede Woche</option>
@@ -507,19 +389,12 @@ export default function SchedulePage() {
                   />
                 </div>
               </div>
-              {(form.scheduleType === "department" ||
-                form.scheduleType === "other") && (
+              {(form.scheduleType === "department" || form.scheduleType === "other") && (
                 <input
                   type="text"
-                  placeholder={
-                    form.scheduleType === "department"
-                      ? "Welche Abteilung?"
-                      : "Beschreibung"
-                  }
+                  placeholder={form.scheduleType === "department" ? "Welche Abteilung?" : "Beschreibung"}
                   value={form.department}
-                  onChange={(e) =>
-                    setForm({ ...form, department: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, department: e.target.value })}
                   className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
                 />
               )}
@@ -586,19 +461,11 @@ export default function SchedulePage() {
                 );
               })()}
               <div className="flex items-center justify-between border-t border-stroke-subtle pt-3">
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDelete(editItem)}
-                >
+                <Button variant="danger" size="sm" onClick={() => handleDelete(editItem)}>
                   Löschen
                 </Button>
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditItem(null)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setEditItem(null)}>
                     Abbrechen
                   </Button>
                   <Button size="sm" onClick={handleUpdate}>
@@ -624,7 +491,7 @@ export default function SchedulePage() {
         mode="edit"
         showConflicts={hasConflicts}
         onCellClick={openEdit}
-        onScrollNearEdge={handleScrollNearEdge}
+        onScrollNearEdge={scrollNearEdge}
       />
 
       <ScheduleLegend />

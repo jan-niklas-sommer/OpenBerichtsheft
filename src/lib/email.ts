@@ -43,3 +43,32 @@ export async function sendVerificationEmail(email: string, token: string, name: 
     `,
   });
 }
+
+export async function sendPasswordResetEmail(email: string, token: string, name: string) {
+  const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+  const safeName = escapeHtml(name);
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || `"OpenBerichtsheft" <noreply@localhost>`,
+    to: email,
+    subject: "Passwort zurücksetzen – OpenBerichtsheft",
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+        <h1 style="font-size: 20px; margin-bottom: 16px;">Hallo, ${safeName}!</h1>
+        <p style="color: #52525b; font-size: 14px; line-height: 1.6;">
+          Sie haben beantragt, Ihr Passwort zurückzusetzen. Klicken Sie auf den Link,
+          um ein neues Passwort zu vergeben:
+        </p>
+        <a href="${resetUrl}"
+           style="display: inline-block; background: #18181b; color: #ffffff; padding: 10px 24px;
+                  border-radius: 8px; text-decoration: none; font-size: 14px; margin: 12px 0;">
+          Passwort zurücksetzen
+        </a>
+        <p style="color: #a1a1aa; font-size: 12px; margin-top: 16px;">
+          Dieser Link ist 1 Stunde gültig. Falls Sie diese Anfrage nicht gestellt haben,
+          können Sie diese E-Mail ignorieren – Ihr Passwort bleibt unverändert.
+        </p>
+      </div>
+    `,
+  });
+}

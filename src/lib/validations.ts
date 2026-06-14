@@ -128,3 +128,12 @@ export const registerSchema = z.object({
 export const resendVerificationSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse"),
 });
+
+export const requestPasswordResetSchema = z.object({
+  email: z.string().email("Ungültige E-Mail-Adresse"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token erforderlich"),
+  password: z.string().min(8, "Mindestens 8 Zeichen"),
+});

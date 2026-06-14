@@ -138,12 +138,20 @@ export default function LoginPage() {
             autoComplete="email"
           />
           <div>
-            <label
-              htmlFor="passwort"
-              className="mb-1.5 block text-sm font-medium text-content-muted"
-            >
-              Passwort
-            </label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label
+                htmlFor="passwort"
+                className="block text-sm font-medium text-content-muted"
+              >
+                Passwort
+              </label>
+              <a
+                href="/forgot-password"
+                className="text-xs text-accent underline underline-offset-2 hover:opacity-80"
+              >
+                Passwort vergessen?
+              </a>
+            </div>
             <div className="relative">
               <input
                 id="passwort"

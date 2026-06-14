@@ -2726,3 +2726,64 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - Folge-Risiko aus Login-Redesign-AP (Navbar-Shield-Inkonsistenz) ist **aufgeloest**.
 - Mobile-Menu (Slide-in) zeigt kein Brand-Logo — bei Bedarf separates AP.
 - Pre-existing tsc-Fehler (vitest-Globals) und `schedule-bounds.test.ts` weiterhin offen (siehe Vor-AP).
+
+---
+
+## 2026-06-14 – Arbeitspaket: Passwort-Wiederherstellung (Self-Service)
+
+### Planner
+
+- **Ziel:** User können ein vergessenes Passwort selbst zurücksetzen, ohne den Administrator (funktionales Lücke, hohe User-Wert).
+- **Umfang:**
+  - Neues `PasswordResetToken`-Modell + Migration (analog `VerificationToken`, 1-h-Gueltigkeit).
+  - `POST /api/auth/request-password-reset` (generic Response, Rate-Limit 5/h, keine Leak ob Email existiert).
+  - `POST /api/auth/reset-password` (Token-Validierung, bcrypt-Hash, single-use, Rate-Limit 20/h).
+  - `sendPasswordResetEmail` in `email.ts`.
+  - Seiten `/forgot-password` und `/reset-password` (Card + BrandLockup, Token via Query).
+  - Middleware-Matcher um neue oeffentliche Seiten erweitert.
+  - Login: "Passwort vergessen?"-Link.
+  - Zod-Schemata + 16 API-Tests.
+- **Nicht-Ziele:** Aenderung am Verifizierungs-Flow; 2FA; Login-History; Admin-Reset-UI.
+- **Akzeptanzkriterien:** Beide Endpoints pruefen Token (gültig/abgelaufen/ungültig), blocken deaktivierte/anonymisierte User, sind rate-limited; generic Response leakt nichts; nur Design-Token; Tests + Build gruen.
+
+### Reviewer
+
+- Rollen-/Statusmodell unberührt — unkritisch.
+- Sicherheit: 64-Hex-Token (kryptografisch random via `randomBytes`), 1-h-Expiry, single-use (delete im gleichen $transaction wie passwordHash-Update), Rate-Limit auf beide Endpoints, generic Response, keine Selbst-Wiederherstellung für deaktivierte/anonymisierte Konten. bcrypt 12 Runden wie bei Registrierung.
+- Datenintegritaet: Token-Loeschung bei Missbrauch/Expiry/Aenderung sichergestellt (`.catch` auf delete bei bereits geloeschtem Token verhindert 500).
+- Mobile: Formulare in `max-w-sm` Card, Touch-Ziele via `h-10` Inputs.
+- **Entscheidung: Freigabe erteilt.**
+
+### Implementer
+
+- `prisma/schema.prisma`: `PasswordResetToken`-Modell + `@@map("password_reset_tokens")`.
+- `prisma/migrations/20260614140000_add_password_reset/migration.sql`: Tabelle + Unique/Index.
+- `src/lib/email.ts`: `sendPasswordResetEmail` (analog Verification, 1-h-Hinweis).
+- `src/lib/validations.ts`: `requestPasswordResetSchema`, `resetPasswordSchema`.
+- `src/app/api/auth/request-password-reset/route.ts`: Rate-Limit → Zod → User-Lookup → nur fuer aktive/nicht-anonymisierte User Token+Mail → generic 200.
+- `src/app/api/auth/reset-password/route.ts`: Rate-Limit → Zod → Token-Lookup → Expiry/User-Check → bcrypt → `$transaction` (update passwordHash + delete token) → 200.
+- `src/app/(auth)/forgot-password/page.tsx`: Email-Formular + Success-State.
+- `src/app/(auth)/reset-password/page.tsx`: Token aus Query; No-Token-Fallback; Password+Confirm mit Toggle; Success-Redirect-Hinweis.
+- `src/middleware.ts`: `forgot-password|reset-password` in Matcher-Exklusion.
+- `src/app/(auth)/login/page.tsx`: "Passwort vergessen?"-Link rechts neben Passwort-Label.
+- 16 Tests (8 je Route): Validierung, Rate-Limit, unknown/expired Token, deaktiviert/anonymisiert, success, generic-Response.
+
+### Verifier
+
+- **Typecheck:** neue Dateien 0 Fehler (58 pre-existing insgesamt, unveraendert).
+- **Lint:** 0 Errors (19 pre-existing Warnings, unveraendert).
+- **Tests:** 896/897 bestanden (+16 neu). 1 pre-existing Failure `schedule-bounds.test.ts`.
+- **Build:** ✓ Compiled successfully, 45/45 static pages. Neue Routen `/forgot-password`, `/reset-password`, `/api/auth/request-password-reset`, `/api/auth/reset-password` gebaut.
+- **Prisma:** `npx prisma generate` erfolgreich; Migration liegt bereit (DB offline → `npm run db:migrate` beim User noetig, in HANDOVER dokumentiert).
+
+### Fixer
+
+- Fix 1: `sendPasswordResetEmail`-Mock musste `mockResolvedValue` nutzen, da Route `.catch()` auf dem Rueckgabewert aufruft (undefined.catch → TypeError).
+- Fix 2: `$transaction`-Mock erhielt Promises (keine Funktionen) → `Promise.all(ops)` statt `ops.map(fn => fn())`.
+
+### Offene Risiken / Folgeaufgaben
+
+- **Migration muss vom User angewendet werden:** DB war offline. Beim Deployment/Dev: `npm run db:migrate` ausfuehren (oder `prisma db push`).
+- SMTP muss konfiguriert sein, damit Mails wirklich versendet werden (analog bestehendem Verifizierungs-Flow; dev = localhost:1025/MailHog).
+- Admin-UI fuer Passwort-Reset (ohne Mail) nicht umgesetzt – ggf. Folge-AP.
+- Pre-existing: `schedule-bounds.test.ts` (datumsabhaengig), vitest-Globals-tsc-Fehler.

@@ -196,6 +196,15 @@ Index: `(userId, read)`, `(userId)`
 **Default-Settings:**
 - `workingDays` = `[1,2,3,4,5]` (Montag–Freitag, JS `Date.getDay()` Werte)
 
+### VerificationToken / PasswordResetToken
+
+Beide Token-Modelle folgen demselben Muster: `email`, einzigartiges `token` (64 Hex-Zeichen), `expiresAt`, `createdAt`. Index auf `[email]` und `[token]`. Token sind single-use und werden nach Verbrauch gelöscht.
+
+| Modell | Zweck | Gültigkeit |
+|--------|-------|-----------|
+| `VerificationToken` | E-Mail-Verifizierung bei Registrierung | 24 h |
+| `PasswordResetToken` | Passwort-Wiederherstellung | 1 h |
+
 ### ScheduleAssignment
 
 | Feld | Typ | Beschreibung |
@@ -289,6 +298,7 @@ draft → submitted → approved
 - **Session-Inhalt**: `userId`, `email`, `name`, `role`.
 - **Middleware**: Next.js Middleware prüft Auth für geschützte Routen und leitet bei Bedarf um.
 - **Passwort-Hashing**: bcrypt via `bcryptjs`.
+- **Passwort-Wiederherstellung**: Token-basierter Selbstbedienungs-Flow (`PasswordResetToken`, 1-Stunden-Gültigkeit), rate-limited. Generic Response auf `/request-password-reset` verrät nicht, ob eine E-Mail existiert.
 - **Rate Limiting**: Max. 5 fehlgeschlagene Login-Versuche pro E-Mail-Adresse, danach 15-minütige Sperre (`src/lib/rate-limit.ts`).
 - **JWT-Cache**: Rollen- und Startdatum-Informationen werden im JWT-Token mitgeführt und mit einem serverseitigen Cache (5 Min TTL) zwischengespeichert, um Datenbankzugriffe zu reduzieren.
 - **CRON-Schutz**: Der Endpoint `/api/notifications/check` erfordert ein `CRON_SECRET`-Header, um unbefugte Aufrufe zu verhindern.
@@ -332,6 +342,11 @@ draft → submitted → approved
 | Methode | Route | Beschreibung | Rollen |
 |---------|-------|-------------|--------|
 | POST | `/api/auth/[...nextauth]` | Auth-Endpoints | Alle |
+| POST | `/api/auth/register` | Selbstregistrierung (Trainee) + Verifizierungs-E-Mail | Alle |
+| POST | `/api/auth/resend-verification` | Verifizierungs-E-Mail erneut senden | Alle |
+| GET | `/api/auth/verify?token=…` | E-Mail verifizieren (Redirect) | Alle |
+| POST | `/api/auth/request-password-reset` | Passwort-Zurücksetzen-Link anfordern (generic Response, Rate-Limited) | Alle |
+| POST | `/api/auth/reset-password` | Passwort mit Token zurücksetzen (Rate-Limited) | Alle |
 | GET | `/api/reports` | Eigene Berichte (Trainee) / Zugeordnete Berichte (Prüfer) | trainee, trainer, training_officer |
 | GET | `/api/reports/summary` | Fortschrittsübersicht pro Azubi | admin, trainer, training_officer |
 | POST | `/api/reports` | Bericht erstellen/upserten | trainee |

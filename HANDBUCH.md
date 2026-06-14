@@ -54,6 +54,20 @@ Nach der Anmeldung werden Sie automatisch in die Ihrem Rolle entsprechende Über
 - Das **Augen-Symbol** rechts im Passwortfeld blendet das Passwort ein oder aus.
 - Oben rechts kann der **Dark-/Light-Mode** über das Sonne-/Mond-Symbol auch vor der Anmeldung gewechselt werden.
 - Bei fehlerhaften Anmeldedaten erscheint eine Hinweisbox mit dem Fehlergrund.
+- Unter dem Passwortfeld führt der Link **Passwort vergessen?** zur Selbst-Wiederherstellung (siehe unten).
+
+### Passwort vergessen (Selbst-Wiederherstellung)
+
+Wenn Sie Ihr Passwort vergessen haben, können Sie es selbst zurücksetzen – ohne den Administrator:
+
+1. Klicken Sie auf der Anmeldeseite auf **Passwort vergessen?**.
+2. Geben Sie Ihre **E-Mail-Adresse** ein und fordern Sie den Link an.
+3. Sie erhalten eine E-Mail mit einem Link zum Zurücksetzen (1 Stunde gültig). *Aus Sicherheitsgründen wird unabhängig davon, ob die Adresse existiert, stets dieselbe Bestätigung angezeigt.*
+4. Klicken Sie auf den Link in der E-Mail.
+5. Vergeben Sie ein **neues Passwort** (mindestens 8 Zeichen) und bestätigen Sie es.
+6. Melden Sie sich mit dem neuen Passwort an.
+
+Hinweis: Die Wiederherstellung funktioniert nur für aktive, nicht anonymisierte Konten. Deaktivierte oder anonymisierte Konten können kein Passwort zurücksetzen.
 
 ### Registrieren (Selbstregistrierung)
 
@@ -62,6 +76,8 @@ Nach der Anmeldung werden Sie automatisch in die Ihrem Rolle entsprechende Über
 ### Login-Schutz (Rate Limiting)
 
 Nach **5 fehlgeschlagenen Anmeldeversuchen** wird der Login für **15 Minuten gesperrt**. Warten Sie die Sperrzeit ab und versuchen Sie es erneut. Bei anhaltenden Problemen wenden Sie sich an den Administrator.
+
+Auch die Link-Anforderung und das Zurücksetzen des Passworts sind rate-limitiert (5 Anfragen bzw. 20 Zurücksetzungen pro Stunde und Adresse), um Missbrauch zu verhindern.
 
 ### Passwort ändern
 

@@ -493,19 +493,22 @@ Durchgehend wird ISO 8601 (DIN 1355) verwendet: Montag = erster Tag der Woche, K
 ```text
 src/
   lib/
-    schedule-resolver.ts     # Auflösungsalgorithmus + Bitfeld-Helfer
+    schedule-resolver.ts     # Auflösungsalgorithmus + Bitfeld-Helfer + ruleAppliesOnDate/expandRuleToDays
     report-builder.ts        # Prefill-Logik (buildDefaultEntries)
   components/
     schedule/
-      types.ts               # Zentrale Typen für Schedule-Komponenten
+      types.ts               # Zentrale Typen (ScheduleAssignmentView mit optionalem ruleId/recurring)
+      expand-rules.ts        # expandRulesToViews: RecurrenceRule -> synthetische Gantt-Views pro Termin
       gantt-timeline.tsx     # Block-basierte Pillen-Timeline (mode: edit|readonly)
-      assignment-modal.tsx   # Container-Modal für Zuweisungserstellung
-      single-range-form.tsx  # Einzeleinsatz-Formular
-      recurring-form.tsx     # Wiederholungsregel-Formular
-      day-composition-form.tsx # Tageszusammensetzung-Formular
+      timeline-block.tsx     # Einzelner Block (↻-Marker bei recurring=true)
+      timeline-tooltip.tsx   # Hover-Tooltip
+      use-drag-scroll.ts     # Drag-to-Scroll mit Momentum
+      assignment-modal.tsx   # Container-Modal für Zuweisungserstellung (Einzeleinsatz + Wiederholung)
 ```
 
 **Gantt-Rendering-Modell:** Die Timeline rendert Assignment-Blöcke als durchgehende Pillen (`rounded-full`), nicht als einzelne Zellen. `computeBlocks()` gruppiert zusammenhängende Werktage mit gleichem Assignment zu einem Block. Wochenenden (Sa/So) werden nicht gerendert. Hover zeigt Tooltip (200ms Delay) mit Kategorie, Datumsrange, Dauer und Betreuer. Inline-Label auf Blöcken >80px Breite („KW X–Y").
+
+**Recurrence-Regeln im Gantt:** `RecurrenceRule`-Muster werden clientseitig über `expandRulesToViews()` in synthetische `ScheduleAssignmentView`-Einträge pro tatsächlichem Termintag expandiert (interval- und ausnahmebewusst via `ruleAppliesOnDate`). Diese werden mit den echten `ScheduleAssignment` zusammengeführt und normal über `computeBlocks()` gerendert. Wiederholungs-Blöcke tragen ein **↻-Symbol** und das Feld `recurring=true` (sowie `ruleId`). Im Trainer-Edit-Modus öffnet ein Klick auf einen solchen Block das Regel-Edit-Popover (WochenTag-Toggle + Intervall, PUT/DELETE gegen `/api/recurrence-rules`).
 
 **Virtualisierungs-TODO:** Die Timeline-Komponente muss bei >1 Jahr Ansicht virtualisiert werden. Die Komponentengrenze ist so geschnitten, dass nachträgliche Virtualisierung kein Refactoring der Aufrufer erfordert.
 

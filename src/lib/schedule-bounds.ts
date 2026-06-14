@@ -1,24 +1,7 @@
 import type { ScheduleAssignmentView } from "@/components/schedule/types";
+import { MS_PER_DAY, toMonday, toSunday } from "@/lib/date-utils";
 
 const PADDING_DAYS = 14;
-
-function toMonday(d: Date): Date {
-  const r = new Date(d);
-  const day = r.getDay();
-  const offset = day === 0 ? -6 : 1 - day;
-  r.setDate(r.getDate() + offset);
-  r.setHours(0, 0, 0, 0);
-  return r;
-}
-
-function toSunday(d: Date): Date {
-  const r = new Date(d);
-  const day = r.getDay();
-  const offset = day === 0 ? 0 : 7 - day;
-  r.setDate(r.getDate() + offset);
-  r.setHours(0, 0, 0, 0);
-  return r;
-}
 
 export function computeDataBounds(assignments: ScheduleAssignmentView[]) {
   if (assignments.length === 0) return null;
@@ -33,7 +16,7 @@ export function computeDataBounds(assignments: ScheduleAssignmentView[]) {
     if (e > maxDate) maxDate = e;
   }
 
-  const padMs = PADDING_DAYS * 86400000;
+  const padMs = PADDING_DAYS * MS_PER_DAY;
   const start = new Date(minDate.getTime() - padMs);
   const end = new Date(maxDate.getTime() + padMs);
 

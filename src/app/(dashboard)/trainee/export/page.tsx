@@ -4,17 +4,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Download, FileText } from "lucide-react";
+import { addMonths } from "@/lib/date-utils";
 
 type DateRange = { from: string; to: string };
 
 function toDateStr(d: Date): string {
   return d.toISOString().split("T")[0];
-}
-
-function addMonths(d: Date, months: number): Date {
-  const r = new Date(d);
-  r.setMonth(r.getMonth() + months);
-  return r;
 }
 
 const QUICK_RANGES: { label: string; getRange: () => DateRange }[] = [

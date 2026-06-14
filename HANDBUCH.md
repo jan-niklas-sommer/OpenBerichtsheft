@@ -431,6 +431,15 @@ Unter **Benutzer** (Navigation) können Sie:
 - Deaktivierte Benutzer können sich nicht mehr anmelden.
 - Klicken Sie auf **Aktivieren**, um den Zugang wiederherzustellen.
 
+#### Passwort zurücksetzen (für Benutzer)
+
+Als Administrator können Sie das Passwort eines beliebigen (nicht anonymisierten) Benutzers zurücksetzen – z.B. wenn dieser den Zugang vergessen hat. Klicken Sie auf **Passwort** neben dem Benutzer. Es stehen zwei Wege zur Verfügung:
+
+- **Neues Passwort setzen:** Sie vergeben direkt ein neues Passwort (mindestens 8 Zeichen). Der Benutzer kann sich sofort damit anmelden. Ausstehende Reset-Links des Benutzers werden dabei ungültig.
+- **Reset-Link per E-Mail senden:** Der Benutzer erhält eine E-Mail mit einem 1 Stunde gültigen Link und legt sein neues Passwort selbst fest. Dies ist die sicherere Variante (das Passwort wird dem Administrator nicht bekannt).
+
+Hinweis: Anonymisierte Konten können nicht zurückgesetzt werden. Damit die E-Mail-Variante funktioniert, muss SMTP konfiguriert sein.
+
 #### Benutzer anonymisieren (DSGVO)
 
 - Nur **deaktivierte Auszubildende** können anonymisiert werden.

@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
+import { KeyRound, Eye, EyeOff } from "lucide-react";
 import { ROLE_LABELS } from "@/lib/utils";
 import type { UserData, ProfessionData } from "@/types";
 
@@ -22,6 +23,60 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ email: "", name: "", role: "trainee" as string, password: "", professionId: "", trainingStartDate: "" });
   const [formError, setFormError] = useState("");
+
+  const [resetTarget, setResetTarget] = useState<UserWithProfession | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
+  const [resetErr, setResetErr] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showResetPw, setShowResetPw] = useState(false);
+
+  const closeReset = () => {
+    setResetTarget(null);
+    setResetPassword("");
+    setResetMsg("");
+    setResetErr("");
+    setShowResetPw(false);
+  };
+
+  const handleSetPassword = async () => {
+    if (!resetTarget) return;
+    setResetErr("");
+    setResetMsg("");
+    setResetLoading(true);
+    const res = await fetch(`/api/users/${resetTarget.id}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: resetPassword }),
+    });
+    setResetLoading(false);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setResetMsg(data.message || "Passwort geändert.");
+      setResetPassword("");
+    } else {
+      setResetErr(data.error || "Fehler beim Ändern des Passworts.");
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    if (!resetTarget) return;
+    setResetErr("");
+    setResetMsg("");
+    setResetLoading(true);
+    const res = await fetch(`/api/users/${resetTarget.id}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sendEmail: true }),
+    });
+    setResetLoading(false);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setResetMsg(data.message || "Reset-Mail versendet.");
+    } else {
+      setResetErr(data.error || "Fehler beim Versenden der Reset-Mail.");
+    }
+  };
 
   useEffect(() => {
     fetch("/api/users")
@@ -191,6 +246,19 @@ export default function UsersPage() {
                   >
                     {user.deactivatedAt ? "Aktivieren" : "Deaktivieren"}
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setResetTarget(user);
+                      setResetMsg("");
+                      setResetErr("");
+                      setResetPassword("");
+                    }}
+                  >
+                    <KeyRound className="h-4 w-4" />
+                    Passwort
+                  </Button>
                   {user.deactivatedAt && user.role === "trainee" && (
                     <Button
                       variant="ghost"
@@ -207,6 +275,102 @@ export default function UsersPage() {
           </Card>
         ))}
       </div>
+
+      {resetTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-backdrop"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) closeReset(); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-lg border border-stroke-subtle bg-surface-elevated p-6 shadow-lg"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-1 text-lg font-semibold text-content-base">
+              Passwort zurücksetzen
+            </h3>
+            <p className="mb-4 text-sm text-content-muted">
+              Für <strong className="text-content-base">{resetTarget.name}</strong> ({resetTarget.email})
+            </p>
+
+            {resetMsg ? (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-success/25 bg-success-soft px-4 py-3 text-sm text-success">
+                  {resetMsg}
+                </div>
+                <div className="flex justify-end">
+                  <Button variant="ghost" size="sm" onClick={closeReset}>
+                    Schließen
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="admin-new-password" className="mb-1.5 block text-sm font-medium text-content-muted">
+                    Neues Passwort
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="admin-new-password"
+                      type={showResetPw ? "text" : "password"}
+                      value={resetPassword}
+                      onChange={(e) => setResetPassword(e.target.value)}
+                      placeholder="Mindestens 8 Zeichen"
+                      minLength={8}
+                      autoComplete="new-password"
+                      className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 pr-10 text-sm text-content-base placeholder:text-content-subtle focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPw(!showResetPw)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-content-subtle transition-colors hover:text-content-muted"
+                      aria-label={showResetPw ? "Passwort verbergen" : "Passwort anzeigen"}
+                    >
+                      {showResetPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {resetErr && (
+                  <div className="rounded-lg border border-danger/25 bg-danger-soft px-4 py-3 text-sm text-danger">
+                    {resetErr}
+                  </div>
+                )}
+
+                <Button
+                  className="w-full"
+                  loading={resetLoading}
+                  disabled={resetPassword.length < 8}
+                  onClick={handleSetPassword}
+                >
+                  Neues Passwort setzen
+                </Button>
+
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-stroke-subtle" />
+                  <span className="text-xs text-content-subtle">oder</span>
+                  <div className="h-px flex-1 bg-stroke-subtle" />
+                </div>
+
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  loading={resetLoading}
+                  onClick={handleSendResetEmail}
+                >
+                  Reset-Link per E-Mail senden
+                </Button>
+
+                <div className="flex justify-end border-t border-stroke-subtle pt-3">
+                  <Button variant="ghost" size="sm" onClick={closeReset}>
+                    Abbrechen
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

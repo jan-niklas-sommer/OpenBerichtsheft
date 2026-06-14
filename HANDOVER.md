@@ -2872,3 +2872,37 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - CODE_REVIEW: MITTEL/NIEDRIG-Items sind **nicht** neu auditiert — nur die verifizierten HOCH/Docs-Items wurden abgehakt. Voll-Auditierung empfohlen.
 - `RecurrenceException`-UI (ROADMAP 2.3) offen (jetzt tragfähig).
 - Reviewer-Dashboard-Skalierung (ROADMAP 2.2 #1 Alternative) offen.
+
+---
+
+## 2026-06-14 – Arbeitspaket: Admin-Passwort-Reset
+
+### Planner
+
+- **Ziel:** Admin kann Passwörter beliebiger Benutzer aus der Admin-Konsole zurücksetzen (entweder direkt setzen oder Reset-Mail auslösen).
+- **Umfang:** `POST /api/users/[id]/reset-password` (admin-only, zwei Modi); Validierungsschema; Admin-UI "Passwort"-Button + Dialog; Tests; Doku.
+- **Nicht-Ziele:** Self-Service-Reset (bereits implementiert); Rollen-/Statusmodell-Änderung.
+- **Akzeptanzkriterien:** admin-only (401/403); Direkt-Set hasht bcrypt + invalidiert ausstehende Tokens; Mail-Modus reused `PasswordResetToken`+`sendPasswordResetEmail`; anonymisierte Konten blockiert; Validierung ≥8 Zeichen; nur Design-Token; Tests + Build gruen.
+
+### Reviewer
+
+- Sicherheit: Admin sieht nie ein Passwort im Mail-Modus; Direkt-Set hasht bcrypt (12 Runden) und löscht offene Reset-Tokens derselben E-Mail (verhindert Token-Missbrauch nach Admin-Reset). Anonymisierte Konten werden abgelehnt. Deaktivierte dürfen resetted werden (Reaktivierungs-Szenario).
+- Datenintegritaet: `$transaction` beim Direkt-Set (update + deleteMany).
+- Mobile: Dialog `max-w-sm`, Touch-Ziele via `h-10`.
+- **Entscheidung: Freigabe erteilt.**
+
+### Implementer
+
+- `src/lib/validations.ts`: `adminResetPasswordSchema` (password ODER sendEmail, refine).
+- `src/app/api/users/[id]/reset-password/route.ts` (neu): admin-only; Direkt-Set (bcrypt + deleteMany offener Tokens in `$transaction`) ODER Mail-Auslösung (Token generieren + `sendPasswordResetEmail`).
+- `src/app/api/users/[id]/reset-password/route.test.ts` (neu): 9 Tests (401/403/404/anonymized/validation/too-short/direct-set+token-clear/email-send/smtp-fail).
+- `src/app/(dashboard)/admin/users/page.tsx`: "Passwort"-Button pro User + Dialog (Passwort-Input mit Toggle, Direkt-Set + E-Mail-Option, Erfolg/Fehler-Feedback).
+
+### Verifier
+
+- **Typecheck:** 0 Fehler. **Lint:** 0 Errors. **Tests:** 922/922 (+9). **Build:** ✓ Compiled successfully, Route `/api/users/[id]/reset-password` gebaut.
+
+### Offene Risiken / Folgeaufgaben
+
+- Mail-Modus braucht konfiguriertes SMTP (sonst 500 → Admin kann auf Direkt-Set ausweichen).
+- Keine Audit-Log-Einträge für Admin-Reset (ggf. Folge-AP mit ReviewEvent-ähnlichem Audit-Modell).

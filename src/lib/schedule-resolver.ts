@@ -177,3 +177,57 @@ export function resolveWeek(
   const dates = getWeekDates(year, week);
   return dates.map((date) => resolveDay(date, singleAssignments, recurrenceRules, exceptions));
 }
+
+export function ruleAppliesOnDate(
+  rule: RecurrenceRule,
+  date: Date,
+  exceptions: RecurrenceException[],
+): boolean {
+  if (!isInRange(date, rule.startDate, rule.endDate)) return false;
+  const isoDay = getIsoDayOfWeek(date);
+  if (!bitfieldContainsWeekday(rule.weekDays, isoDay)) return false;
+  if (
+    exceptions.some(
+      (ex) =>
+        ex.ruleId === rule.id &&
+        normalizeDate(ex.date).getTime() === normalizeDate(date).getTime(),
+    )
+  ) {
+    return false;
+  }
+  if ((rule.interval ?? 1) > 1) {
+    const start = normalizeDate(rule.startDate);
+    const target = normalizeDate(date);
+    const diffDays = Math.round((target.getTime() - start.getTime()) / 86400000);
+    let matchCount = 0;
+    for (let d = 0; d <= diffDays; d++) {
+      const checkDate = new Date(start);
+      checkDate.setDate(start.getDate() + d);
+      if (bitfieldContainsWeekday(rule.weekDays, getIsoDayOfWeek(checkDate))) {
+        matchCount++;
+      }
+    }
+    if (matchCount % (rule.interval ?? 1) !== 1) return false;
+  }
+  return true;
+}
+
+export function expandRuleToDays(
+  rule: RecurrenceRule,
+  rangeStart: Date,
+  rangeEnd: Date,
+  exceptions: RecurrenceException[],
+): Date[] {
+  const start = normalizeDate(rangeStart);
+  const end = normalizeDate(rangeEnd);
+  if (end < start) return [];
+  const days: Date[] = [];
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    if (ruleAppliesOnDate(rule, cursor, exceptions)) {
+      days.push(new Date(cursor));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}

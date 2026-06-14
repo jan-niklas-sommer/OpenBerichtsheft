@@ -5,6 +5,7 @@ import {
   type ScheduleAssignmentView,
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
+import { expandRulesToViews, type RecurrenceRuleExpandInput } from "@/components/schedule/expand-rules";
 import { computeDataBounds } from "@/lib/schedule-bounds";
 
 function addMonths(d: Date, months: number): Date {
@@ -33,6 +34,7 @@ function toSunday(d: Date): Date {
 
 export default function OfficerSchedulePage() {
   const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
+  const [rules, setRules] = useState<RecurrenceRuleExpandInput[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const boundsRef = useRef<{ minBound: Date; maxBound: Date } | null>(null);
@@ -49,32 +51,39 @@ export default function OfficerSchedulePage() {
   });
 
   useEffect(() => {
-    fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const arr = Array.isArray(data) ? data : [];
-        setAssignments(arr);
-        setLoading(false);
+    Promise.all([
+      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
+      fetch("/api/recurrence-rules").then((r) => r.json()),
+    ]).then(([data, ruleData]) => {
+      const arr = Array.isArray(data) ? data : [];
+      setAssignments(arr);
+      setRules(Array.isArray(ruleData) ? ruleData : []);
+      setLoading(false);
 
-        if (!initialSnapRef.current && arr.length > 0) {
-          const bounds = computeDataBounds(arr);
-          if (bounds) {
-            boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
-            setViewStart(bounds.start);
-            setViewEnd(bounds.end);
-          }
-          initialSnapRef.current = true;
+      if (!initialSnapRef.current && arr.length > 0) {
+        const bounds = computeDataBounds(arr);
+        if (bounds) {
+          boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
+          setViewStart(bounds.start);
+          setViewEnd(bounds.end);
         }
-      });
+        initialSnapRef.current = true;
+      }
+    });
   }, [viewStart, viewEnd]);
 
+  const allViews = useMemo<ScheduleAssignmentView[]>(
+    () => [...assignments, ...expandRulesToViews(rules, viewStart, viewEnd)],
+    [assignments, rules, viewStart, viewEnd],
+  );
+
   const filtered = useMemo(() => {
-    if (!search) return assignments;
+    if (!search) return allViews;
     const s = search.toLowerCase();
-    return assignments.filter((a) =>
+    return allViews.filter((a) =>
       a.trainee.name.toLowerCase().includes(s),
     );
-  }, [assignments, search]);
+  }, [allViews, search]);
 
   const traineeRows = useMemo(() => {
     const seen = new Map<string, string>();

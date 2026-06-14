@@ -8,6 +8,7 @@ import {
 } from "./types";
 import { getConflictsForDay } from "./types";
 import { getIsoWeek as getIsoWeekFull } from "@/lib/utils";
+import { Repeat } from "lucide-react";
 
 function getWeekNumber(date: Date): number {
   return getIsoWeekFull(date).week;
@@ -82,10 +83,13 @@ export function TimelineBlock({
     >
       {showLabel && (
         <span
-          className="flex h-full items-center justify-center truncate px-2 text-[10px] font-medium"
+          className="flex h-full items-center justify-center gap-1 truncate px-2 text-[10px] font-medium"
           style={{ color: TYPE_FG_COLORS[a.scheduleType] }}
         >
-          {label}
+          {a.recurring && (
+            <Repeat className="h-2.5 w-2.5 shrink-0" strokeWidth={2} aria-hidden="true" />
+          )}
+          <span className="truncate">{label}</span>
         </span>
       )}
     </div>

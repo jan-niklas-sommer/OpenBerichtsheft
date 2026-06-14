@@ -11,7 +11,9 @@ import {
 } from "@/components/schedule/types";
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
 import { AssignmentModal } from "@/components/schedule/assignment-modal";
+import { expandRulesToViews, type RecurrenceRuleExpandInput } from "@/components/schedule/expand-rules";
 import { computeDataBounds } from "@/lib/schedule-bounds";
+import { weekdayToBit, bitfieldContainsWeekday } from "@/lib/schedule-resolver";
 
 interface Trainee {
   id: string;
@@ -52,6 +54,7 @@ function toSunday(d: Date): Date {
 
 export default function SchedulePage() {
   const [assignments, setAssignments] = useState<ScheduleAssignmentView[]>([]);
+  const [rules, setRules] = useState<RecurrenceRuleExpandInput[]>([]);
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,17 +81,21 @@ export default function SchedulePage() {
     endDate: "",
     department: "",
     supervisorId: "",
+    weekDays: [1, 2, 3, 4, 5] as number[],
+    interval: 1,
   });
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     Promise.all([
       fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
+      fetch("/api/recurrence-rules").then((r) => r.json()),
       fetch("/api/users?role=trainee").then((r) => r.json()),
       fetch("/api/users?role=training_officer").then((r) => r.json()),
-    ]).then(([sched, tr, off]) => {
+    ]).then(([sched, ruleData, tr, off]) => {
       const data = Array.isArray(sched) ? sched : [];
       setAssignments(data);
+      setRules(Array.isArray(ruleData) ? ruleData : []);
       setTrainees(Array.isArray(tr) ? tr : []);
       setOfficers(Array.isArray(off) ? off : []);
       setLoading(false);
@@ -116,8 +123,13 @@ export default function SchedulePage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [editItem]);
 
+  const allViews = useMemo<ScheduleAssignmentView[]>(() => {
+    const expanded = expandRulesToViews(rules, viewStart, viewEnd);
+    return [...assignments, ...expanded];
+  }, [assignments, rules, viewStart, viewEnd]);
+
   const filteredAssignments = useMemo(() => {
-    let filtered = assignments;
+    let filtered = allViews;
     if (search) {
       const s = search.toLowerCase();
       filtered = filtered.filter((a) =>
@@ -130,7 +142,7 @@ export default function SchedulePage() {
       );
     }
     return filtered;
-  }, [assignments, search, professionFilter]);
+  }, [allViews, search, professionFilter]);
 
   const traineeRows = useMemo(() => {
     const assignmentTraineeIds = new Set(filteredAssignments.map((a) => a.traineeId));
@@ -158,11 +170,11 @@ export default function SchedulePage() {
 
   const professions = useMemo(() => {
     const set = new Set<string>();
-    for (const a of assignments) {
+    for (const a of allViews) {
       if (a.trainee.profession?.name) set.add(a.trainee.profession.name);
     }
     return Array.from(set).sort();
-  }, [assignments]);
+  }, [allViews]);
 
   const hasConflicts = useMemo(() => {
     for (const [traineeId] of traineeRows) {
@@ -185,16 +197,18 @@ export default function SchedulePage() {
   }, [traineeRows, filteredAssignments]);
 
   const refreshData = useCallback(() => {
-    fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`)
-      .then((r) => r.json())
-      .then((sched) => {
-        const data = Array.isArray(sched) ? sched : [];
-        setAssignments(data);
-        const bounds = computeDataBounds(data);
-        if (bounds) {
-          boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
-        }
-      });
+    Promise.all([
+      fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
+      fetch("/api/recurrence-rules").then((r) => r.json()),
+    ]).then(([sched, ruleData]) => {
+      const data = Array.isArray(sched) ? sched : [];
+      setAssignments(data);
+      setRules(Array.isArray(ruleData) ? ruleData : []);
+      const bounds = computeDataBounds(data);
+      if (bounds) {
+        boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
+      }
+    });
   }, [viewStart, viewEnd]);
 
   const handleScrollNearEdge = useCallback(
@@ -219,6 +233,28 @@ export default function SchedulePage() {
 
   const handleUpdate = async () => {
     if (!editItem) return;
+    if (editItem.ruleId) {
+      const weekDaysBitfield = form.weekDays.reduce((acc, d) => acc | weekdayToBit(d), 0);
+      const res = await fetch("/api/recurrence-rules", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editItem.ruleId,
+          scheduleType: form.scheduleType,
+          startDate: form.startDate,
+          endDate: form.endDate,
+          weekDays: weekDaysBitfield,
+          interval: form.interval,
+          department: form.department || null,
+          supervisorId: form.supervisorId || null,
+        }),
+      });
+      if (res.ok) {
+        setEditItem(null);
+        refreshData();
+      }
+      return;
+    }
     const res = await fetch("/api/schedule", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -240,16 +276,42 @@ export default function SchedulePage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/schedule?id=${id}`, { method: "DELETE" });
+  const handleDelete = async (item: ScheduleAssignmentView) => {
+    if (item.ruleId) {
+      const res = await fetch(`/api/recurrence-rules?id=${item.ruleId}`, { method: "DELETE" });
+      if (res.ok) {
+        setRules((prev) => prev.filter((r) => r.id !== item.ruleId));
+        setEditItem(null);
+      }
+      return;
+    }
+    const res = await fetch(`/api/schedule?id=${item.id}`, { method: "DELETE" });
     if (res.ok) {
-      setAssignments((prev) => prev.filter((a) => a.id !== id));
+      setAssignments((prev) => prev.filter((a) => a.id !== item.id));
       setEditItem(null);
     }
   };
 
   const openEdit = (a: ScheduleAssignmentView) => {
     setEditItem(a);
+    if (a.ruleId) {
+      const rule = rules.find((r) => r.id === a.ruleId);
+      const days: number[] = [];
+      for (let d = 1; d <= 7; d++) {
+        if (rule && bitfieldContainsWeekday(rule.weekDays, d)) days.push(d);
+      }
+      setForm({
+        traineeId: a.traineeId,
+        scheduleType: a.scheduleType,
+        startDate: (rule?.startDate ?? a.startDate).split("T")[0],
+        endDate: (rule?.endDate ?? a.endDate).split("T")[0],
+        department: a.department || "",
+        supervisorId: a.supervisor?.id || "",
+        weekDays: days.length > 0 ? days : [1, 2, 3, 4, 5],
+        interval: rule?.interval ?? 1,
+      });
+      return;
+    }
     setForm({
       traineeId: a.traineeId,
       scheduleType: a.scheduleType,
@@ -257,6 +319,8 @@ export default function SchedulePage() {
       endDate: a.endDate.split("T")[0],
       department: a.department || "",
       supervisorId: a.supervisor?.id || "",
+      weekDays: [1, 2, 3, 4, 5],
+      interval: 1,
     });
   };
 
@@ -321,8 +385,13 @@ export default function SchedulePage() {
             onMouseDown={(e) => e.stopPropagation()}
           >
             <h3 className="mb-3 font-semibold text-content-base">
-              Bearbeiten
+              {editItem.recurring ? "Wiederholungsregel" : "Bearbeiten"}
             </h3>
+            {editItem.recurring && (
+              <p className="mb-2 rounded-md bg-surface-overlay px-2 py-1 text-xs text-content-muted">
+                Wiederholt sich wöchentlich – Änderungen wirken auf alle Termine der Regel.
+              </p>
+            )}
             <div className="space-y-3">
               <select
                 value={form.scheduleType}
@@ -337,6 +406,59 @@ export default function SchedulePage() {
                   </option>
                 ))}
               </select>
+              {editItem.recurring && (
+                <>
+                  <div>
+                    <label className="mb-1 block text-xs text-content-muted">
+                      Wochentage
+                    </label>
+                    <div className="flex gap-1">
+                      {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((name, i) => {
+                        const day = i + 1;
+                        const active = form.weekDays.includes(day);
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                weekDays: prev.weekDays.includes(day)
+                                  ? prev.weekDays.filter((d) => d !== day)
+                                  : [...prev.weekDays, day].sort(),
+                              }))
+                            }
+                            className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium transition-colors ${
+                              active
+                                ? "bg-accent text-accent-fg"
+                                : "border border-stroke-base text-content-muted hover:bg-surface-overlay"
+                            }`}
+                          >
+                            {name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-content-muted">
+                      Intervall
+                    </label>
+                    <select
+                      value={form.interval}
+                      onChange={(e) =>
+                        setForm({ ...form, interval: Number(e.target.value) })
+                      }
+                      className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
+                    >
+                      <option value={1}>Jede Woche</option>
+                      <option value={2}>Alle 2 Wochen</option>
+                      <option value={3}>Alle 3 Wochen</option>
+                      <option value={4}>Alle 4 Wochen</option>
+                    </select>
+                  </div>
+                </>
+              )}
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="mb-1 block text-xs text-content-muted">Von</label>
@@ -387,7 +509,7 @@ export default function SchedulePage() {
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => handleDelete(editItem.id)}
+                  onClick={() => handleDelete(editItem)}
                 >
                   Löschen
                 </Button>

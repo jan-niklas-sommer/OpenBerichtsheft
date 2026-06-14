@@ -40,6 +40,8 @@ export interface ScheduleAssignmentView {
   color: string | null;
   trainee: { id: string; name: string; profession?: { name: string } | null };
   supervisor: { id: string; name: string } | null;
+  ruleId?: string;
+  recurring?: boolean;
 }
 
 export interface RecurrenceRuleView {

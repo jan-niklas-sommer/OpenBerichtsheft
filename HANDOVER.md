@@ -2787,3 +2787,55 @@ Plan deckt ausschließlich Strukturänderungen ab. Keine Funktionsänderungen. G
 - SMTP muss konfiguriert sein, damit Mails wirklich versendet werden (analog bestehendem Verifizierungs-Flow; dev = localhost:1025/MailHog).
 - Admin-UI fuer Passwort-Reset (ohne Mail) nicht umgesetzt – ggf. Folge-AP.
 - Pre-existing: `schedule-bounds.test.ts` (datumsabhaengig), vitest-Globals-tsc-Fehler.
+
+---
+
+## 2026-06-14 – Arbeitspaket: Wiederholungsregeln im Gantt sichtbar + verwaltbar
+
+### Planner
+
+- **Ziel:** RecurrenceRules waren bisher nach Erstellung im Schedule-Gantt **unsichtbar** (latenter Bug). Sie werden nun als Tages-Balken an ihren jeweiligen Terminen gerendert und sind im Trainer-Edit-Popover bearbeitbar/loeschbar.
+- **Umfang:**
+  - Pure Helper `ruleAppliesOnDate` + `expandRuleToDays` in `schedule-resolver.ts` (interval-/ausnahme-/wochentag-bewusst).
+  - `expandRulesToViews` in neuem `components/schedule/expand-rules.ts` → synthetische `ScheduleAssignmentView` pro Termintag (mit `ruleId`/`recurring`).
+  - Alle 3 Schedule-Pages (trainer/officer/trainee) laden zusaetzlich `/api/recurrence-rules` und mergen expandierte Regeln in die Gantt-Daten.
+  - Trainer-Edit-Popover: erkennen `ruleId` → WochenTag-Toggle + Intervall-Select + PUT/DELETE gegen `/api/recurrence-rules`.
+  - `timeline-block.tsx`: **↻-Symbol** auf Wiederholungs-Balken.
+- **Nicht-Ziele:** RecurrenceException-UI (jetzt traeglich — Folge-AP); Officer-Edit (bleibt read-only); Drag-Resize.
+- **Akzeptanzkriterien:** Regeln sichtbar in allen 3 Views; Regeln in Trainer-View editierbar + löschbar; nur Design-Token; Tests + Build gruen.
+
+### Reviewer
+
+- Rollen-/Statusmodell unberührt — unkritisch.
+- Resolver-Logik (Layering, Interval) konsistent zwischen `resolveDay` und neuem `ruleAppliesOnDate` (bewusst dupliziert statt Refactor von `resolveDay`, um deren Tests nicht zu gefaehrden).
+- Datenintegritaet: expandierte Views sind reine UI-Synthetik (keine DB-Schreibzugriffe ausser dem bestehenden PUT/DELETE der recurrence-rules-API).
+- Mobile: WochenTag-Toggles `h-7` (28px) — akzeptabel im Popover-Kontext; Intervall als Select.
+- **Entscheidung: Freigabe erteilt.**
+
+### Implementer
+
+- `src/lib/schedule-resolver.ts`: `ruleAppliesOnDate`, `expandRuleToDays` (pure, getestet).
+- `src/components/schedule/types.ts`: `ScheduleAssignmentView` um optionale `ruleId`/`recurring` erweitert.
+- `src/components/schedule/expand-rules.ts` (neu): `expandRulesToViews` mappen Regeln+Ausnahmen → synthetische Views.
+- `src/components/schedule/timeline-block.tsx`: `Repeat`-Icon (lucide) auf `recurring`-Balken.
+- `src/app/(dashboard)/trainer/schedule/page.tsx`: `rules`-State + Fetch, `allViews`-Memo, Edit-Popover mit WochenTag-/Intervall-Feldern fuer Regeln, `handleUpdate`/`handleDelete`/`openEdit` branchen auf `ruleId`.
+- `src/app/(dashboard)/officer/schedule/page.tsx` + `trainee/schedule/page.tsx`: `rules`-Fetch + `allViews` (read-only Sichtbarkeit).
+- Tests: 10 neue Resolver-Tests + 6 expand-rules-Tests.
+
+### Verifier
+
+- **Typecheck:** eigene Produktions-Dateien 0 Fehler (58 pre-existing insgesamt, u.a. `priority` in `schedule-resolver.test.ts` — nicht durch dieses AP).
+- **Lint:** 0 Errors (19 pre-existing Warnings).
+- **Tests:** 912/913 bestanden (+16 neu). 1 pre-existing Failure `schedule-bounds.test.ts`.
+- **Build:** ✓ Compiled successfully, 45/45 static pages.
+
+### Fixer
+
+- Fix 1: Resolver-Expand-Test war zeitzonenabhaengig (`toISOString` UTC-Verschiebung) → lokale `YYYY-MM-DD`-Formatierung (`localYmd`) im Test.
+
+### Offene Risiken / Folgeaufgaben
+
+- **RecurrenceException-UI jetzt truegbar:** Da Regeln sichtbar + editierbar sind, kann ein Folge-AP "Ausnahme fuer einzelnen Termin" direkt am Regel-Block anknuepfen (z.B. Recht-Klick/Menu → "Ausnahme hinzufuegen" → POST an neue Exception-API).
+- Officer haben Phase-1 theoretisch Edit-Rechte, die Schedule-UI bleibt dort aber read-only (konsistent mit bisherigem Stand) — ggf. Folge-AP.
+- Performance: bei sehr vielen Regeln × langem Zeitraum steigt die Anzahl synthetischer Views linear — ggf. später virtualisieren (siehe ARCHITECTURE-Todo).
+- Pre-existing: `schedule-bounds.test.ts`, vitest-Globals-tsc-Fehler.

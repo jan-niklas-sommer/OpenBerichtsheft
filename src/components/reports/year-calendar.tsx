@@ -133,41 +133,45 @@ export function YearCalendar({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setLegendPos(null)}
     >
-      <div className="mb-0.5 relative h-4">
-        {monthRanges.map((m) => (
-          <span
-            key={`${m.label}-${m.startIdx}`}
-            className="absolute text-[10px] text-content-subtle leading-none"
-            style={{
-              left: `${(m.startIdx / weeks.length) * 100}%`,
-              width: `${(m.span / weeks.length) * 100}%`,
-            }}
-          >
-            {m.label}
-          </span>
-        ))}
-      </div>
+      <div className="overflow-x-auto timeline-scroll">
+        <div className="min-w-[480px]">
+          <div className="mb-0.5 relative h-4">
+            {monthRanges.map((m) => (
+              <span
+                key={`${m.label}-${m.startIdx}`}
+                className="absolute text-[10px] text-content-subtle leading-none"
+                style={{
+                  left: `${(m.startIdx / weeks.length) * 100}%`,
+                  width: `${(m.span / weeks.length) * 100}%`,
+                }}
+              >
+                {m.label}
+              </span>
+            ))}
+          </div>
 
-      <div className="flex gap-[2px] w-full">
-        {weeks.map((w) => {
-          const colorClass = getStatusColor(w.week);
-          const isSelectedMonth = monthWeeks.has(w.week) && w.month === month;
-          const beforeStart = isBeforeTrainingStart(year, w.week, trainingStart);
-          const href = getWeekHref(w.week);
+          <div className="flex gap-[2px] w-full">
+            {weeks.map((w) => {
+              const colorClass = getStatusColor(w.week);
+              const isSelectedMonth = monthWeeks.has(w.week) && w.month === month;
+              const beforeStart = isBeforeTrainingStart(year, w.week, trainingStart);
+              const href = getWeekHref(w.week);
 
-          return (
-            <Link
-              key={`${w.year}-${w.week}`}
-              href={href}
-              title={getTooltip(w.week)}
-              className={`h-7 min-w-[3px] flex-1 rounded-sm transition-transform hover:scale-y-150 hover:z-10 ${colorClass} ${
-                isSelectedMonth && !beforeStart
-                  ? "ring-1 ring-content-base"
-                  : ""
-              } ${beforeStart ? "pointer-events-none" : ""}`}
-            />
-          );
-        })}
+              return (
+                <Link
+                  key={`${w.year}-${w.week}`}
+                  href={href}
+                  title={getTooltip(w.week)}
+                  className={`h-7 min-w-[3px] flex-1 rounded-sm transition-transform hover:scale-y-150 hover:z-10 ${colorClass} ${
+                    isSelectedMonth && !beforeStart
+                      ? "ring-1 ring-content-base"
+                      : ""
+                  } ${beforeStart ? "pointer-events-none" : ""}`}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {legendPos && (

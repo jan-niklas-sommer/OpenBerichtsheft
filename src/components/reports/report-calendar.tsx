@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getWeeksInMonth, getIsoWeek, statusColor, STATUS_LABELS, isBeforeTrainingStart } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import type { ReportStatus } from "@/types";
 
 interface ReportSummary {
@@ -111,7 +111,8 @@ export function ReportCalendar({
                     </span>
                   )}
                   {missing && (
-                    <span className="inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger">
+                      <AlertCircle className="h-3 w-3" strokeWidth={1.5} />
                       Fehlt
                     </span>
                   )}

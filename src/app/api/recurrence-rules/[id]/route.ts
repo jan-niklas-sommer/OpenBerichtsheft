@@ -3,14 +3,20 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { updateRecurrenceRuleSchema } from "@/lib/validations";
 import { weekdayToBit } from "@/lib/schedule-resolver";
+import { trainerCanAccessTrainee } from "@/lib/schedule-access";
 
-async function assertOwnsRule(role: string, userId: string, id: string) {
-  if (role === "admin") return true;
+async function canMutateRule(
+  userId: string,
+  role: string,
+  id: string,
+): Promise<{ status: 404 | 403 | 200 }> {
   const existing = await prisma.recurrenceRule.findUnique({
     where: { id },
-    select: { createdById: true },
+    select: { traineeId: true },
   });
-  return !!existing && existing.createdById === userId;
+  if (!existing) return { status: 404 };
+  if (await trainerCanAccessTrainee(userId, role, existing.traineeId)) return { status: 200 };
+  return { status: 403 };
 }
 
 export async function PUT(
@@ -28,8 +34,9 @@ export async function PUT(
 
   const { id } = await params;
 
-  if (!(await assertOwnsRule(role, userId, id))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const access = await canMutateRule(userId, role, id);
+  if (access.status !== 200) {
+    return NextResponse.json({ error: access.status === 404 ? "Not found" : "Forbidden" }, { status: access.status });
   }
 
   const body = await req.json();
@@ -84,8 +91,9 @@ export async function DELETE(
 
   const { id } = await params;
 
-  if (!(await assertOwnsRule(role, userId, id))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const access = await canMutateRule(userId, role, id);
+  if (access.status !== 200) {
+    return NextResponse.json({ error: access.status === 404 ? "Not found" : "Forbidden" }, { status: access.status });
   }
 
   try {

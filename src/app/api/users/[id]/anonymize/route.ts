@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { hashPassword } from "@/lib/password";
+import { invalidateRoleCache } from "@/lib/auth";
 
 export async function POST(
   _req: NextRequest,
@@ -30,6 +31,8 @@ export async function POST(
     },
     select: { id: true, name: true, email: true, role: true, anonymizedAt: true },
   });
+
+  invalidateRoleCache(id);
 
   return NextResponse.json(anonymized);
 }

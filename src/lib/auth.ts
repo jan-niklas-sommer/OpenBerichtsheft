@@ -7,6 +7,16 @@ import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/rate-li
 const roleCache = new Map<string, { role: string; trainingStartDate: string | null; fetchedAt: number }>();
 const ROLE_CACHE_TTL = 5 * 60 * 1000;
 
+/**
+ * Invalidiert den Rollen-Cache (für einen User oder komplett). Nach Rollen-,
+ * Deaktivierungs- oder Anonymisierungs-Änderungen aufrufen, damit der JWT-Callback
+ * die neue Rolle sofort statt erst nach Ablauf der TTL übernimmt.
+ */
+export function invalidateRoleCache(userId?: string) {
+  if (userId) roleCache.delete(userId);
+  else roleCache.clear();
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   trustHost: true,

@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { POST } from "./route";
 
 vi.mock("@/lib/auth", () => ({
+  invalidateRoleCache: vi.fn(),
   auth: vi.fn(),
 }));
 

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { invalidateRoleCache } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateUserSchema } from "@/lib/validations";
 import { hashPassword } from "@/lib/password";
@@ -41,6 +42,8 @@ export async function PUT(
     data,
     select: { id: true, email: true, name: true, role: true, professionId: true, trainingStartDate: true, createdAt: true, deactivatedAt: true },
   });
+
+  invalidateRoleCache(id);
 
   return NextResponse.json(user);
 }

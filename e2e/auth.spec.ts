@@ -5,13 +5,13 @@ test.describe("Authentication", () => {
   test("login with valid credentials redirects to dashboard", async ({ page }) => {
     await login(page, TEST_USERS.trainee.email, TEST_USERS.trainee.password);
     await expect(page).toHaveURL(/\/trainee/);
-    await expect(page.getByText("Anna Azubi")).toBeVisible();
+    await expect(page.getByText("Meine Berichte")).toBeVisible();
   });
 
   test("login with invalid credentials shows error", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel("E-Mail").fill("wrong@example.com");
-    await page.getByLabel("Passwort").fill("wrongpassword");
+    await page.getByLabel("E-Mail", { exact: true }).fill("wrong@example.com");
+    await page.getByLabel("Passwort", { exact: true }).fill("wrongpassword");
     await page.getByRole("button", { name: "Anmelden" }).click();
     await expect(page.getByText("Ungültige Anmeldedaten")).toBeVisible();
   });
@@ -47,7 +47,7 @@ test.describe("Authentication", () => {
 test.describe("Role-based Navigation", () => {
   test("trainee sees Berichte link", async ({ page }) => {
     await login(page, TEST_USERS.trainee.email, TEST_USERS.trainee.password);
-    await expect(page.getByRole("link", { name: "Berichte" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Übersicht" })).toBeVisible();
   });
 
   test("admin sees admin navigation items", async ({ page }) => {

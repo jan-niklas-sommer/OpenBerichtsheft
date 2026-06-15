@@ -10,8 +10,8 @@ const TEST_USERS = {
 
 async function login(page: Page, email: string, password: string) {
   await page.goto("/login");
-  await page.getByLabel("E-Mail").fill(email);
-  await page.getByLabel("Passwort").fill(password);
+  await page.getByLabel("E-Mail", { exact: true }).fill(email);
+  await page.getByLabel("Passwort", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Anmelden" }).click();
   await page.waitForURL(/\/(trainee|trainer|officer|admin)/);
 }

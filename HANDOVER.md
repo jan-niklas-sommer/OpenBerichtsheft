@@ -3090,3 +3090,13 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **H-2:** Serverless-Cache-Limitation in ARCHITECTURE.md + JSDoc ehrlich dokumentiert (Multi-Instance → TTL-basierter Fallback).
 - **M-3 (false positive):** `/new` redirectet serverseitig → `isNewFromSlug` ist dead code, kein Datenverlust.
 - **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.
+
+## 2026-06-14 – E2E-Fixes + Verifikation
+
+- **E2E-Helper:** `getByLabel` mit `{ exact: true }` (Kollision mit Passwort-Toggle `aria-label="Passwort anzeigen"`).
+- **Stale UI-Texte:** "Anna Azubi" → "Meine Berichte" (Navbar zeigt Initialen), "Berichte" → "Übersicht" (Nav-Item umbenannt), "Neuer Bericht" → "Aktueller Bericht" (Button-Text), Role-Badge-Regex → Page-Heading (stabiler).
+- **Live verifiziert:**
+  - Login (authorize-Extraktion) ✓
+  - H8 Trainer Write-Access (PUT auf Regel → 200) ✓
+  - E2E: 20/20 Playwright-Tests ✓
+- **Verifier:** typecheck 0, lint 0 Errors, 938 Unit/API-Tests + 20/20 E2E, build ✓.

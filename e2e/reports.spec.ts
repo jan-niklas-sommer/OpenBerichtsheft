@@ -7,7 +7,7 @@ test.describe("Weekly Report CRUD", () => {
 
     await expect(page.getByText("Meine Berichte")).toBeVisible();
 
-    await page.getByRole("button", { name: /Neuer Bericht/i }).click();
+    await page.getByRole("button", { name: /Aktueller Bericht/i }).click();
     await page.waitForURL(/\/trainee\/reports\/\d{4}-\d+/, { timeout: 10000 });
 
     await expect(page.getByRole("heading", { name: /KW \d+/ })).toBeVisible();
@@ -16,7 +16,7 @@ test.describe("Weekly Report CRUD", () => {
   test("trainee can write report text", async ({ page }) => {
     await login(page, TEST_USERS.trainee.email, TEST_USERS.trainee.password);
 
-    await page.getByRole("button", { name: /Neuer Bericht/i }).click();
+    await page.getByRole("button", { name: /Aktueller Bericht/i }).click();
     await page.waitForURL(/\/trainee\/reports\/\d{4}-\d+/, { timeout: 10000 });
 
     const textarea = page.getByPlaceholder(/Berichtstext|Woche/i);

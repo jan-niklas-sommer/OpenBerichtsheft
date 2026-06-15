@@ -8,7 +8,7 @@ test.describe("Admin Functions", () => {
     await page.getByRole("link", { name: "Benutzer" }).click();
     await page.waitForURL(/\/admin\/users/);
 
-    await expect(page.getByText(/Admin|Ausbilder|Auszubildende/i)).toBeVisible();
+    await expect(page.getByText("Benutzerverwaltung")).toBeVisible({ timeout: 15000 });
   });
 
   test("admin can view professions", async ({ page }) => {

@@ -25,14 +25,12 @@ export async function POST(req: NextRequest) {
 
   const { token, password } = parsed.data;
 
+  // 1. Token + zugehörige E-Mail lesen (für den User-Lookup).
   const resetToken = await prisma.passwordResetToken.findUnique({
     where: { token },
+    select: { email: true, expiresAt: true },
   });
-
-  if (!resetToken || resetToken.expiresAt < new Date()) {
-    if (resetToken) {
-      await prisma.passwordResetToken.delete({ where: { token } }).catch(() => {});
-    }
+  if (!resetToken) {
     return NextResponse.json(
       { error: "Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an." },
       { status: 400 },
@@ -43,24 +41,33 @@ export async function POST(req: NextRequest) {
     where: { email: resetToken.email },
     select: { id: true, deactivatedAt: true, anonymizedAt: true },
   });
-
   if (!user || user.deactivatedAt || user.anonymizedAt) {
-    await prisma.passwordResetToken.delete({ where: { token } }).catch(() => {});
+    await prisma.passwordResetToken.deleteMany({ where: { token } }).catch(() => {});
     return NextResponse.json(
       { error: "Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an." },
       { status: 400 },
     );
   }
 
-  const passwordHash = await hashPassword(password);
+  // 2. Atomarer Konsum: deleteMany mit Ablauf-Bedingung ist das Race-Gate.
+  // Bei zwei parallelen Requests mit gleichem Token gewinnt nur einer
+  // (count === 1); der Verlierer erhält count === 0 und ändert nichts.
+  const consumed = await prisma.passwordResetToken.deleteMany({
+    where: { token, expiresAt: { gt: new Date() } },
+  });
+  if (consumed.count === 0) {
+    return NextResponse.json(
+      { error: "Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an." },
+      { status: 400 },
+    );
+  }
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash },
-    }),
-    prisma.passwordResetToken.delete({ where: { token } }),
-  ]);
+  // 3. Passwort aktualisieren (nur der Gewinner des Gates kommt hierhin).
+  const passwordHash = await hashPassword(password);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash },
+  });
 
   return NextResponse.json({ message: "Passwort erfolgreich geändert. Sie können sich jetzt anmelden." });
 }

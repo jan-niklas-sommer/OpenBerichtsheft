@@ -18,7 +18,7 @@ export function useAutosave<T>(
   const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dataRef = useRef<T | null>(null);
   const onSaveRef = useRef(onSave);
-  const lastSeenHashRef = useRef<string>("");
+  const submittedHashRef = useRef<string>("");
   const mountedRef = useRef(true);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,11 +83,14 @@ export function useAutosave<T>(
 
   useEffect(() => {
     if (data == null) return;
-    // Deep-Compare: kein Save planen, wenn der Inhalt identisch zum letzten
-    // eingereichten Stand ist (verhindert Saves bei reiner Referenz-Änderung).
+    // Deep-Compare gegen den zuletzt eingereichten Stand: reine Referenz-
+    // Wechsel ohne Inhaltsänderung triggern keinen Save. (Hinweis: nach
+    // dauerhaftem Fehlschlag ist dieser Hash bereits gesetzt — Recovery dann
+    // über manuelles save() oder weitere Eingabe. Transiente Fehler werden
+    // durch das interne Retry abgedeckt.)
     const hash = JSON.stringify(data);
-    if (hash === lastSeenHashRef.current) return;
-    lastSeenHashRef.current = hash;
+    if (hash === submittedHashRef.current) return;
+    submittedHashRef.current = hash;
 
     const d = data;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);

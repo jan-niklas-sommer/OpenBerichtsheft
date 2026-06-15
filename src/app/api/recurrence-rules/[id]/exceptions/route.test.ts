@@ -119,7 +119,15 @@ describe("DELETE /api/recurrence-rules/[id]/exceptions", () => {
     (prisma.recurrenceException.delete as any).mockResolvedValue({});
     const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
     expect(res.status).toBe(200);
-    expect(prisma.recurrenceException.delete).toHaveBeenCalledWith({ where: { id: "e1" } });
+    expect(prisma.recurrenceException.delete).toHaveBeenCalledWith({ where: { id: "e1", ruleId: "r1" } });
+  });
+
+  it("returns 404 when exception belongs to a different rule (cross-rule guard)", async () => {
+    (auth as any).mockResolvedValue(adminSession);
+    // Compound-Where schlägt fehl (P2025), weil die Exception nicht zu ruleId r1 gehört
+    (prisma.recurrenceException.delete as any).mockRejectedValue(new Error("P2025"));
+    const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
+    expect(res.status).toBe(404);
   });
 
   it("returns 404 when exception missing", async () => {

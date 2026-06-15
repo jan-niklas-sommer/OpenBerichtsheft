@@ -5,6 +5,7 @@ import { PUT } from "./[id]/route";
 import { POST as ANONYMIZE } from "./[id]/anonymize/route";
 
 vi.mock("@/lib/auth", () => ({
+  invalidateRoleCache: vi.fn(),
   auth: vi.fn(),
 }));
 

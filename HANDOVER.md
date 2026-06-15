@@ -3048,3 +3048,10 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **H7 (stale Test-Helper):** ungenutzte `makePutRequest`/`makeDeleteRequest`-Helper aus 4 Collection-Route-Tests entfernt (Leftover der `[id]`-Migration).
 - **Verifier:** typecheck 0, lint 0 Errors, 920/920 Tests, build ✓.
 - **Bewusst offen (geringeres Leverage / architektonisch):** H3 (Autosave Phantom-Save beim Wochennavigation — pre-existing, trickreich), H6 (5-Min-Role-Cache — dokumentiert intentional), H8 (Write-Ownership=Creator vs Read=Profession — Design-Entscheidung), diverse pre-existing Test-Fixture-Lint-Warnings.
+
+## 2026-06-14 – AP-A: Profession-basierte Ownership (H8) + Role-Cache-Invalidierung (H6)
+
+- **H8:** Schedule/Rules-Write-Ownership für Trainer nicht mehr `createdById === userId`, sondern profession-basiert (analog Lese-Recht) via neuer `src/lib/schedule-access.ts` (`trainerCanAccessTrainee`). Ein Trainer kann nun Einsätze/Regeln eines anderen Trainers für denselben Beruf übernehmen. Gleichzeitig 404/403-Konsistenz (M8): nicht-existente IDs → 404, kein Zugriff → 403.
+- **H6:** `invalidateRoleCache(userId?)` exportiert aus `auth.ts`; aufgerufen in `users/[id]` PUT (Rollen-/Deaktivierungs-Änderung) + `anonymize`. Rollen-Revocation wirkt jetzt sofort statt erst nach 5-Min-TTL.
+- **Tests:** schedule/recurrence `[id]`-Tests umgeschrieben (profession-basierte Fälle + 404 + Trainer-mit-Zugriff); Auth-Mocks um `invalidateRoleCache` ergänzt.
+- **Verifier:** typecheck 0, lint 0 Errors, 924/924 Tests, build ✓.

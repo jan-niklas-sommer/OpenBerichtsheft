@@ -9,6 +9,12 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(),
+    },
+    trainerProfessionAssignment: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -25,6 +31,12 @@ function makeReq(body: unknown) {
 }
 const params = (id: string) => Promise.resolve({ id });
 
+function mockExistsForTrainee(traineeId = "tt1") {
+  (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ traineeId });
+  (prisma.user.findUnique as any).mockResolvedValue({ professionId: "p1" });
+  (prisma.trainerProfessionAssignment.findFirst as any).mockResolvedValue({ id: "pa1" });
+}
+
 describe("PUT /api/schedule/[id]", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -40,27 +52,46 @@ describe("PUT /api/schedule/[id]", () => {
     expect(res.status).toBe(403);
   });
 
-  it("returns 403 when trainer is not the owner", async () => {
+  it("returns 404 when assignment does not exist", async () => {
+    (auth as any).mockResolvedValue(adminSession);
+    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue(null);
+    const res = await PUT(makeReq({ department: "HR" }), { params: params(VALID_ID) });
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 403 when trainer is not assigned to the trainee's profession", async () => {
     (auth as any).mockResolvedValue(trainerSession);
-    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ createdBy: "other" });
+    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ traineeId: "tt1" });
+    (prisma.user.findUnique as any).mockResolvedValue({ professionId: "p1" });
+    (prisma.trainerProfessionAssignment.findFirst as any).mockResolvedValue(null);
     const res = await PUT(makeReq({ department: "HR" }), { params: params(VALID_ID) });
     expect(res.status).toBe(403);
   });
 
-  it("returns 400 for invalid scheduleType", async () => {
-    (auth as any).mockResolvedValue(adminSession);
+  it("returns 400 for invalid scheduleType (trainer with access)", async () => {
+    (auth as any).mockResolvedValue(trainerSession);
+    mockExistsForTrainee();
     const res = await PUT(makeReq({ scheduleType: "invalid" }), { params: params(VALID_ID) });
     expect(res.status).toBe(400);
   });
 
   it("updates assignment as admin (200)", async () => {
     (auth as any).mockResolvedValue(adminSession);
+    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ traineeId: "tt1" });
     (prisma.scheduleAssignment.update as any).mockResolvedValue({ id: VALID_ID, department: "HR" });
     const res = await PUT(makeReq({ department: "HR" }), { params: params(VALID_ID) });
     expect(res.status).toBe(200);
     expect(prisma.scheduleAssignment.update).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: VALID_ID } }),
     );
+  });
+
+  it("updates assignment as trainer with profession access (200)", async () => {
+    (auth as any).mockResolvedValue(trainerSession);
+    mockExistsForTrainee();
+    (prisma.scheduleAssignment.update as any).mockResolvedValue({ id: VALID_ID });
+    const res = await PUT(makeReq({ department: "HR" }), { params: params(VALID_ID) });
+    expect(res.status).toBe(200);
   });
 });
 
@@ -73,25 +104,28 @@ describe("DELETE /api/schedule/[id]", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 when trainer is not the owner", async () => {
+  it("returns 404 when assignment does not exist", async () => {
+    (auth as any).mockResolvedValue(adminSession);
+    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue(null);
+    const res = await DELETE(makeReq(null), { params: params(VALID_ID) });
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 403 when trainer is not assigned to profession", async () => {
     (auth as any).mockResolvedValue(trainerSession);
-    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ createdBy: "other" });
+    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ traineeId: "tt1" });
+    (prisma.user.findUnique as any).mockResolvedValue({ professionId: "p1" });
+    (prisma.trainerProfessionAssignment.findFirst as any).mockResolvedValue(null);
     const res = await DELETE(makeReq(null), { params: params(VALID_ID) });
     expect(res.status).toBe(403);
   });
 
   it("deletes assignment as admin (200)", async () => {
     (auth as any).mockResolvedValue(adminSession);
+    (prisma.scheduleAssignment.findUnique as any).mockResolvedValue({ traineeId: "tt1" });
     (prisma.scheduleAssignment.delete as any).mockResolvedValue({ id: VALID_ID });
     const res = await DELETE(makeReq(null), { params: params(VALID_ID) });
     expect(res.status).toBe(200);
     expect(prisma.scheduleAssignment.delete).toHaveBeenCalledWith({ where: { id: VALID_ID } });
-  });
-
-  it("returns 404 when assignment missing", async () => {
-    (auth as any).mockResolvedValue(adminSession);
-    (prisma.scheduleAssignment.delete as any).mockRejectedValue(new Error("not found"));
-    const res = await DELETE(makeReq(null), { params: params(VALID_ID) });
-    expect(res.status).toBe(404);
   });
 });

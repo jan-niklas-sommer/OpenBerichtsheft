@@ -31,6 +31,7 @@ interface EditForm {
   endDate: string;
   department: string;
   supervisorId: string;
+  displayLabel: string;
   weekDays: number[];
   interval: number;
 }
@@ -49,6 +50,7 @@ function buildForm(item: ScheduleAssignmentView, rules: RecurrenceRuleExpandInpu
       endDate: (rule?.endDate ?? item.endDate).split("T")[0],
       department: item.department || "",
       supervisorId: item.supervisor?.id || "",
+      displayLabel: rule?.displayLabel || "",
       weekDays: days.length > 0 ? days : [...DEFAULT_WEEKDAYS],
       interval: rule?.interval ?? 1,
     };
@@ -60,6 +62,7 @@ function buildForm(item: ScheduleAssignmentView, rules: RecurrenceRuleExpandInpu
     endDate: item.endDate.split("T")[0],
     department: item.department || "",
     supervisorId: item.supervisor?.id || "",
+    displayLabel: "",
     weekDays: [...DEFAULT_WEEKDAYS],
     interval: 1,
   };
@@ -135,6 +138,7 @@ export function EditAssignmentPopover({
           weekDays: weekDaysBitfield,
           interval: form.interval,
           department: form.department || null,
+          displayLabel: form.displayLabel || null,
           supervisorId: form.supervisorId || null,
         }),
       });
@@ -290,6 +294,13 @@ export function EditAssignmentPopover({
                   <option value={4}>Alle 4 Wochen</option>
                 </select>
               </div>
+              <input
+                type="text"
+                placeholder="Beschreibung der Regel (optional)"
+                value={form.displayLabel}
+                onChange={(e) => setForm({ ...form, displayLabel: e.target.value })}
+                className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
+              />
             </>
           )}
           <div className="flex gap-2">

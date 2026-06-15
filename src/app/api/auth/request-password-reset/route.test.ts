@@ -5,6 +5,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findUnique: vi.fn() },
     passwordResetToken: { deleteMany: vi.fn(), create: vi.fn() },
+    $transaction: vi.fn((ops: unknown[]) => Promise.all(ops as Promise<unknown>[])),
   },
 }));
 vi.mock("@/lib/email", () => ({

@@ -12,6 +12,10 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    passwordResetToken: {
+      deleteMany: vi.fn(),
+    },
+    $transaction: vi.fn((ops: unknown[]) => Promise.all(ops as Promise<unknown>[])),
   },
 }));
 
@@ -46,7 +50,7 @@ describe("PUT /api/users/me/password", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue(session);
-    mockFindUnique.mockResolvedValue({ passwordHash: "old-hash" });
+    mockFindUnique.mockResolvedValue({ passwordHash: "old-hash", email: "u@test.de" });
     mockCompare.mockResolvedValue(true);
     mockHash.mockResolvedValue("new-hashed-pw");
   });

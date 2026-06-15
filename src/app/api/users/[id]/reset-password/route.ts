@@ -58,10 +58,10 @@ export async function POST(
 
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
-  await prisma.passwordResetToken.deleteMany({ where: { email: user.email } });
-  await prisma.passwordResetToken.create({
-    data: { email: user.email, token, expiresAt },
-  });
+  await prisma.$transaction([
+    prisma.passwordResetToken.deleteMany({ where: { email: user.email } }),
+    prisma.passwordResetToken.create({ data: { email: user.email, token, expiresAt } }),
+  ]);
 
   try {
     await sendPasswordResetEmail(user.email, token, user.name);

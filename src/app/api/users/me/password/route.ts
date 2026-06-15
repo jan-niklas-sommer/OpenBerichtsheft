@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { passwordHash: true },
+    select: { passwordHash: true, email: true },
   });
 
   if (!user) {
@@ -37,10 +37,14 @@ export async function PUT(req: NextRequest) {
   }
 
   const newHash = await hashPassword(parsed.data.newPassword);
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { passwordHash: newHash },
-  });
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: { passwordHash: newHash },
+    }),
+    // Offene Reset-Tokens invalidieren (Passwort wurde direkt geändert).
+    prisma.passwordResetToken.deleteMany({ where: { email: user.email } }),
+  ]);
 
   return NextResponse.json({ success: true });
 }

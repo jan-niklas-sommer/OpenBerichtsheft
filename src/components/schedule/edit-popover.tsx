@@ -194,7 +194,7 @@ export function EditAssignmentPopover({
 
   const handleRemoveException = async (exceptionId: string) => {
     const res = await fetch(
-      `/api/recurrence-rules/${item.ruleId}/exceptions?exceptionId=${exceptionId}`,
+      `/api/recurrence-rules/${item.ruleId}/exceptions/${exceptionId}`,
       { method: "DELETE" },
     );
     if (res.ok) onSaved();

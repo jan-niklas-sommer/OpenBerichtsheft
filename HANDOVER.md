@@ -3040,3 +3040,11 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **H4:** neuer `use-schedule-view.test.ts` (5 Tests: Fetch, Error-Catch, Empty, Refresh, ScrollNearEdge).
 - **H5:** neuer `password.test.ts` (3 Tests für `hashPassword`/`verifyPassword`/`BCRYPT_ROUNDS`).
 - **Verifier:** typecheck 0, lint 0 Errors, 924/924 Tests, build ✓.
+
+## 2026-06-14 – Cleanup-AP: L1, L2, H7
+
+- **L1 (Exception-Pfad-Konsistenz):** `DELETE /api/recurrence-rules/[id]/exceptions?exceptionId=` → geschachtelter REST-Pfad `/api/recurrence-rules/[id]/exceptions/[exceptionId]`. DELETE aus der `exceptions/route.ts` entfernt (nur POST bleibt); Frontend (`edit-popover`) + Tests angepasst. C2-Cross-Regel-Schutz (Compound-Where `{id, ruleId}`) bleibt erhalten.
+- **L2 (Dead Code entfernt):** `RecurrenceRuleView`-Interface, `generateDays` (nur `generateWorkDays` genutzt), `clampViewToBounds` (nur Tests, keine Prod-Nutzung) inkl. ihrer Tests.
+- **H7 (stale Test-Helper):** ungenutzte `makePutRequest`/`makeDeleteRequest`-Helper aus 4 Collection-Route-Tests entfernt (Leftover der `[id]`-Migration).
+- **Verifier:** typecheck 0, lint 0 Errors, 920/920 Tests, build ✓.
+- **Bewusst offen (geringeres Leverage / architektonisch):** H3 (Autosave Phantom-Save beim Wochennavigation — pre-existing, trickreich), H6 (5-Min-Role-Cache — dokumentiert intentional), H8 (Write-Ownership=Creator vs Read=Profession — Design-Entscheidung), diverse pre-existing Test-Fixture-Lint-Warnings.

@@ -9,7 +9,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { POST, DELETE } from "./route";
+import { POST } from "./route";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -88,52 +88,5 @@ describe("POST /api/recurrence-rules/[id]/exceptions", () => {
     (prisma.recurrenceException.create as any).mockRejectedValue(new Error("unique constraint"));
     const res = await POST(makeReq({ date: "2025-01-13" }), { params: params() });
     expect(res.status).toBe(409);
-  });
-});
-
-describe("DELETE /api/recurrence-rules/[id]/exceptions", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("returns 400 without exceptionId", async () => {
-    (auth as any).mockResolvedValue(adminSession);
-    const res = await DELETE(makeReq(null), { params: params() });
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 404 when rule not found (trainer)", async () => {
-    (auth as any).mockResolvedValue(trainerSession);
-    (prisma.recurrenceRule.findUnique as any).mockResolvedValue(null);
-    const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
-    expect(res.status).toBe(404);
-  });
-
-  it("returns 403 when trainer does not own rule", async () => {
-    (auth as any).mockResolvedValue(trainerSession);
-    (prisma.recurrenceRule.findUnique as any).mockResolvedValue({ id: "r1", createdById: "other" });
-    const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
-    expect(res.status).toBe(403);
-  });
-
-  it("deletes exception for admin", async () => {
-    (auth as any).mockResolvedValue(adminSession);
-    (prisma.recurrenceException.delete as any).mockResolvedValue({});
-    const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
-    expect(res.status).toBe(200);
-    expect(prisma.recurrenceException.delete).toHaveBeenCalledWith({ where: { id: "e1", ruleId: "r1" } });
-  });
-
-  it("returns 404 when exception belongs to a different rule (cross-rule guard)", async () => {
-    (auth as any).mockResolvedValue(adminSession);
-    // Compound-Where schlägt fehl (P2025), weil die Exception nicht zu ruleId r1 gehört
-    (prisma.recurrenceException.delete as any).mockRejectedValue(new Error("P2025"));
-    const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
-    expect(res.status).toBe(404);
-  });
-
-  it("returns 404 when exception missing", async () => {
-    (auth as any).mockResolvedValue(adminSession);
-    (prisma.recurrenceException.delete as any).mockRejectedValue(new Error("not found"));
-    const res = await DELETE(makeReq(null, "?exceptionId=e1"), { params: params() });
-    expect(res.status).toBe(404);
   });
 });

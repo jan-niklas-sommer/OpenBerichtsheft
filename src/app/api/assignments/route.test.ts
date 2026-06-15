@@ -63,13 +63,6 @@ function makePostRequest(body: unknown): NextRequest {
     headers: { "Content-Type": "application/json" },
   });
 }
-
-function makeDeleteRequest(id: string): NextRequest {
-  return new NextRequest(`http://localhost:3000/api/assignments?id=${id}`, {
-    method: "DELETE",
-  });
-}
-
 describe("GET /api/assignments", () => {
   beforeEach(() => {
     vi.clearAllMocks();

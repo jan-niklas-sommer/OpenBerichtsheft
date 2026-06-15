@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeDataBounds, clampViewToBounds } from "./schedule-bounds";
+import { computeDataBounds } from "./schedule-bounds";
 
 function makeAssignment(start: string, end: string) {
   return {
@@ -74,36 +74,3 @@ describe("computeDataBounds", () => {
   });
 });
 
-describe("clampViewToBounds", () => {
-  it("does not clamp when within bounds", () => {
-    const start = new Date("2026-03-02");
-    const end = new Date("2026-05-29");
-    const result = clampViewToBounds(start, end, new Date("2026-01-01"), new Date("2026-12-31"));
-    expect(result.start).toBe(start);
-    expect(result.end).toBe(end);
-  });
-
-  it("clamps start to minBound", () => {
-    const start = new Date("2025-06-01");
-    const end = new Date("2026-05-29");
-    const minBound = new Date("2026-01-01");
-    const result = clampViewToBounds(start, end, minBound, new Date("2026-12-31"));
-    expect(result.start).toEqual(minBound);
-  });
-
-  it("clamps end to maxBound", () => {
-    const start = new Date("2026-03-02");
-    const end = new Date("2027-06-01");
-    const maxBound = new Date("2026-12-31");
-    const result = clampViewToBounds(start, end, new Date("2026-01-01"), maxBound);
-    expect(result.end).toEqual(maxBound);
-  });
-
-  it("does not clamp when bounds are null", () => {
-    const start = new Date("2020-01-01");
-    const end = new Date("2030-12-31");
-    const result = clampViewToBounds(start, end, null, null);
-    expect(result.start).toBe(start);
-    expect(result.end).toBe(end);
-  });
-});

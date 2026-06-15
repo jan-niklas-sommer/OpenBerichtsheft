@@ -49,21 +49,6 @@ export interface ScheduleAssignmentView {
   recurring?: boolean;
 }
 
-export interface RecurrenceRuleView {
-  id: string;
-  traineeId: string;
-  scheduleType: ScheduleType;
-  startDate: string;
-  endDate: string;
-  weekDays: number;
-  displayLabel: string | null;
-  department: string | null;
-  color: string | null;
-  priority: number;
-  trainee: { id: string; name: string; profession?: { name: string } | null };
-  supervisor: { id: string; name: string } | null;
-}
-
 export function getTopAssignmentForDay(
   traineeId: string,
   date: Date,
@@ -95,16 +80,6 @@ export function getConflictsForDay(
       new Date(a.startDate) <= date &&
       new Date(a.endDate) >= date,
   );
-}
-
-export function generateDays(start: Date, end: Date): Date[] {
-  const result: Date[] = [];
-  const d = new Date(start);
-  while (d < end) {
-    result.push(new Date(d));
-    d.setDate(d.getDate() + 1);
-  }
-  return result;
 }
 
 export function generateWorkDays(start: Date, end: Date): Date[] {

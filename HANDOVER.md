@@ -3001,3 +3001,11 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - `CODE_REVIEW.md` Reconciliation-Tabelle erweitert: QO-M22 (Gantt-Split), QO-M23 (Typ-Zentralisierung), QO-L11 (status-Typ) sowie die Refactor-APs 1–3 als erledigt markiert; verbleibend offene (QO-L9/L10/L12, QO-M19–M21, N+1) explizit aufgeführt.
 - `original_prompt.md` aus Repo-Root nach `docs/` verschoben.
 - **Bewusst nicht in dieser Session gemacht** (geringeres Leverage / bewusst zurückgestellt): `validations.ts`-Domain-Split, `useApi`-Data-Fetch-Hook, `as ScheduleType`-Cast-Removal, NotificationBell-Extraktion — eigenständige APs bei Bedarf.
+
+## 2026-06-14 – Refactor AP6: Autosave Deep-Compare + Retry (N+1 waren stale)
+
+- **N+1 (QO-M8/M9):** Bei Prüfung als **bereits behoben** befunden — `schedule` GET nutzt `findMany({in})` (keine Loop), `notifications/check` nutzt `createMany`. Entsprechend dokumentiert.
+- **Autosave Deep-Compare (QO-M19):** `useAutosave` vergleicht `JSON.stringify(data)` mit dem zuletzt eingereichten Stand; reine Referenz-Wechsel ohne Inhaltsänderung triggern keinen Save mehr.
+- **Autosave Retry (QO-M20):** Bei Fehler bis zu 2 Retries mit exponentiellem Backoff (1s/2s); "error"-Status bleibt sofort nach Erst-Fail (testkompatibel); Mounted-Flag + Timer-Cleanup verhindern post-Unmount-Retries.
+- **Tests:** +2 (Deep-Compare, Retry-Recovery); 13/13 im Hook, 926/926 gesamt.
+- **Verifier:** typecheck 0, lint 0, build ✓.

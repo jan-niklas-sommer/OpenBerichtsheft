@@ -1,10 +1,6 @@
 import { NextRequest } from "next/server";
 import { POST } from "./route";
 
-vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
-}));
-
 vi.mock("@/lib/utils", () => ({
   getIsoWeek: vi.fn(),
 }));
@@ -17,20 +13,14 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { auth } from "@/lib/auth";
 import { getIsoWeek } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 
-const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockGetIsoWeek = getIsoWeek as unknown as ReturnType<typeof vi.fn>;
 const mockUserFindMany = prisma.user.findMany as ReturnType<typeof vi.fn>;
 const mockReportFindMany = prisma.weeklyReport.findMany as ReturnType<typeof vi.fn>;
 const mockNotifFindMany = prisma.notification.findMany as ReturnType<typeof vi.fn>;
 const mockNotifCreate = prisma.notification.create as ReturnType<typeof vi.fn>;
-
-const adminSession = {
-  user: { id: "admin-1", role: "admin", email: "admin@test.de", name: "Admin" },
-};
 
 function makeRequest(secret?: string) {
   const url = `http://localhost:3000/api/notifications/check${secret ? `?secret=${secret}` : ""}`;
@@ -44,28 +34,19 @@ describe("POST /api/notifications/check", () => {
     process.env.CRON_SECRET = "test-secret";
   });
 
-  it("returns 401 without session", async () => {
-    mockAuth.mockResolvedValue(null);
-    const res = await POST(makeRequest("test-secret"));
-    expect(res.status).toBe(401);
-  });
-
-  it("returns 403 for non-admin", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "t-1", role: "trainee", email: "t@test.de", name: "T" },
-    });
-    const res = await POST(makeRequest("test-secret"));
-    expect(res.status).toBe(403);
-  });
-
   it("returns 403 for wrong secret", async () => {
-    mockAuth.mockResolvedValue(adminSession);
     const res = await POST(makeRequest("wrong"));
     expect(res.status).toBe(403);
   });
 
+  it("returns 403 without CRON_SECRET set", async () => {
+    delete process.env.CRON_SECRET;
+    mockUserFindMany.mockResolvedValue([]);
+    const res = await POST(makeRequest());
+    expect(res.status).toBe(403);
+  });
+
   it("creates notifications for missing reports", async () => {
-    mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([
       { id: "t-1", trainingStartDate: "2026-01-01" },
     ]);
@@ -83,7 +64,6 @@ describe("POST /api/notifications/check", () => {
   });
 
   it("skips weeks before training start", async () => {
-    mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([
       { id: "t-1", trainingStartDate: "2026-03-01" },
     ]);
@@ -98,7 +78,6 @@ describe("POST /api/notifications/check", () => {
   });
 
   it("skips trainees with future training start year", async () => {
-    mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([
       { id: "t-1", trainingStartDate: "2028-01-01" },
     ]);
@@ -115,7 +94,6 @@ describe("POST /api/notifications/check", () => {
   });
 
   it("does not duplicate notifications already sent", async () => {
-    mockAuth.mockResolvedValue(adminSession);
     mockUserFindMany.mockResolvedValue([
       { id: "t-1", trainingStartDate: "2026-01-01" },
     ]);
@@ -131,13 +109,5 @@ describe("POST /api/notifications/check", () => {
       (c: unknown[]) => (c as [{ data: { message: string } }])[0]?.data?.message?.includes("KW 8/2026")
     );
     expect(createdForKw8).toBe(false);
-  });
-
-  it("returns 403 without CRON_SECRET set", async () => {
-    delete process.env.CRON_SECRET;
-    mockAuth.mockResolvedValue(adminSession);
-    mockUserFindMany.mockResolvedValue([]);
-    const res = await POST(makeRequest());
-    expect(res.status).toBe(403);
   });
 });

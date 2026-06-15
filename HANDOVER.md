@@ -3017,3 +3017,16 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - **edit-popover:** `setState`-in-Effect (Lint-Error) aufgelöst via `key`-Remount (`key={id-startDate}`) — `useState`-Initializer läuft pro Item neu.
 - **useApi-Hook bewusst NICHT gemacht:** die verbleibenden Fetch-Stellen sind mehrheitlich Multi-Fetch-Seiten (Editor, Schedule), für die ein `useApi(url)` nicht passt; ein forcierter Hook wäre Over-Abstraction. Bleibt bewusst zurückgestellt.
 - **Verifier:** typecheck 0, lint 0 Errors, 926/926 Tests, build ✓.
+
+## 2026-06-14 – Security-AP: C1–C4 + M6 + H2 + QO-L31-Duplikat
+
+Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
+
+- **C2 (Exception-Auth-Bypass, eigene Regression):** `DELETE /api/recurrence-rules/[id]/exceptions` prüft jetzt per Compound-Where `{ id, ruleId }`, dass die Exception zur Regel im Pfad gehört. + Regressionstest (Cross-Rule → 404).
+- **C1 (Password-Reset TOCTOU):** Token wird atomar via `deleteMany({ token, expiresAt: { gt: now } })` konsumiert (Race-Gate); Passwort-Update nur beim Gewinner.
+- **C3 (Cron unreachbar):** `notifications/check` prüft nur noch `CRON_SECRET` (keine Session — Cron hat keine); in `proxy.ts`-Matcher exkludiert.
+- **C4 (Popover schloss nach Ausnahme-Add):** `handleAddException` schließt nicht mehr — aktualisierte Ausnahme-Liste bleibt sichtbar.
+- **M6 (Edit-Popover A11y):** `role=dialog`/`aria-modal`/`aria-labelledby` + Focus-Trap + ESC + Autofocus.
+- **H2 (Autosave Hash):** Hash-on-success verworfen (interagierte fehlerhaft mit Re-Renders während Retry); stabile "zuletzt eingereicht"-Semantik mit Kommentar; Recovery via internem Retry + manuellem save().
+- **QO-L31:** `notifications/route.test.ts` duplizierte den ganzen Check-Test cross-file — entfernt (Check-Abdeckung sauber in `check/route.test.ts`).
+- **Verifier:** typecheck 0, lint 0 Errors, 916/916 Tests, build ✓.

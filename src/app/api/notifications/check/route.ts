@@ -1,13 +1,10 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getIsoWeek } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.user.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
+  // Reiner Cron-Endpoint: ein Scheduler hat keine Session. Zugriff wird
+  // ausschließlich über CRON_SECRET gewährt (nicht über Admin-Session).
   const url = new URL(req.url);
   const secret = url.searchParams.get("secret");
   if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {

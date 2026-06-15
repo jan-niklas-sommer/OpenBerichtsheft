@@ -3,22 +3,21 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    passwordResetToken: { findUnique: vi.fn(), delete: vi.fn() },
+    passwordResetToken: { findUnique: vi.fn(), deleteMany: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
-    $transaction: vi.fn((ops: any[]) => Promise.all(ops)),
   },
 }));
 vi.mock("@/lib/rate-limit", () => ({
   rateLimit: vi.fn(() => ({ success: true })),
 }));
-vi.mock("bcryptjs", () => ({
-  hash: vi.fn().mockResolvedValue("hashed:new"),
+vi.mock("@/lib/password", () => ({
+  hashPassword: vi.fn().mockResolvedValue("hashed:new"),
 }));
 
 import { POST } from "./route";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
-import { hash } from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 
 function makeReq(body: unknown) {
   return {
@@ -53,14 +52,16 @@ describe("POST /api/auth/reset-password", () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it("returns 400 and deletes token when expired", async () => {
+  it("returns 400 when token expired (atomic gate count 0)", async () => {
     (prisma.passwordResetToken.findUnique as any).mockResolvedValue({
       token: "t1", email: "a@b.de", expiresAt: new Date("2020-01-01"),
     });
-    (prisma.passwordResetToken.delete as any).mockResolvedValue({});
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: "u1", deactivatedAt: null, anonymizedAt: null,
+    });
+    (prisma.passwordResetToken.deleteMany as any).mockResolvedValue({ count: 0 });
     const res = await POST(makeReq({ token: "t1", password: "12345678" }));
     expect(res.status).toBe(400);
-    expect(prisma.passwordResetToken.delete).toHaveBeenCalledWith({ where: { token: "t1" } });
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
@@ -69,7 +70,7 @@ describe("POST /api/auth/reset-password", () => {
       token: "t1", email: "a@b.de", expiresAt: new Date(Date.now() + 999999),
     });
     (prisma.user.findUnique as any).mockResolvedValue(null);
-    (prisma.passwordResetToken.delete as any).mockResolvedValue({});
+    (prisma.passwordResetToken.deleteMany as any).mockResolvedValue({ count: 1 });
     const res = await POST(makeReq({ token: "t1", password: "12345678" }));
     expect(res.status).toBe(400);
   });
@@ -81,28 +82,30 @@ describe("POST /api/auth/reset-password", () => {
     (prisma.user.findUnique as any).mockResolvedValue({
       id: "u1", deactivatedAt: new Date(), anonymizedAt: null,
     });
-    (prisma.passwordResetToken.delete as any).mockResolvedValue({});
+    (prisma.passwordResetToken.deleteMany as any).mockResolvedValue({ count: 1 });
     const res = await POST(makeReq({ token: "t1", password: "12345678" }));
     expect(res.status).toBe(400);
   });
 
-  it("resets password and deletes token on success", async () => {
+  it("resets password on success (atomic consume count 1)", async () => {
     (prisma.passwordResetToken.findUnique as any).mockResolvedValue({
       token: "t1", email: "a@b.de", expiresAt: new Date(Date.now() + 999999),
     });
     (prisma.user.findUnique as any).mockResolvedValue({
       id: "u1", deactivatedAt: null, anonymizedAt: null,
     });
+    (prisma.passwordResetToken.deleteMany as any).mockResolvedValue({ count: 1 });
     (prisma.user.update as any).mockResolvedValue({ id: "u1" });
-    (prisma.passwordResetToken.delete as any).mockResolvedValue({});
 
     const res = await POST(makeReq({ token: "t1", password: "neuesPasswort12" }));
     expect(res.status).toBe(200);
-    expect(hash).toHaveBeenCalledWith("neuesPasswort12", 12);
+    expect(hashPassword).toHaveBeenCalledWith("neuesPasswort12");
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: "u1" },
       data: { passwordHash: "hashed:new" },
     });
-    expect(prisma.passwordResetToken.delete).toHaveBeenCalledWith({ where: { token: "t1" } });
+    expect(prisma.passwordResetToken.deleteMany).toHaveBeenCalledWith({
+      where: { token: "t1", expiresAt: expect.any(Object) },
+    });
   });
 });

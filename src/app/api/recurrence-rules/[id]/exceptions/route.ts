@@ -101,7 +101,9 @@ export async function DELETE(
   }
 
   try {
-    await prisma.recurrenceException.delete({ where: { id: exceptionId } });
+    // Compound-Check: stellt sicher, dass die Exception tatsächlich zur Regel
+    // im Pfad gehört (verhindert Cross-Regel-Löschung via fremder exceptionId).
+    await prisma.recurrenceException.delete({ where: { id: exceptionId, ruleId } });
   } catch {
     return NextResponse.json({ error: "Ausnahme nicht gefunden" }, { status: 404 });
   }

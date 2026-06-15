@@ -89,6 +89,39 @@ export function EditAssignmentPopover({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [onClose]);
 
+  useEffect(() => {
+    const container = popoverRef.current;
+    if (!container) return;
+    const first = container.querySelector<HTMLElement>(
+      'button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])',
+    );
+    const t = setTimeout(() => first?.focus(), 50);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      onClose();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    const container = popoverRef.current;
+    if (!container) return;
+    const focusable = container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+    const firstEl = focusable[0];
+    const lastEl = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === firstEl) {
+      e.preventDefault();
+      lastEl.focus();
+    } else if (!e.shiftKey && document.activeElement === lastEl) {
+      e.preventDefault();
+      firstEl.focus();
+    }
+  };
+
   const handleUpdate = async () => {
     if (item.ruleId) {
       const weekDaysBitfield = form.weekDays.reduce((acc, d) => acc | weekdayToBit(d), 0);
@@ -152,7 +185,7 @@ export function EditAssignmentPopover({
     });
     if (res.ok) {
       onSaved();
-      onClose();
+      // Popover offen lassen, damit die aktualisierte Ausnahme-Liste sichtbar wird.
     } else {
       const data = await res.json().catch(() => ({}));
       alert(data.error || "Ausnahme konnte nicht erstellt werden");
@@ -183,10 +216,14 @@ export function EditAssignmentPopover({
     >
       <div
         ref={popoverRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-assignment-title"
         className="w-80 rounded-lg border border-stroke-subtle bg-surface-elevated p-5 shadow-lg"
         onMouseDown={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
       >
-        <h3 className="mb-3 font-semibold text-content-base">
+        <h3 id="edit-assignment-title" className="mb-3 font-semibold text-content-base">
           {item.recurring ? "Wiederholungsregel" : "Bearbeiten"}
         </h3>
         {item.recurring && (

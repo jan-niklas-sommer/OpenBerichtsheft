@@ -6,18 +6,25 @@ Diese Review stammt vom **2026-05-10**. Seitdem sind zahlreiche Issues durch Fol
 
 | Issue | Status | Nachweis |
 |-------|--------|---------|
-| QO-H4 (CRON_SECRET-Bypass) | Erledigt | `notifications/check/route.ts:13` prüft `!process.env.CRON_SECRET` zuerst |
-| QO-H1 (Rate Limiting) | Erledigt | `src/lib/rate-limit.ts` aktiv auf Login/Register/Password-Reset |
-| QO-M17 (cn ohne twMerge) | Erledigt | `src/lib/utils.ts` nutzt `twMerge(clsx(...))` |
-| QO-M22 (Gantt 578 Zeilen) | Erledigt | Aufteilung in TimelineBlock/Tooltip/useDragScroll (337 Zeilen) |
-| QO-M23 (TraineeWithReports dupliziert) | Erledigt | Zentral in `src/types/index.ts`; ScheduleAssignmentView in `components/schedule/types.ts` |
-| QO-L11 (status: string) | Erledigt | `TraineeWithReports.reports[].status` nun `ReportStatus` |
-| QO-DOC4 (Next.js-Version) | Erledigt | ARCHITECTURE.md führt 16.x |
-| tsc-Fehler in Testdateien | Erledigt | `npm run typecheck` läuft mit 0 Fehlern (vitest-Globals + Test-Typfixes) |
-| `schedule-bounds.test.ts` (datumsabhängig) | Erledigt | Test auf relative Daten umgestellt |
-| 3fache Schedule-Pages / API-ID-Konventionen / Popover-Monolith | Erledigt (Refactor 2026-06-14) | `useScheduleView`-Hook, `[id]`-REST-Pfade, `EditAssignmentPopover` |
+| QO-H4 (CRON_SECRET-Bypass) | Erledigt | `notifications/check/route.ts` |
+| QO-H1 (Rate Limiting) | Erledigt | `src/lib/rate-limit.ts` aktiv |
+| QO-H8 (aria-labels) | Erledigt | Icon-Buttons + Edit-Popover haben aria-labels |
+| QO-H9 (fehllende Tests recurrence-rules/prefill) | Erledigt | recurrence-rules + exceptions + [id] vollständig getestet |
+| QO-H10 (Modal Focus-Trap) | Erledigt | AssignmentModal + EditAssignmentPopover (role=dialog/Focus-Trap/ESC) |
+| QO-M8/M9 (N+1) | Erledigt | schedule `findMany({in})`, notifications `createMany` |
+| QO-M17 (cn twMerge) | Erledigt | `src/lib/utils.ts` |
+| QO-M22 (Gantt 578 Zeilen) | Erledigt | aufgeteilt in TimelineBlock/Tooltip/useDragScroll |
+| QO-M23 (TraineeWithReports dupliziert) | Erledigt | zentral in `src/types/index.ts` |
+| QO-M19/M20 (Autosave Deep-Compare/Retry) | Erledigt | `use-autosave.ts` + reset() gegen Phantom-Saves |
+| QO-L9 (as ScheduleType casts) | Erledigt | `isScheduleType`-Guard |
+| QO-L11 (status: string) | Erledigt | `TraineeWithReports.reports[].status: ReportStatus` |
+| QO-L12 (NotificationBell eigene Datei) | Erledigt | `src/components/layout/notification-bell.tsx` |
+| QO-L31 (Cross-File-Test-Duplizierung) | Erledigt | check-Tests dediziert in `check/route.test.ts` |
+| QO-DOC4 (Next.js-Version) | Erledigt | ARCHITECTURE.md 16.x |
+| tsc-Fehler / schedule-bounds / API-Konvention / Schedule-Dup / Popover-Monolith / bcrypt-Streuung | Erledigt | Refactor-Offensive 2026-06-14 (siehe HANDOVER) |
+| Full-Review 2026-06-14: C1 (Token-Race), C2 (Exception-Cross-Regel), C3 (Cron-Auth), C4 (Popover-Close), H1 (Doppel-Fetch), H2 (Autosave-Hash), H3 (Phantom-Save), H4/H5 (Hook/Password-Tests), H6 (Role-Cache), H7 (stale Helper), H8 (Ownership=Profession), M2 (Export-TZ), M4 (users 404), M5 (Officer-403-Tests), M6 (Popover-A11y), M7 (Timeline-Keyboard), M8 (404/403), M9 (displayLabel), L1 (Exception-[exceptionId]), L2 (Dead Code), L3/L4 (Token-Invalidierung/Transaktionen), L8 (Konflikt-Logik extrahiert+getestet) | Erledigt | Alle Critical/High/Medium aus dem Full-Review behoben (siehe HANDOVER 2026-06-14) |
 
-> **Hinweis:** Teil-Reconciliation der verifizierten Punkte. **Noch offen** (verifiziert): QO-L9 (`as ScheduleType`-Casts, `assignment-modal.tsx`/`edit-popover.tsx`), QO-L10 (`NavbarProps.role: string`), QO-L12 (NotificationBell eigene Datei), QO-M19–M21 (Autosave/Session), sowie N+1 (QO-M8/M9) und weitere MITTEL/NIEDRIG-Items — eine vollständige Neu-Auditierung steht aus.
+> **Noch offen (bewusst zurückgestellt — geringes Leverage / architektonisch):** QO-L10 (`NavbarProps.role: string` statt Role-Enum — kosmetisch), M1 (notifications/check Jahreswechsel-Logik — funktioniert, Rewrite riskant), M3 (users PUT Mass-Assignment — admin-only, alle Schema-Felder intendiert), L5 (prefill reportType-Check + totes Promise.all-Element), L6 (Datumsformat YYYY-MM-DD vs ISO — brittel aber funktioniert), L7 (drag-scroll setTimeout-Race — theoretisch).
 
 ---
 

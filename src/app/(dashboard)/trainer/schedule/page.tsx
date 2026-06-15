@@ -9,6 +9,7 @@ import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timel
 import { AssignmentModal } from "@/components/schedule/assignment-modal";
 import { EditAssignmentPopover } from "@/components/schedule/edit-popover";
 import { useScheduleView } from "@/components/schedule/use-schedule-view";
+import { hasScheduleConflicts } from "@/components/schedule/schedule-filters";
 
 interface Trainee {
   id: string;
@@ -89,17 +90,7 @@ export default function SchedulePage() {
   const hasConflicts = useMemo(() => {
     for (const [traineeId] of traineeRows) {
       const traineeAssignments = filteredAssignments.filter((a) => a.traineeId === traineeId);
-      for (let i = 0; i < traineeAssignments.length; i++) {
-        for (let j = i + 1; j < traineeAssignments.length; j++) {
-          const a = traineeAssignments[i];
-          const b = traineeAssignments[j];
-          if (
-            new Date(a.startDate) <= new Date(b.endDate) &&
-            new Date(b.startDate) <= new Date(a.endDate)
-          )
-            return true;
-        }
-      }
+      if (hasScheduleConflicts(traineeAssignments)) return true;
     }
     return false;
   }, [traineeRows, filteredAssignments]);

@@ -184,4 +184,43 @@ describe("useAutosave", () => {
     expect(onSave).not.toHaveBeenCalled();
     expect(result.current.saveStatus).toBe("idle");
   });
+
+  it("does not re-save when only the reference changes (deep compare)", async () => {
+    const { rerender } = renderHook(
+      ({ data }) => useAutosave(data, onSave, 500),
+      { initialProps: { data: { foo: "bar" } } }
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    // new object reference, identical content
+    rerender({ data: { foo: "bar" } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries on error and recovers when a later attempt succeeds", async () => {
+    let calls = 0;
+    onSave = vi.fn().mockImplementation(() => {
+      calls++;
+      return calls < 2 ? Promise.reject(new Error("fail")) : Promise.resolve();
+    }) as unknown as (data: unknown) => Promise<void>;
+
+    const { result } = renderHook(() => useAutosave({ foo: "bar" }, onSave, 500));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    expect(result.current.saveStatus).toBe("error");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(2);
+    expect(result.current.saveStatus).toBe("saved");
+  });
 });

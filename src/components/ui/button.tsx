@@ -51,7 +51,7 @@ export function Button({
           viewBox="0 0 24 24"
         >
           <circle
-            className="opacity-25"
+            className="opacity-40"
             cx="12"
             cy="12"
             r="10"

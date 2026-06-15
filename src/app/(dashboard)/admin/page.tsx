@@ -30,7 +30,7 @@ export default async function AdminDashboard() {
               <CardTitle>Benutzer</CardTitle>
             </div>
           </CardHeader>
-          <p className="text-3xl font-bold text-content-base">
+          <p className="text-3xl font-semibold text-content-base">
             {userCount}
           </p>
         </Card>
@@ -42,7 +42,7 @@ export default async function AdminDashboard() {
               <CardTitle>Berichte</CardTitle>
             </div>
           </CardHeader>
-          <p className="text-3xl font-bold text-content-base">
+          <p className="text-3xl font-semibold text-content-base">
             {reportCount}
           </p>
         </Card>
@@ -54,7 +54,7 @@ export default async function AdminDashboard() {
               <CardTitle>Zuordnungen</CardTitle>
             </div>
           </CardHeader>
-          <p className="text-3xl font-bold text-content-base">
+          <p className="text-3xl font-semibold text-content-base">
             {assignmentCount}
           </p>
         </Card>

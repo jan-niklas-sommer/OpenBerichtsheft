@@ -203,7 +203,7 @@ export function GanttTimeline({
         <div className="border-b border-stroke-subtle pb-3">
           {todayIndex >= 0 && (
             <div
-              className="absolute z-10 w-0 opacity-20"
+              className="absolute z-10 w-0 opacity-40"
               style={{
                 left: todayIndex * cellWidth + cellWidth / 2,
                 top: 0,

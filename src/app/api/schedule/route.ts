@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { updateScheduleSchema, scheduleTypeSchema } from "@/lib/validations";
+import { trainerCanAccessTrainee } from "@/lib/schedule-access";
 
 const createSchema = z.object({
   traineeId: z.string().uuid(),
@@ -149,22 +150,14 @@ export async function POST(req: NextRequest) {
 
   const targetUser = await prisma.user.findUnique({
     where: { id: traineeId },
-    select: { role: true, professionId: true },
+    select: { role: true },
   });
   if (!targetUser || targetUser.role !== "trainee") {
     return NextResponse.json({ error: "traineeId must reference a user with role 'trainee'" }, { status: 400 });
   }
 
-  if (role === "trainer") {
-    if (!targetUser.professionId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-    const professionAssignment = await prisma.trainerProfessionAssignment.findFirst({
-      where: { trainerId: userId, professionId: targetUser.professionId },
-    });
-    if (!professionAssignment) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!(await trainerCanAccessTrainee(userId, role, traineeId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const assignment = await prisma.scheduleAssignment.create({

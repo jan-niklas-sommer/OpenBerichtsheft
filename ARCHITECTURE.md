@@ -300,7 +300,7 @@ draft → submitted → approved
 - **Passwort-Hashing**: bcrypt via `bcryptjs`.
 - **Passwort-Wiederherstellung**: Token-basierter Selbstbedienungs-Flow (`PasswordResetToken`, 1-Stunden-Gültigkeit), rate-limited. Generic Response auf `/request-password-reset` verrät nicht, ob eine E-Mail existiert.
 - **Rate Limiting**: Max. 5 fehlgeschlagene Login-Versuche pro E-Mail-Adresse, danach 15-minütige Sperre (`src/lib/rate-limit.ts`).
-- **JWT-Cache**: Rollen- und Startdatum-Informationen werden im JWT-Token mitgeführt und mit einem serverseitigen Cache (5 Min TTL) zwischengespeichert, um Datenbankzugriffe zu reduzieren.
+- **JWT-Cache**: Rollen- und Startdatum-Informationen werden im JWT-Token mitgeführt und mit einem serverseitigen Cache (5 Min TTL) zwischengespeichert, um Datenbankzugriffe zu reduzieren. **Wichtig bei Multi-Instance-Deployments (Vercel/Lambda):** `invalidateRoleCache` wirkt nur auf der bearbeitenden Instanz. Auf anderen Instanzen kann die alte Rolle bis zu TTL (5 Min) aktiv bleiben. Der Cache ist ein Kompromiss Performance vs. Konsistenz — bei sicherheitskritischen Änderungen (Deaktivierung) zusätzlich Session-Expiry prüfen.
 - **CRON-Schutz**: Der Endpoint `/api/notifications/check` erfordert ein `CRON_SECRET`-Header, um unbefugte Aufrufe zu verhindern.
 
 ---

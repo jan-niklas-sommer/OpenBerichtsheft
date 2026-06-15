@@ -82,10 +82,8 @@ export function useAutosave<T>(
   };
 
   const reset = useCallback((data?: T) => {
-    // Markiert die übergebenen (oder aktuellen) Daten als Baseline — ohne Save.
-    // Aufrufen, nachdem Daten vom Server geladen wurden, damit kein Phantom-Save
-    // der unveraenderten Server-Daten ausgeloest wird.
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     const baseline = data ?? dataRef.current;
     submittedHashRef.current = baseline ? JSON.stringify(baseline) : "";
   }, []);
@@ -116,6 +114,7 @@ export function useAutosave<T>(
       mountedRef.current = false;
       if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
 

@@ -87,13 +87,10 @@ export default function SchedulePage() {
     return Array.from(set).sort();
   }, [allViews]);
 
-  const hasConflicts = useMemo(() => {
-    for (const [traineeId] of traineeRows) {
-      const traineeAssignments = filteredAssignments.filter((a) => a.traineeId === traineeId);
-      if (hasScheduleConflicts(traineeAssignments)) return true;
-    }
-    return false;
-  }, [traineeRows, filteredAssignments]);
+  const hasConflicts = useMemo(
+    () => hasScheduleConflicts(filteredAssignments),
+    [filteredAssignments],
+  );
 
   if (loading) return <div className="text-content-muted">Laden...</div>;
 

@@ -3061,3 +3061,12 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **H3:** `useAutosave` bekommt ein `reset(data?)`, das Daten als Baseline markiert (ohne Save). Der Report-Editor ruft `reset()` beim Laden eines (neuen) Reports via `useEffect` auf `report.id` — verhindert Phantom-PUTs beim Initialload + Wochenwechsel.
 - **Test:** +1 (reset → kein Phantom-Save bei identischem Inhalt).
 - **Verifier:** typecheck 0, lint 0 Errors, 924/924 Tests, build ✓.
+
+## 2026-06-14 – AP-C: Hardening-Batch (M9, L3, L4, M5)
+
+- **M9:** `displayLabel` (Regel-Beschreibung) im Edit-Popover editierbar (ExpandInput-Typ + EditForm + PUT-Body + UI-Input).
+- **L3:** `me/password` invalidiert offene `passwordResetToken`s nach Passwortwechsel (transaktional).
+- **L4:** Reset-Token delete+create in `request-password-reset` + `admin-reset` nun transaktional (`$transaction`).
+- **M5:** explizite `training_officer`→403-Tests für schedule/recurrence-rules `[id]` PUT.
+- **Bewusst übersprungen:** M3 (users PUT Mass-Assignment — admin-only, alle Schema-Felder intendiert, kein echtes Vuln), L7 (drag-scroll setTimeout-Race — theoretisch, Praxis ok), M1 (notifications/check Logik — funktionierend, Rewrite riskant).
+- **Verifier:** typecheck 0, lint 0 Errors, 927/927 Tests, build ✓.

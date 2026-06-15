@@ -52,6 +52,12 @@ describe("PUT /api/recurrence-rules/[id]", () => {
     expect(res.status).toBe(403);
   });
 
+  it("returns 403 for training_officer (read-only role)", async () => {
+    (auth as any).mockResolvedValue({ user: { id: "x", role: "training_officer" } });
+    const res = await PUT(makeReq({ interval: 2 }), { params: params(VALID_ID) });
+    expect(res.status).toBe(403);
+  });
+
   it("returns 404 when rule does not exist", async () => {
     (auth as any).mockResolvedValue(adminSession);
     (prisma.recurrenceRule.findUnique as any).mockResolvedValue(null);

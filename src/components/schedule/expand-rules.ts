@@ -9,6 +9,7 @@ export interface RecurrenceRuleExpandInput {
   endDate: string;
   weekDays: number;
   interval?: number;
+  displayLabel?: string | null;
   department?: string | null;
   trainee: { id: string; name: string; profession?: { name: string } | null };
   supervisor?: { id: string; name: string } | null;

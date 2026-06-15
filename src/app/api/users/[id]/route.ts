@@ -15,6 +15,12 @@ export async function PUT(
   if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
+
+  const existing = await prisma.user.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const body = await req.json();
   const parsed = updateUserSchema.safeParse(body);
   if (!parsed.success) {

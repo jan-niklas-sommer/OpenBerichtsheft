@@ -335,6 +335,7 @@ describe("POST /api/users", () => {
 describe("PUT /api/users/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFindUnique.mockResolvedValue({ id: "user-1" });
   });
 
   function makePutRequest(id: string, body: unknown): { req: NextRequest; params: Promise<{ id: string }> } {

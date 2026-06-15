@@ -9,6 +9,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
+      findUnique: vi.fn().mockResolvedValue({ id: "user-1" }),
       update: vi.fn(),
     },
   },

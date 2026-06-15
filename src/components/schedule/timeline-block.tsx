@@ -3,6 +3,7 @@
 import {
   TYPE_COLORS,
   TYPE_FG_COLORS,
+  TYPE_LABELS,
   type ScheduleAssignmentView,
   type AssignmentBlock,
 } from "./types";
@@ -59,10 +60,12 @@ export function TimelineBlock({
 
   const barTop = (rowHeight - barHeight) / 2;
 
+  const interactive = mode === "edit" && !!onCellClick;
+
   return (
     <div
       className={`absolute rounded-full transition-shadow ${
-        mode === "edit" && onCellClick ? "cursor-pointer" : ""
+        interactive ? "cursor-pointer" : ""
       } ${hasConflict ? "ring-1 ring-danger ring-inset" : ""}`}
       style={{
         left: block.offset,
@@ -71,12 +74,24 @@ export function TimelineBlock({
         height: barHeight,
         backgroundColor: TYPE_COLORS[a.scheduleType],
       }}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label={
+        interactive ? `${label} – ${TYPE_LABELS[a.scheduleType]}` : undefined
+      }
       onClick={(e) => {
         if (wasDragged()) {
           e.stopPropagation();
           return;
         }
-        if (mode === "edit") onCellClick?.(a);
+        if (interactive) onCellClick?.(a);
+      }}
+      onKeyDown={(e) => {
+        if (!interactive) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onCellClick?.(a);
+        }
       }}
       onMouseEnter={(e) => onMouseEnter(a, e)}
       onMouseLeave={onMouseLeave}

@@ -3030,3 +3030,13 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **H2 (Autosave Hash):** Hash-on-success verworfen (interagierte fehlerhaft mit Re-Renders während Retry); stabile "zuletzt eingereicht"-Semantik mit Kommentar; Recovery via internem Retry + manuellem save().
 - **QO-L31:** `notifications/route.test.ts` duplizierte den ganzen Check-Test cross-file — entfernt (Check-Abdeckung sauber in `check/route.test.ts`).
 - **Verifier:** typecheck 0, lint 0 Errors, 916/916 Tests, build ✓.
+
+## 2026-06-14 – Correctness-AP: H1, M2, M4, M7, H4, H5
+
+- **H1 (Doppel-Fetch + fehlendes Catch):** `useScheduleView` nutzt `skipNextFetchRef`, sodass der initiale Snap keinen redundanten Refetch auslöst; `.catch` setzt `loading=false` (kein infinite "Laden…" bei Netzwerkfehler).
+- **M2 (Export/Count Datum TZ):** `setHours(23,…)` → `setUTCHours(23,…)` in `reports/export` + `reports/count` (korrekte Datums-Grenzen bei Non-UTC-Deploys).
+- **M4 (users/[id] 404):** Existenz-Check vor `update` (404 statt 500 P2025 bei unbekannter ID).
+- **M7 (Timeline Tastatur):** Blöcke bekommen `role=button`/`tabIndex`/Enter-Space/`aria-label` im Edit-Modus.
+- **H4:** neuer `use-schedule-view.test.ts` (5 Tests: Fetch, Error-Catch, Empty, Refresh, ScrollNearEdge).
+- **H5:** neuer `password.test.ts` (3 Tests für `hashPassword`/`verifyPassword`/`BCRYPT_ROUNDS`).
+- **Verifier:** typecheck 0, lint 0 Errors, 924/924 Tests, build ✓.

@@ -1,21 +1,23 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { authorize } from "./authorize";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword } from "@/lib/password";
-import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/rate-limit";
 
 const roleCache = new Map<string, { role: string; trainingStartDate: string | null; fetchedAt: number }>();
 const ROLE_CACHE_TTL = 5 * 60 * 1000;
 
 /**
- * Invalidiert den Rollen-Cache (für einen User oder komplett). Nach Rollen-,
- * Deaktivierungs- oder Anonymisierungs-Änderungen aufrufen, damit der JWT-Callback
- * die neue Rolle sofort statt erst nach Ablauf der TTL übernimmt.
+ * Invalidiert den Rollen-Cache. Hinweis: funktioniert nur auf der Instanz, die
+ * die Änderung durchführt (Single-Instance). Bei Multi-Instance-Deployments
+ * (Vercel/Lambda) kann die alte Rolle bis zu ROLE_CACHE_TTL (5 Min) auf anderen
+ * Instanzen erhalten bleiben. Siehe ARCHITECTURE.md / DEPLOY.md.
  */
 export function invalidateRoleCache(userId?: string) {
   if (userId) roleCache.delete(userId);
   else roleCache.clear();
 }
+
+export { authorize };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
@@ -26,43 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "E-Mail", type: "email" },
         password: { label: "Passwort", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-
-        const email = credentials.email as string;
-
-        if (isRateLimited(email)) return null;
-
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (!user || user.deactivatedAt || user.anonymizedAt) return null;
-
-        if (!user.emailVerified) {
-          const err = new Error("EMAIL_NOT_VERIFIED");
-          err.name = "EmailNotVerified";
-          throw err;
-        }
-
-        const valid = await verifyPassword(
-          credentials.password as string,
-          user.passwordHash
-        );
-        if (!valid) {
-          recordFailedAttempt(email);
-          return null;
-        }
-
-        clearAttempts(email);
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
-      },
+      authorize,
     }),
   ],
   callbacks: {

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { weekdayToBit } from "@/lib/schedule-resolver";
 import { updateRecurrenceRuleSchema, scheduleTypeSchema } from "@/lib/validations";
+import { trainerCanAccessTrainee } from "@/lib/schedule-access";
 
 const createRuleSchema = z.object({
   traineeId: z.string().uuid(),
@@ -103,20 +104,16 @@ export async function POST(req: NextRequest) {
 
   const { traineeId, scheduleType, startDate, endDate, weekDays, interval, displayLabel, department, supervisorId } = parsed.data;
 
-  if (role === "trainer") {
-    const trainee = await prisma.user.findUnique({
-      where: { id: traineeId },
-      select: { professionId: true },
-    });
-    if (!trainee?.professionId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-    const professionAssignment = await prisma.trainerProfessionAssignment.findFirst({
-      where: { trainerId: userId, professionId: trainee.professionId },
-    });
-    if (!professionAssignment) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  const targetUser = await prisma.user.findUnique({
+    where: { id: traineeId },
+    select: { role: true },
+  });
+  if (!targetUser || targetUser.role !== "trainee") {
+    return NextResponse.json({ error: "traineeId muss auf einen Auszubildenden verweisen" }, { status: 400 });
+  }
+
+  if (!(await trainerCanAccessTrainee(userId, role, traineeId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const weekDaysBitfield = typeof weekDays === "number"

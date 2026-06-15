@@ -36,4 +36,13 @@ describe("hasScheduleConflicts", () => {
   it("returns true for touching boundaries (<=/>=)", () => {
     expect(hasScheduleConflicts([make("2026-01-01", "2026-01-10"), make("2026-01-10", "2026-01-20")])).toBe(true);
   });
+
+  it("returns false for overlapping assignments of DIFFERENT trainees", () => {
+    expect(
+      hasScheduleConflicts([
+        make("2026-01-01", "2026-01-20", "t1"),
+        make("2026-01-10", "2026-01-25", "t2"),
+      ]),
+    ).toBe(false);
+  });
 });

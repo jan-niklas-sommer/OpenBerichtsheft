@@ -174,8 +174,9 @@ describe("POST /api/schedule", () => {
 
     mockAuth.mockResolvedValue(trainerSession);
     mockUserFindUnique
-      .mockResolvedValueOnce({ id: traineeId, role: "trainee", professionId: profId })
-      .mockResolvedValueOnce({ role: "training_officer" });
+      .mockResolvedValueOnce({ role: "trainee" })                    // role check
+      .mockResolvedValueOnce({ professionId: profId })               // trainerCanAccessTrainee
+      .mockResolvedValueOnce({ role: "training_officer" });          // officer check
     mockProfessions.mockResolvedValue([{ professionId: profId }]);
     mockProfessionFindFirst.mockResolvedValue({ id: "tpa-1", trainerId: trainerSession.user.id, professionId: profId });
     mockScheduleCreate.mockResolvedValue({

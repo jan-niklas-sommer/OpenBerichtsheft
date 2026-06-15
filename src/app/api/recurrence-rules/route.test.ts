@@ -161,7 +161,10 @@ describe("GET /api/recurrence-rules", () => {
 });
 
 describe("POST /api/recurrence-rules", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUserFindUnique.mockResolvedValue({ role: "trainee", professionId: "prof-1" });
+  });
 
   it("returns 401 without session", async () => {
     mockAuth.mockResolvedValue(null);
@@ -233,7 +236,7 @@ describe("POST /api/recurrence-rules", () => {
 
   it("returns 403 for trainer not assigned to trainee profession", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockUserFindUnique.mockResolvedValue({ role: "trainee", professionId: "prof-1" });
     mockProfessionFindFirst.mockResolvedValue(null);
     const res = await POST(
       makePostRequest({
@@ -249,7 +252,7 @@ describe("POST /api/recurrence-rules", () => {
 
   it("creates rule as trainer with valid assignment", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockUserFindUnique.mockResolvedValue({ professionId: "prof-1" });
+    mockUserFindUnique.mockResolvedValue({ role: "trainee", professionId: "prof-1" });
     mockProfessionFindFirst.mockResolvedValue({ id: "assign-1" });
     mockCreate.mockResolvedValue(sampleRule);
     const res = await POST(
@@ -266,7 +269,7 @@ describe("POST /api/recurrence-rules", () => {
 
   it("returns 403 when trainee has no profession", async () => {
     mockAuth.mockResolvedValue(trainerSession);
-    mockUserFindUnique.mockResolvedValue({ professionId: null });
+    mockUserFindUnique.mockResolvedValue({ role: "trainee", professionId: null });
     const res = await POST(
       makePostRequest({
         traineeId: "e68ee10b-4c07-48b5-b071-c5ea06138f79",

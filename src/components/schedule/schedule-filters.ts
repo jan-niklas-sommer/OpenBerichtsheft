@@ -11,6 +11,7 @@ export function hasScheduleConflicts(assignments: ScheduleAssignmentView[]): boo
     for (let j = i + 1; j < assignments.length; j++) {
       const a = assignments[i];
       const b = assignments[j];
+      if (a.traineeId !== b.traineeId) continue;
       if (
         new Date(a.startDate) <= new Date(b.endDate) &&
         new Date(b.startDate) <= new Date(a.endDate)

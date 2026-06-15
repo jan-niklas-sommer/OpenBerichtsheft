@@ -3077,3 +3077,16 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **CODE_REVIEW.md:** vollständige Reconciliation — alle QO-H/M/L aus dem Initial-Review + alle Full-Review-Findings (C1–C4, H1–H8, M2/M4/M5/M6/M7/M8/M9, L1/L2/L3/L4/L8) als erledigt markiert; verbleibend (L10, M1, M3, L5, L6, L7) als bewusst zurückgestellt gelistet.
 - **Neu `DEPLOY.md`:** Ops-Checkliste (Migrationen, Vercel-Env `DATABASE_URL`/`AUTH_SECRET`/`SMTP_*`/`CRON_SECRET`, Credential-Rotation, Post-Deploy-Smoke).
 - **Verifier:** typecheck 0, lint 0 Errors, 932/932 Tests, build ✓.
+
+## 2026-06-14 – Review-Runde 3: H-1/H-3, M-1/M-2/M-4, L-1/L-2, H-2 Doku
+
+- **H-1:** `authorize` in eigene `src/lib/authorize.ts` ausgelagert (ohne NextAuth-Init → in vitest testbar). `auth.test.ts` → `authorize.test.ts` mit 8 Tests, die die **echte** Funktion testen (Rate-Limit, Email-Verified-Gate, deaktiviert/anonymisiert, falsches Passwort, korrekter Login).
+- **H-3:** `recurrence-rules` POST prüft jetzt `targetUser.role !== "trainee"` (wie `schedule` POST — konsistent).
+- **L-1:** Beide POST-Routes (`schedule` + `recurrence-rules`) nutzen `trainerCanAccessTrainee` statt inline profession-check (DRY).
+- **L-2:** `me/password` prüft `session?.user?.id` statt nur `session?.user` (Schutz gegen zombie-JWT mit undefined id).
+- **M-1:** dedizierter `schedule-access.test.ts` (6 Tests: admin-shortcut, nicht-trainer, trainee-missing, professionId-null, profession-nicht-zugeordnet, profession-zugeordnet).
+- **M-2:** `reset()` cleart jetzt auch `retryTimerRef`; Unmount-Cleanup cleart auch `timeoutRef`.
+- **M-4:** `hasScheduleConflicts` prüft zusätzlich `traineeId`-Gleichheit (Contract stimmt mit Docstring überein); Trainer-Page vereinfacht (ein Call statt per-Trainee-Loop).
+- **H-2:** Serverless-Cache-Limitation in ARCHITECTURE.md + JSDoc ehrlich dokumentiert (Multi-Instance → TTL-basierter Fallback).
+- **M-3 (false positive):** `/new` redirectet serverseitig → `isNewFromSlug` ist dead code, kein Datenverlust.
+- **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.

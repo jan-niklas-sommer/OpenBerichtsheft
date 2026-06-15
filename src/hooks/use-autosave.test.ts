@@ -202,6 +202,22 @@ describe("useAutosave", () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
+  it("reset() marks current data as baseline (no phantom save)", async () => {
+    const { result, rerender } = renderHook(
+      ({ data }) => useAutosave(data, onSave, 500),
+      { initialProps: { data: { foo: "bar" } } }
+    );
+    await act(async () => {
+      result.current.reset();
+    });
+    // Gleicher Inhalt, neue Referenz -> kein Save (Baseline gesetzt)
+    rerender({ data: { foo: "bar" } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
   it("retries on error and recovers when a later attempt succeeds", async () => {
     let calls = 0;
     onSave = vi.fn().mockImplementation(() => {

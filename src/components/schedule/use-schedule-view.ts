@@ -35,38 +35,46 @@ export function useScheduleView(): ScheduleView {
   const [viewEnd, setViewEnd] = useState<Date>(initialEnd);
   const boundsRef = useRef<{ minBound: Date; maxBound: Date } | null>(null);
   const initialSnapRef = useRef(false);
+  // Verhindert den Doppel-Fetch beim initialen Snap: der Snap ändert viewStart/
+  // viewEnd und triggert damit den Fetch-Effekt erneut — diese zweite Ausführung
+  // ist redundant (die Daten des ersten Fetch decken das gesnappte Fenster ab).
+  const skipNextFetchRef = useRef(false);
 
   const doFetch = useCallback(
     (snap: boolean) => {
       Promise.all([
         fetch(`/api/schedule?start=${viewStart.toISOString()}&end=${viewEnd.toISOString()}`).then((r) => r.json()),
         fetch("/api/recurrence-rules").then((r) => r.json()),
-      ]).then(([sched, ruleData]) => {
-        const data = Array.isArray(sched) ? sched : [];
-        setAssignments(data);
-        setRules(Array.isArray(ruleData) ? ruleData : []);
-        setLoading(false);
+      ])
+        .then(([sched, ruleData]) => {
+          const data = Array.isArray(sched) ? sched : [];
+          setAssignments(data);
+          setRules(Array.isArray(ruleData) ? ruleData : []);
+          setLoading(false);
 
-        if (snap && !initialSnapRef.current && data.length > 0) {
-          const bounds = computeDataBounds(data);
-          if (bounds) {
-            boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
+          const bounds = data.length > 0 ? computeDataBounds(data) : null;
+          if (bounds) boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
+
+          if (snap && !initialSnapRef.current && data.length > 0 && bounds) {
+            initialSnapRef.current = true;
+            skipNextFetchRef.current = true;
             setViewStart(bounds.start);
             setViewEnd(bounds.end);
           }
-          initialSnapRef.current = true;
-        } else if (data.length > 0) {
-          const bounds = computeDataBounds(data);
-          if (bounds) {
-            boundsRef.current = { minBound: bounds.minBound, maxBound: bounds.maxBound };
-          }
-        }
-      });
+        })
+        .catch(() => {
+          // Fetch-Fehler dürfen die UI nicht in "Laden…" blockieren.
+          setLoading(false);
+        });
     },
     [viewStart, viewEnd],
   );
 
   useEffect(() => {
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false;
+      return;
+    }
     doFetch(true);
   }, [doFetch]);
 

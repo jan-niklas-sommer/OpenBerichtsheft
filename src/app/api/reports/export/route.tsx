@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   const fromDate = new Date(parsed.data.from);
   const toDate = new Date(parsed.data.to);
-  toDate.setHours(23, 59, 59, 999);
+  toDate.setUTCHours(23, 59, 59, 999);
 
   if (fromDate > toDate) {
     return NextResponse.json({ error: "from must be before to" }, { status: 400 });

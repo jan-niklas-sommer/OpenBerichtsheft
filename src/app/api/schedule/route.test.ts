@@ -71,19 +71,6 @@ function makePostRequest(body: unknown): NextRequest {
     headers: { "Content-Type": "application/json" },
   });
 }
-
-function makePutRequest(body: unknown): NextRequest {
-  return new NextRequest("http://localhost:3000/api/schedule", {
-    method: "PUT",
-    body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-function makeDeleteRequest(id: string): NextRequest {
-  return new NextRequest(`http://localhost:3000/api/schedule?id=${id}`, { method: "DELETE" });
-}
-
 describe("GET /api/schedule", () => {
   beforeEach(() => vi.clearAllMocks());
 

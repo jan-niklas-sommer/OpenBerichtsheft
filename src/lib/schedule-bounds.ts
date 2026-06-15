@@ -31,16 +31,3 @@ export function computeDataBounds(assignments: ScheduleAssignmentView[]) {
     maxBound: toSunday(new Date(maxDate.getTime() + padMs * 2)),
   };
 }
-
-export function clampViewToBounds(
-  nextStart: Date,
-  nextEnd: Date,
-  minBound: Date | null,
-  maxBound: Date | null,
-): { start: Date; end: Date } {
-  let start = nextStart;
-  let end = nextEnd;
-  if (minBound && start < minBound) start = new Date(minBound);
-  if (maxBound && end > maxBound) end = new Date(maxBound);
-  return { start, end };
-}

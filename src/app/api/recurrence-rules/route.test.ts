@@ -91,18 +91,6 @@ function makePostRequest(body: unknown): NextRequest {
   });
 }
 
-function makePutRequest(body: unknown): NextRequest {
-  return new NextRequest("http://localhost:3000/api/recurrence-rules", {
-    method: "PUT",
-    body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-function makeDeleteRequest(id: string): NextRequest {
-  return new NextRequest(`http://localhost:3000/api/recurrence-rules?id=${id}`, { method: "DELETE" });
-}
-
 describe("GET /api/recurrence-rules", () => {
   beforeEach(() => vi.clearAllMocks());
 

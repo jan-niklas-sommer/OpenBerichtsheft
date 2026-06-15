@@ -87,7 +87,7 @@ const TraineeCard = memo(function TraineeCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1.5">
+          <div ref={dotContainerRef} className="relative hidden sm:flex items-center gap-1.5" aria-label="Berichtstatus der letzten Wochen">
             {recentWeeks.map((w) => {
               const report = trainee.reports.find(
                 (r) => r.calendarYear === w.year && r.calendarWeek === w.week
@@ -102,6 +102,7 @@ const TraineeCard = memo(function TraineeCard({
                 <Link
                   key={`${w.year}-${w.week}`}
                   href={href}
+                  title={tooltipText}
                   className={`h-[14px] w-[14px] rounded-sm ${report ? statusDotColor(report.status) : "bg-surface-overlay border border-stroke-subtle"}`}
                   onMouseEnter={(e) => handleDotEnter(tooltipText, e)}
                   onMouseLeave={handleDotLeave}

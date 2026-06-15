@@ -138,7 +138,7 @@ export default function LoginPage() {
             autoComplete="email"
           />
           <div>
-            <div className="mb-1.5 flex items-center justify-between">
+            <div className="mb-1.5 flex items-baseline justify-between">
               <label
                 htmlFor="passwort"
                 className="block text-sm font-medium text-content-muted"

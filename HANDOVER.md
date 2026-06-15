@@ -3112,3 +3112,11 @@ Aus visuellem Review (Playwright-Screenshots + Code-Scan):
 - **U2:** Monats-Navigation `size="sm"` → `size="md"` + Icons `h-4` → `h-5` (Touch-Target 40px).
 - **U3:** Permanente Legende `text-[11px]` → `text-xs` (12px = DESIGN_SYSTEM-Minimum); Dots `h-2.5` → `h-3`.
 - **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.
+
+## 2026-06-14 – UI-Polish zur Perfektion
+
+- **Login-Baseline:** `items-center` → `items-baseline` für Passwort-Label + „Passwort vergessen?"-Link (typografische Baselines ausgerichtet). KI-Rating: 9/10.
+- **„Fehlt"-Icon:** `AlertCircle` (lucide, `h-3 w-3`) neben „Fehlt"-Text in der ReportCalendar-Wochenliste — Accessibility (nicht nur Farbe, auch Icon).
+- **Trainer-Dashboard-Punkte:** `title`-Attribut + `aria-label` ergänzt (native Tooltips neben Custom-Hover).
+- **Mobile-Heatmap:** horizontale Scroll (`overflow-x-auto timeline-scroll` + `min-w-[480px]`) für die Jahres-Heatmap — auf 390px scrollbar statt gequetscht.
+- **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.

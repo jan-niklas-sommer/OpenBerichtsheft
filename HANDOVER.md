@@ -3055,3 +3055,9 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **H6:** `invalidateRoleCache(userId?)` exportiert aus `auth.ts`; aufgerufen in `users/[id]` PUT (Rollen-/Deaktivierungs-Änderung) + `anonymize`. Rollen-Revocation wirkt jetzt sofort statt erst nach 5-Min-TTL.
 - **Tests:** schedule/recurrence `[id]`-Tests umgeschrieben (profession-basierte Fälle + 404 + Trainer-mit-Zugriff); Auth-Mocks um `invalidateRoleCache` ergänzt.
 - **Verifier:** typecheck 0, lint 0 Errors, 924/924 Tests, build ✓.
+
+## 2026-06-14 – AP-B: Autosave Phantom-Save behoben (H3)
+
+- **H3:** `useAutosave` bekommt ein `reset(data?)`, das Daten als Baseline markiert (ohne Save). Der Report-Editor ruft `reset()` beim Laden eines (neuen) Reports via `useEffect` auf `report.id` — verhindert Phantom-PUTs beim Initialload + Wochenwechsel.
+- **Test:** +1 (reset → kein Phantom-Save bei identischem Inhalt).
+- **Verifier:** typecheck 0, lint 0 Errors, 924/924 Tests, build ✓.

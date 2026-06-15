@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 const MAX_RETRIES = 2;
 const RETRY_BASE_MS = 1000;
@@ -81,6 +81,15 @@ export function useAutosave<T>(
     }
   };
 
+  const reset = useCallback((data?: T) => {
+    // Markiert die übergebenen (oder aktuellen) Daten als Baseline — ohne Save.
+    // Aufrufen, nachdem Daten vom Server geladen wurden, damit kein Phantom-Save
+    // der unveraenderten Server-Daten ausgeloest wird.
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    const baseline = data ?? dataRef.current;
+    submittedHashRef.current = baseline ? JSON.stringify(baseline) : "";
+  }, []);
+
   useEffect(() => {
     if (data == null) return;
     // Deep-Compare gegen den zuletzt eingereichten Stand: reine Referenz-
@@ -110,5 +119,5 @@ export function useAutosave<T>(
     };
   }, []);
 
-  return { saveStatus, save };
+  return { saveStatus, save, reset };
 }

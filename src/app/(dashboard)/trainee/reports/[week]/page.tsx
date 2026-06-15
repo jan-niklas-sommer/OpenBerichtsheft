@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -200,11 +200,22 @@ export default function ReportEditorPage() {
     }
   };
 
-  const { saveStatus, save } = useAutosave(
+  const { saveStatus, save, reset } = useAutosave(
     autosaveData,
     handleSave,
     20000
   );
+
+  // Beim Laden eines (anderen) Reports vom Server die geladenen Daten als
+  // Baseline markieren, damit kein Phantom-Save der unveränderten Server-Daten
+  // getriggert wird (initial + bei Wochenwechsel).
+  const loadedReportIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (report && report.id !== loadedReportIdRef.current) {
+      loadedReportIdRef.current = report.id;
+      reset();
+    }
+  }, [report, reset]);
 
   const handleSubmit = async () => {
     setSubmitting(true);

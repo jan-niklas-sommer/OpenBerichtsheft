@@ -3070,3 +3070,10 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
 - **M5:** explizite `training_officer`→403-Tests für schedule/recurrence-rules `[id]` PUT.
 - **Bewusst übersprungen:** M3 (users PUT Mass-Assignment — admin-only, alle Schema-Felder intendiert, kein echtes Vuln), L7 (drag-scroll setTimeout-Race — theoretisch, Praxis ok), M1 (notifications/check Logik — funktionierend, Rewrite riskant).
 - **Verifier:** typecheck 0, lint 0 Errors, 927/927 Tests, build ✓.
+
+## 2026-06-14 – AP-D: L8 (Konflikt-Logik extrahiert) + CODE_REVIEW-Reaudit + Ops-Checkliste
+
+- **L8:** `hasScheduleConflicts` als pure Function ausgelagert (`src/components/schedule/schedule-filters.ts`) + 5 Tests; Trainer-Page nutzt sie. (Voll-Page-Tests für die Schedule-Pages sind in jsdom nicht praktikabel — Gantt braucht DOM-Messungen; die algorithmische Logik ist nun aber isoliert testbar.)
+- **CODE_REVIEW.md:** vollständige Reconciliation — alle QO-H/M/L aus dem Initial-Review + alle Full-Review-Findings (C1–C4, H1–H8, M2/M4/M5/M6/M7/M8/M9, L1/L2/L3/L4/L8) als erledigt markiert; verbleibend (L10, M1, M3, L5, L6, L7) als bewusst zurückgestellt gelistet.
+- **Neu `DEPLOY.md`:** Ops-Checkliste (Migrationen, Vercel-Env `DATABASE_URL`/`AUTH_SECRET`/`SMTP_*`/`CRON_SECRET`, Credential-Rotation, Post-Deploy-Smoke).
+- **Verifier:** typecheck 0, lint 0 Errors, 932/932 Tests, build ✓.

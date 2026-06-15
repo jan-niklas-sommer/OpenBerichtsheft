@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   TYPE_LABELS,
+  isScheduleType,
   type ScheduleType,
 } from "@/components/schedule/types";
 import { weekdayToBit } from "@/lib/schedule-resolver";
@@ -249,7 +250,9 @@ export function AssignmentModal({
 
             <select
               value={scheduleType}
-              onChange={(e) => setScheduleType(e.target.value as ScheduleType)}
+              onChange={(e) => {
+                if (isScheduleType(e.target.value)) setScheduleType(e.target.value);
+              }}
               className={selectClass}
               aria-label="Einsatztyp"
             >

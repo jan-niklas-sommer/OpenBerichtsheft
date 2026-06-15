@@ -31,6 +31,10 @@ export const LAYER_ORDER = ["school", "vacation", "other", "department"];
 export type { ScheduleType } from "@/lib/schedule-resolver";
 import type { ScheduleType } from "@/lib/schedule-resolver";
 
+export function isScheduleType(value: string): value is ScheduleType {
+  return value === "department" || value === "school" || value === "vacation" || value === "other";
+}
+
 export interface ScheduleAssignmentView {
   id: string;
   traineeId: string;

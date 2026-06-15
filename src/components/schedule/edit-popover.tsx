@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   TYPE_LABELS,
+  isScheduleType,
   type ScheduleAssignmentView,
   type ScheduleType,
 } from "./types";
@@ -77,10 +78,6 @@ export function EditAssignmentPopover({
 }: EditAssignmentPopoverProps) {
   const [form, setForm] = useState<EditForm>(() => buildForm(item, rules));
   const popoverRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setForm(buildForm(item, rules));
-  }, [item, rules]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -200,7 +197,9 @@ export function EditAssignmentPopover({
         <div className="space-y-3">
           <select
             value={form.scheduleType}
-            onChange={(e) => setForm({ ...form, scheduleType: e.target.value as ScheduleType })}
+            onChange={(e) => {
+              if (isScheduleType(e.target.value)) setForm({ ...form, scheduleType: e.target.value });
+            }}
             className="w-full rounded-lg border border-stroke-base bg-surface-base px-2 py-1.5 text-sm text-content-base"
           >
             {Object.entries(TYPE_LABELS).map(([k, v]) => (

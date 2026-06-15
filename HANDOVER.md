@@ -3100,3 +3100,15 @@ Aus dem Full-Review behobene Issues (teils eigene Refactor-Regressionen):
   - H8 Trainer Write-Access (PUT auf Regel → 200) ✓
   - E2E: 20/20 Playwright-Tests ✓
 - **Verifier:** typecheck 0, lint 0 Errors, 938 Unit/API-Tests + 20/20 E2E, build ✓.
+
+## 2026-06-14 – Design + UI/UX Fixes (D1-D3, U1-U3)
+
+Aus visuellem Review (Playwright-Screenshots + Code-Scan):
+
+- **D1:** Gantt-Heute-Linie `opacity-20` → `opacity-40` (DESIGN_SYSTEM fordert 0.4).
+- **D2:** Admin-Stat-Zahlen `font-bold` → `font-semibold` (Bold nur für Page-Headings).
+- **D3:** Button-Spinner `opacity-25` → `opacity-40` (Mindest-Opacity).
+- **U1:** Settings-Link Navbar `size-8` → `size-9` (Touch-Target 36px).
+- **U2:** Monats-Navigation `size="sm"` → `size="md"` + Icons `h-4` → `h-5` (Touch-Target 40px).
+- **U3:** Permanente Legende `text-[11px]` → `text-xs` (12px = DESIGN_SYSTEM-Minimum); Dots `h-2.5` → `h-3`.
+- **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.

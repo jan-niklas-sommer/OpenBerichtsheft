@@ -107,7 +107,7 @@ export function Navbar({ role, userName }: NavbarProps) {
             <ThemeToggle />
             <Link
               href="/einstellungen"
-              className="inline-flex items-center justify-center rounded-md size-8 bg-transparent p-0 text-content-muted hover:bg-surface-overlay hover:text-content-base transition-colors"
+              className="inline-flex items-center justify-center rounded-md size-9 bg-transparent p-0 text-content-muted hover:bg-surface-overlay hover:text-content-base transition-colors"
               aria-label="Einstellungen"
             >
               <KeyRound className="h-4 w-4" />

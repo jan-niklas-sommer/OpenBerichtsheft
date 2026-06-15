@@ -154,6 +154,7 @@ export default function SchedulePage() {
 
       {editItem && (
         <EditAssignmentPopover
+          key={`${editItem.id}-${editItem.startDate}`}
           item={editItem}
           rules={rules}
           officers={officers.map((o) => ({ id: o.id, name: o.name }))}

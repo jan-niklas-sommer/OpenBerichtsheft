@@ -3009,3 +3009,11 @@ Nach `migrate deploy` sind alle bestehenden Konten verifiziert und die Logins fu
 - **Autosave Retry (QO-M20):** Bei Fehler bis zu 2 Retries mit exponentiellem Backoff (1s/2s); "error"-Status bleibt sofort nach Erst-Fail (testkompatibel); Mounted-Flag + Timer-Cleanup verhindern post-Unmount-Retries.
 - **Tests:** +2 (Deep-Compare, Retry-Recovery); 13/13 im Hook, 926/926 gesamt.
 - **Verifier:** typecheck 0, lint 0, build ✓.
+
+## 2026-06-14 – Refactor AP7: NotificationBell extrahiert + Casts behoben
+
+- **NotificationBell (QO-L12):** aus `navbar.tsx` (~90 Zeilen) in eigene `src/components/layout/notification-bell.tsx` ausgelagert; `MAX_BADGE_COUNT`-Konstante; Navbar-Imports bereinigt.
+- **ScheduleType-Casts (QO-L9):** `as ScheduleType` in `edit-popover.tsx`/`assignment-modal.tsx` durch `isScheduleType`-Type-Guard ersetzt (Guard in `components/schedule/types.ts`).
+- **edit-popover:** `setState`-in-Effect (Lint-Error) aufgelöst via `key`-Remount (`key={id-startDate}`) — `useState`-Initializer läuft pro Item neu.
+- **useApi-Hook bewusst NICHT gemacht:** die verbleibenden Fetch-Stellen sind mehrheitlich Multi-Fetch-Seiten (Editor, Schedule), für die ein `useApi(url)` nicht passt; ein forcierter Hook wäre Over-Abstraction. Bleibt bewusst zurückgestellt.
+- **Verifier:** typecheck 0, lint 0 Errors, 926/926 Tests, build ✓.

@@ -3120,3 +3120,14 @@ Aus visuellem Review (Playwright-Screenshots + Code-Scan):
 - **Trainer-Dashboard-Punkte:** `title`-Attribut + `aria-label` ergänzt (native Tooltips neben Custom-Hover).
 - **Mobile-Heatmap:** horizontale Scroll (`overflow-x-auto timeline-scroll` + `min-w-[480px]`) für die Jahres-Heatmap — auf 390px scrollbar statt gequetscht.
 - **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.
+
+## 2026-06-14 – Gantt: Smarter Blocks mit Department-Labels
+
+- **Row-Höhe:** 48px → 54px (+12%); Single-Row 40px → 48px.
+- **Block-Höhe:** 24px → 36px (+50%) — genug für lesbare Inline-Labels.
+- **Label-Inhalt:** KW-Range („KW 2–7") → **Department/Typ** („IT-Entwicklung", „Berufsschule", „Urlaub"). Fallback: TYPE_LABELS bei fehlendem Department.
+- **Label-Schwelle:** 80px → 60px (mehr Blöcke mit Text).
+- **Schriftgröße:** text-[10px] → text-[11px]; Repeat-Icon h-2.5 → h-3.
+- **Visuell verifiziert (Playwright-Screenshot):** Department-Namen klar lesbar („IT-Entwicklung", „Systemadministration", „Cybersecurity" etc.), Timeline scannbar, keine Überladung.
+- **DESIGN_SYSTEM.md:** Row-Höhe und Bar-Height aktualisiert.
+- **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.

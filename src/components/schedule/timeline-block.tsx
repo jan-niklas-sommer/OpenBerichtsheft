@@ -8,12 +8,7 @@ import {
   type AssignmentBlock,
 } from "./types";
 import { getConflictsForDay } from "./types";
-import { getIsoWeek as getIsoWeekFull } from "@/lib/utils";
 import { Repeat } from "lucide-react";
-
-function getWeekNumber(date: Date): number {
-  return getIsoWeekFull(date).week;
-}
 
 interface TimelineBlockProps {
   block: AssignmentBlock;
@@ -53,10 +48,8 @@ export function TimelineBlock({
     return false;
   })();
 
-  const showLabel = block.width > 80;
-  const startKW = getWeekNumber(workDays[block.startIndex]);
-  const endKW = block.endIndex < workDays.length ? getWeekNumber(workDays[block.endIndex]) : startKW;
-  const label = startKW === endKW ? `KW ${startKW}` : `KW ${startKW}–${endKW}`;
+  const showLabel = block.width > 60;
+  const labelText = a.department || TYPE_LABELS[a.scheduleType] || "";
 
   const barTop = (rowHeight - barHeight) / 2;
 
@@ -77,7 +70,7 @@ export function TimelineBlock({
       role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : undefined}
       aria-label={
-        interactive ? `${label} – ${TYPE_LABELS[a.scheduleType]}` : undefined
+        interactive ? `${labelText} – ${TYPE_LABELS[a.scheduleType]}` : undefined
       }
       onClick={(e) => {
         if (wasDragged()) {
@@ -98,13 +91,13 @@ export function TimelineBlock({
     >
       {showLabel && (
         <span
-          className="flex h-full items-center justify-center gap-1 truncate px-2 text-[10px] font-medium"
+          className="flex h-full items-center justify-center gap-1 truncate px-2 text-[11px] font-medium"
           style={{ color: TYPE_FG_COLORS[a.scheduleType] }}
         >
           {a.recurring && (
-            <Repeat className="h-2.5 w-2.5 shrink-0" strokeWidth={2} aria-hidden="true" />
+            <Repeat className="h-3 w-3 shrink-0" strokeWidth={2} aria-hidden="true" />
           )}
-          <span className="truncate">{label}</span>
+          <span className="truncate">{labelText}</span>
         </span>
       )}
     </div>

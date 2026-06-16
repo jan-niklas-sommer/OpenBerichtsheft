@@ -3131,3 +3131,9 @@ Aus visuellem Review (Playwright-Screenshots + Code-Scan):
 - **Visuell verifiziert (Playwright-Screenshot):** Department-Namen klar lesbar („IT-Entwicklung", „Systemadministration", „Cybersecurity" etc.), Timeline scannbar, keine Überladung.
 - **DESIGN_SYSTEM.md:** Row-Höhe und Bar-Height aktualisiert.
 - **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.
+
+## 2026-06-14 – Fix: Redundanter Heatmap-Hover-Tooltip entfernt
+
+- **Problem:** Beim Hovern über die Jahres-Heatmap erschien ein schwebendes Legenden-Overlay, das (a) redundant zur permanenten Legende darunter war, (b) die UI verschob und (c) einen vertikalen Scrollbalken verursachte.
+- **Fix:** Komplett entfernt — `legendPos` State, `containerRef`, `handleMouseMove`, `onMouseMove`/`onMouseLeave` Handler, und das浮动-Overlay (~~30 Zeilen). Permanente Legende + `title`-Attribute pro Woche bleiben erhalten.
+- **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.

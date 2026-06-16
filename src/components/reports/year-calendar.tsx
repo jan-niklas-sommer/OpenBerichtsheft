@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { getIsoWeek, statusDotColor, STATUS_LABELS, getWeekDates, formatDate, getWeeksInMonth, isBeforeTrainingStart } from "@/lib/utils";
 import type { ReportStatus } from "@/types";
@@ -35,9 +35,6 @@ export function YearCalendar({
   reports,
   trainingStartDate,
 }: YearCalendarProps) {
-  const [legendPos, setLegendPos] = useState<{ x: number; y: number; containerWidth: number } | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const reportMap = useMemo(() => {
     const map = new Map<string, ReportStatus>();
     for (const r of reports) {
@@ -118,21 +115,8 @@ export function YearCalendar({
     return beforeStart ? "#" : `/trainee/reports/${year}-${w}`;
   };
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setLegendPos({ x, y, containerWidth: rect.width });
-  }, []);
-
   return (
-    <div
-      ref={containerRef}
-      className="relative"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setLegendPos(null)}
-    >
+    <div>
       <div className="overflow-x-auto timeline-scroll">
         <div className="min-w-[480px]">
           <div className="mb-0.5 relative h-4">
@@ -173,23 +157,6 @@ export function YearCalendar({
           </div>
         </div>
       </div>
-
-      {legendPos && (
-        <div
-          className="absolute pointer-events-none rounded-lg border border-stroke-subtle bg-surface-base/95 backdrop-blur-sm p-2.5 shadow-lg z-20 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-content-muted"
-          style={{
-            left: Math.min(legendPos.x + 12, legendPos.containerWidth - 220),
-            top: legendPos.y + 12,
-          }}
-        >
-          {LEGEND_ITEMS.map((item) => (
-            <span key={item.status} className="flex items-center gap-1">
-              <span className={`inline-block h-3 w-3 rounded-sm ${statusDotColor(item.status)}`} />
-              {item.label}
-            </span>
-          ))}
-        </div>
-      )}
 
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-content-muted">
         {LEGEND_ITEMS.map((item) => (

@@ -466,7 +466,7 @@ border-radius: var(--radius-full);
 
 ```css
 --gantt-day-width: 18px;
---gantt-row-height: 40px;
+--gantt-row-height: 54px;
 --gantt-header-height: 56px;
 ```
 
@@ -481,7 +481,7 @@ border-radius: var(--radius-full);
 **Einsatzbalken:**
 
 ```css
-height: 70% der Row-Höhe;
+height: 36px (fester Wert für Inline-Labels);
 border-radius: var(--radius-sm);
 background: var(--color-cat-{type}-bg);
 border-left: 3px solid var(--color-cat-{type}-fg);

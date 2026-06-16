@@ -107,7 +107,7 @@ describe("GanttTimeline", () => {
 
     const pill = container.querySelector(".rounded-full span");
     expect(pill).toBeTruthy();
-    expect(pill?.textContent).toMatch(/KW \d+/);
+    expect(pill?.textContent).toMatch(/Abteilung|Schule|Urlaub|Sonstiges|IT|Vertrieb/);
   });
 
   it("does not render inline label on narrow blocks", () => {

@@ -49,7 +49,7 @@ export function GanttTimeline({
   viewStart,
   viewEnd,
   cellWidth = 6,
-  rowHeight = 48,
+  rowHeight = 54,
   mode,
   singleRow = false,
   showConflicts = false,
@@ -59,7 +59,7 @@ export function GanttTimeline({
   const headerHeight = 48;
   const monthRowHeight = 22;
   const weekRowHeight = 26;
-  const barHeight = 24;
+  const barHeight = 36;
 
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -214,7 +214,7 @@ export function GanttTimeline({
           )}
 
           {rows.map((row) => {
-            const effectiveRowHeight = singleRow ? 40 : rowHeight;
+            const effectiveRowHeight = singleRow ? 48 : rowHeight;
             const blocks = rowBlocks.get(row.traineeId) || [];
 
             return (

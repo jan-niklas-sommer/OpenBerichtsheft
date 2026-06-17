@@ -146,7 +146,7 @@ export function YearCalendar({
                   key={`${w.year}-${w.week}`}
                   href={href}
                   title={getTooltip(w.week)}
-                  className={`h-7 min-w-[3px] flex-1 rounded-sm transition-transform hover:scale-y-150 hover:z-10 ${colorClass} ${
+                  className={`h-7 min-w-[3px] flex-1 rounded-sm transition-all hover:ring-1 hover:ring-content-base/50 hover:z-10 ${colorClass} ${
                     isSelectedMonth && !beforeStart
                       ? "ring-1 ring-content-base"
                       : ""

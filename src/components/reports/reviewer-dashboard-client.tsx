@@ -191,6 +191,16 @@ export function ReviewerDashboardClient({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showFilters, setShowFilters] = useState(false);
 
+  const handleFilterChange = (filter: StatusFilter) => {
+    setStatusFilter(filter);
+    if (filter !== "all") {
+      const first = trainees.find((t) =>
+        t.reports.some((r) => r.status === filter)
+      );
+      if (first) setExpandedTrainee(first.id);
+    }
+  };
+
   const filteredTrainees = useMemo(() => {
     return trainees.map((t) => ({
       ...t,
@@ -241,7 +251,7 @@ export function ReviewerDashboardClient({
               key={f.value}
               variant={statusFilter === f.value ? "primary" : "secondary"}
               size="sm"
-              onClick={() => setStatusFilter(f.value)}
+              onClick={() => handleFilterChange(f.value)}
             >
               {f.label}
             </Button>

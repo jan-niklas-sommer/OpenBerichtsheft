@@ -342,9 +342,14 @@ export default function ReportEditorPage() {
           professionName={report?.trainee?.profession?.name}
         />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" aria-live="polite">
           <div className="text-sm text-content-muted">
-            {saveStatus === "saving" && "Speichert…"}
+            {saveStatus === "saving" && (
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-stroke-base border-t-accent" />
+                Speichert…
+              </span>
+            )}
             {saveStatus === "saved" && savedAt && (
               <span className="flex items-center gap-1 text-success">
                 <Check className="h-3 w-3" /> Zuletzt gespeichert {relativeSaveText}

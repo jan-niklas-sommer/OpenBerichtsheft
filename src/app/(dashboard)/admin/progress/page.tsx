@@ -62,35 +62,27 @@ export default function ProgressPage() {
 
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <Card>
-          <div className="p-4">
-            <p className="text-sm text-content-muted">Auszubildende</p>
-            <p className="text-2xl font-semibold text-content-base">{data.length}</p>
-          </div>
+          <p className="text-sm text-content-muted">Auszubildende</p>
+          <p className="text-2xl font-semibold text-content-base">{data.length}</p>
         </Card>
         <Card>
-          <div className="p-4">
-            <p className="text-sm text-content-muted">Berichte gesamt</p>
-            <p className="text-2xl font-semibold text-content-base">{totals.total}</p>
-          </div>
+          <p className="text-sm text-content-muted">Berichte gesamt</p>
+          <p className="text-2xl font-semibold text-content-base">{totals.total}</p>
         </Card>
         <Card>
-          <div className="p-4">
-            <p className="text-sm text-content-muted">Genehmigt</p>
-            <p className="text-2xl font-semibold text-success">{totals.approved}</p>
-          </div>
+          <p className="text-sm text-content-muted">Genehmigt</p>
+          <p className="text-2xl font-semibold text-success">{totals.approved}</p>
         </Card>
         <Card>
-          <div className="p-4">
-            <p className="text-sm text-content-muted">Fehlende Wochen</p>
-            <p className="text-2xl font-semibold text-danger">{totals.missing}</p>
-          </div>
+          <p className="text-sm text-content-muted">Fehlende Wochen</p>
+          <p className="text-2xl font-semibold text-danger">{totals.missing}</p>
         </Card>
       </div>
 
       <div className="space-y-4">
         {data.map((trainee) => (
           <Card key={trainee.traineeId}>
-            <div className="p-4 space-y-3">
+            <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium text-content-base">

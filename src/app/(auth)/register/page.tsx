@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,12 +53,12 @@ export default function RegisterPage() {
           <p className="text-xs text-content-subtle">
             Der Link ist 24 Stunden gültig.
           </p>
-          <a
+          <Link
             href="/login"
             className="inline-block text-sm font-medium text-accent underline underline-offset-2 hover:opacity-80"
           >
             Zur Anmeldung
-          </a>
+          </Link>
         </Card>
       </div>
     );
@@ -107,12 +109,12 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-content-muted">
         Bereits ein Konto?{" "}
-        <a
+        <Link
           href="/login"
           className="font-medium text-accent underline underline-offset-2 hover:opacity-80"
         >
           Anmelden
-        </a>
+        </Link>
       </p>
     </div>
   );

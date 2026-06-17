@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,12 +93,12 @@ export default function ForgotPasswordPage() {
       </Card>
 
       <p className="mt-6 text-center text-sm text-content-muted">
-        <a
+        <Link
           href="/login"
           className="font-medium text-accent underline underline-offset-2 hover:opacity-80"
         >
           Zurück zur Anmeldung
-        </a>
+        </Link>
       </p>
     </div>
   );

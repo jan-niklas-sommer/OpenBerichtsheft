@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextArea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useAutosave } from "@/hooks/use-autosave";
+import { useToast } from "@/components/ui/toaster";
 import { WeekNavigator } from "@/components/reports/week-navigator";
 import {
   getWeekDates,
@@ -23,6 +24,7 @@ import type { DailyEntryData, DayType, WeeklyReportData, ReportStatus, ReportTyp
 import { Save, Send, Check, Download, CalendarDays, Undo2, FileText, FileSpreadsheet, Clock } from "lucide-react";
 
 export default function ReportEditorPage() {
+  const { toast } = useToast();
   const params = useParams();
   const router = useRouter();
   const [report, setReport] = useState<WeeklyReportData | null>(null);
@@ -232,6 +234,8 @@ export default function ReportEditorPage() {
 
     if (res.ok) {
       router.push("/trainee");
+    } else {
+      toast("Fehler beim Einreichen", "error");
     }
     setSubmitting(false);
   };
@@ -245,6 +249,9 @@ export default function ReportEditorPage() {
     if (res.ok) {
       const updated = await res.json();
       setReport(updated);
+      toast("Bericht zurückgezogen");
+    } else {
+      toast("Fehler beim Zurückziehen", "error");
     }
     setSubmitting(false);
   };
@@ -526,7 +533,7 @@ export default function ReportEditorPage() {
                             updateEntry(index, "hours", Math.min(24, Math.max(0, parseInt(e.target.value) || 0)))
                           }
                           disabled={!isEditable}
-                          className="h-10 w-20 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
+                          className="h-10 w-20 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong disabled:opacity-50"
                         />
                         <span className="text-sm text-content-muted">h</span>
                         <input
@@ -538,7 +545,7 @@ export default function ReportEditorPage() {
                             updateEntry(index, "minutes", Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
                           }
                           disabled={!isEditable}
-                          className="h-10 w-20 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none disabled:opacity-50"
+                          className="h-10 w-20 rounded-lg border border-stroke-base bg-surface-base px-2 text-center text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong disabled:opacity-50"
                         />
                         <span className="text-sm text-content-muted">min</span>
                       </div>

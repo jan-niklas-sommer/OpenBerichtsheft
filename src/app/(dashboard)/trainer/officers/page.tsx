@@ -116,7 +116,7 @@ export default function TrainerOfficersPage() {
                 value={form.traineeId}
                 onChange={(e) => setForm({ ...form, traineeId: e.target.value })}
                 required
-                className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
+                className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
               >
                 <option value="">Auswählen...</option>
                 {trainees.map((t) => (
@@ -133,7 +133,7 @@ export default function TrainerOfficersPage() {
                 value={form.trainingOfficerId}
                 onChange={(e) => setForm({ ...form, trainingOfficerId: e.target.value })}
                 required
-                className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none"
+                className="h-10 w-full rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
               >
                 <option value="">Auswählen...</option>
                 {officers.map((o) => (

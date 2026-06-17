@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -145,12 +147,12 @@ export default function LoginPage() {
               >
                 Passwort
               </label>
-              <a
+              <Link
                 href="/forgot-password"
                 className="text-xs text-accent underline underline-offset-2 hover:opacity-80"
               >
                 Passwort vergessen?
-              </a>
+              </Link>
             </div>
             <div className="relative">
               <input
@@ -206,12 +208,12 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-content-muted">
         Noch kein Konto?{" "}
-        <a
+        <Link
           href="/register"
           className="font-medium text-accent underline underline-offset-2 hover:opacity-80"
         >
           Jetzt registrieren
-        </a>
+        </Link>
       </p>
     </div>
   );

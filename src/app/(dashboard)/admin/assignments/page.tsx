@@ -4,12 +4,19 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Trash2, UserCheck } from "lucide-react";
 import type { UserData, AssignmentData, ProfessionData } from "@/types";
 
 export default function AssignmentsPage() {
+  const { toast } = useToast();
   const [assignments, setAssignments] = useState<AssignmentData[]>([]);
   const [users, setUsers] = useState<UserData[]>([]);
   const [professions, setProfessions] = useState<ProfessionData[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState<AssignmentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ trainerId: "", professionId: "" });
   const [formError, setFormError] = useState("");
@@ -41,6 +48,7 @@ export default function AssignmentsPage() {
       const assignment = await res.json();
       setAssignments((prev) => [assignment, ...prev]);
       setForm({ trainerId: "", professionId: "" });
+      toast("Zuordnung erstellt");
     } else {
       const data = await res.json();
       setFormError(data.error || "Fehler");
@@ -51,11 +59,12 @@ export default function AssignmentsPage() {
     const res = await fetch(`/api/assignments/${id}`, { method: "DELETE" });
     if (res.ok) {
       setAssignments((prev) => prev.filter((a) => a.id !== id));
+      toast("Zuordnung gelöscht");
     }
   };
 
   if (loading) {
-    return <div className="text-content-muted">Laden...</div>;
+    return <SkeletonList count={4} />;
   }
 
   return (
@@ -92,6 +101,15 @@ export default function AssignmentsPage() {
       </Card>
 
       <div className="space-y-3">
+        {assignments.length === 0 && (
+          <Card>
+            <EmptyState
+              icon={UserCheck}
+              title="Noch keine Zuordnungen"
+              description="Ordne Ausbilder zu Ausbildungsberufen zu, damit sie Berichte prüfen können."
+            />
+          </Card>
+        )}
         {assignments.map((a) => (
           <Card key={a.id} className="flex items-center justify-between">
             <div>
@@ -102,15 +120,23 @@ export default function AssignmentsPage() {
                 Ausbilder: {a.trainer?.email}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(a.id)}>
-              Entfernen
+            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(a)}>
+              <Trash2 className="h-4 w-4 text-danger" />
             </Button>
           </Card>
         ))}
-        {assignments.length === 0 && (
-          <p className="text-content-muted">Keine Zuordnungen vorhanden.</p>
-        )}
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Zuordnung löschen"
+        description={`${confirmDelete?.trainer?.name} → ${confirmDelete?.profession?.name} wird entfernt.`}
+        onConfirm={() => {
+          if (confirmDelete) handleDelete(confirmDelete.id);
+          setConfirmDelete(null);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

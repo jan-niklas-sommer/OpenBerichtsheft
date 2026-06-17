@@ -12,6 +12,7 @@ import {
 } from "./types";
 import type { RecurrenceRuleExpandInput } from "./expand-rules";
 import { weekdayToBit, bitfieldContainsWeekday } from "@/lib/schedule-resolver";
+import { useToast } from "@/components/ui/toaster";
 
 const DEFAULT_WEEKDAYS = [1, 2, 3, 4, 5];
 const DAY_NAMES = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as const;
@@ -79,6 +80,7 @@ export function EditAssignmentPopover({
   onClose,
   onSaved,
 }: EditAssignmentPopoverProps) {
+  const { toast } = useToast();
   const [form, setForm] = useState<EditForm>(() => buildForm(item, rules));
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -192,7 +194,7 @@ export function EditAssignmentPopover({
       // Popover offen lassen, damit die aktualisierte Ausnahme-Liste sichtbar wird.
     } else {
       const data = await res.json().catch(() => ({}));
-      alert(data.error || "Ausnahme konnte nicht erstellt werden");
+      toast(data.error || "Ausnahme konnte nicht erstellt werden", "error");
     }
   };
 

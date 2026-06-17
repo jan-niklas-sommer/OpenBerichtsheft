@@ -7,7 +7,11 @@ import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
-import { KeyRound, Eye, EyeOff } from "lucide-react";
+import { useToast } from "@/components/ui/toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KeyRound, Eye, EyeOff, Users, Search } from "lucide-react";
 import { ROLE_LABELS } from "@/lib/utils";
 import type { UserData, ProfessionData } from "@/types";
 
@@ -17,7 +21,10 @@ interface UserWithProfession extends UserData {
 }
 
 export default function UsersPage() {
+  const { toast } = useToast();
   const [users, setUsers] = useState<UserWithProfession[]>([]);
+  const [search, setSearch] = useState("");
+  const [confirmAnonymize, setConfirmAnonymize] = useState<UserWithProfession | null>(null);
   const [professions, setProfessions] = useState<ProfessionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -103,6 +110,7 @@ export default function UsersPage() {
       setUsers((prev) => [user, ...prev]);
       setShowForm(false);
       setForm({ email: "", name: "", role: "trainee", password: "", professionId: "", trainingStartDate: "" });
+      toast("Benutzer erstellt");
     } else {
       const data = await res.json();
       setFormError(data.error || "Fehler beim Erstellen");
@@ -124,19 +132,26 @@ export default function UsersPage() {
   };
 
   const handleAnonymize = async (user: UserWithProfession) => {
-    if (!confirm(`"${user.name}" wirklich anonymisieren? Dies kann nicht rückgängig gemacht werden.`)) return;
     const res = await fetch(`/api/users/${user.id}/anonymize`, { method: "POST" });
     if (res.ok) {
       const updated = await res.json();
       setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...updated } : u)));
+      toast("Benutzer anonymisiert");
     } else {
       const data = await res.json();
-      alert(data.error || "Fehler beim Anonymisieren");
+      toast(data.error || "Fehler beim Anonymisieren", "error");
     }
   };
 
+  const filteredUsers = search
+    ? users.filter((u) => {
+        const s = search.toLowerCase();
+        return u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s);
+      })
+    : users;
+
   if (loading) {
-    return <div className="text-content-muted">Laden...</div>;
+    return <SkeletonList />;
   }
 
   return (
@@ -149,6 +164,14 @@ export default function UsersPage() {
           {showForm ? "Abbrechen" : "Benutzer erstellen"}
         </Button>
       </div>
+
+      <input
+        type="text"
+        placeholder="Benutzer suchen..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-4 h-9 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
+      />
 
       {showForm && (
         <Card className="mb-6">
@@ -215,13 +238,20 @@ export default function UsersPage() {
       )}
 
       <div className="space-y-3">
-        {users.map((user) => (
+        {filteredUsers.length === 0 && (
+          <EmptyState
+            icon={Users}
+            title="Keine Benutzer gefunden"
+            description={search ? "Keine Treffer für deine Suche." : "Erstelle den ersten Benutzer."}
+          />
+        )}
+        {filteredUsers.map((user) => (
           <Card key={user.id} className="flex items-center justify-between">
             <div>
                <p className="font-medium text-content-base">
                   {user.name}
                 </p>
-                <p className="text-sm text-content-muted">
+               <p className="text-sm text-content-muted">
                  {user.email}
                  {user.profession?.name && (
                    <> &middot; {user.profession.name}</>
@@ -229,7 +259,7 @@ export default function UsersPage() {
                </p>
             </div>
             <div className="flex items-center gap-3">
-              <Badge variant={user.deactivatedAt ? "danger" : "success"}>
+              <Badge variant="default">
                 {ROLE_LABELS[user.role]}
               </Badge>
               {user.anonymizedAt ? (
@@ -263,7 +293,7 @@ export default function UsersPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleAnonymize(user)}
+                      onClick={() => setConfirmAnonymize(user)}
                       className="text-danger"
                     >
                       Anonymisieren
@@ -371,6 +401,18 @@ export default function UsersPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmAnonymize}
+        title="Benutzer anonymisieren"
+        description={`"${confirmAnonymize?.name}" wird unwiderruflich anonymisiert. Name und E-Mail werden durch Platzhalter ersetzt.`}
+        confirmLabel="Anonymisieren"
+        onConfirm={() => {
+          if (confirmAnonymize) handleAnonymize(confirmAnonymize);
+          setConfirmAnonymize(null);
+        }}
+        onCancel={() => setConfirmAnonymize(null)}
+      />
     </div>
   );
 }

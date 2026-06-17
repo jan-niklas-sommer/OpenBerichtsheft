@@ -76,7 +76,7 @@ export default function EinstellungenPage() {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
-                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 pr-10 text-sm text-content-base placeholder:text-content-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 pr-10 text-sm text-content-base placeholder:text-content-muted focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
               />
               <button
                 type="button"
@@ -101,7 +101,7 @@ export default function EinstellungenPage() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 pr-10 text-sm text-content-base placeholder:text-content-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 pr-10 text-sm text-content-base placeholder:text-content-muted focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
               />
               <button
                 type="button"
@@ -125,7 +125,7 @@ export default function EinstellungenPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base placeholder:text-content-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base placeholder:text-content-muted focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
             />
           </div>
 

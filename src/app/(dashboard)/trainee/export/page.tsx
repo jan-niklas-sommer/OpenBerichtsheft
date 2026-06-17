@@ -163,7 +163,7 @@ export default function ExportPage() {
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
               />
             </div>
             <div>
@@ -175,7 +175,7 @@ export default function ExportPage() {
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
               />
             </div>
           </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,12 +33,12 @@ export default function ResetPasswordPage() {
               Passwort-Wiederherstellung an.
             </span>
           </div>
-          <a
+          <Link
             href="/forgot-password"
             className="inline-block text-sm font-medium text-accent underline underline-offset-2 hover:opacity-80"
           >
             Neuen Link anfordern
-          </a>
+          </Link>
         </Card>
       </div>
     );
@@ -96,12 +98,12 @@ export default function ResetPasswordPage() {
               mit dem neuen Passwort anmelden.
             </p>
           </div>
-          <a
+          <Link
             href="/login"
             className="block text-center text-sm font-medium text-accent underline underline-offset-2 hover:opacity-80"
           >
             Zur Anmeldung
-          </a>
+          </Link>
         </Card>
       </div>
     );
@@ -184,12 +186,12 @@ export default function ResetPasswordPage() {
       </Card>
 
       <p className="mt-6 text-center text-sm text-content-muted">
-        <a
+        <Link
           href="/login"
           className="font-medium text-accent underline underline-offset-2 hover:opacity-80"
         >
           Zurück zur Anmeldung
-        </a>
+        </Link>
       </p>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
 import { CalendarDays, Download, FileText } from "lucide-react";
 import { addMonths } from "@/lib/date-utils";
 
@@ -155,27 +156,23 @@ export default function ExportPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="from" className="mb-1.5 block text-sm font-medium text-content-base">
+              <label className="mb-1.5 block text-sm font-medium text-content-base">
                 Von
               </label>
-              <input
-                id="from"
-                type="date"
+              <DatePicker
                 value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
+                onChange={setFrom}
+                placeholder="Startdatum"
               />
             </div>
             <div>
-              <label htmlFor="to" className="mb-1.5 block text-sm font-medium text-content-base">
+              <label className="mb-1.5 block text-sm font-medium text-content-base">
                 Bis
               </label>
-              <input
-                id="to"
-                type="date"
+              <DatePicker
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
-                className="w-full rounded-md border border-stroke-base bg-surface-base px-3 py-2 text-sm text-content-base focus:border-stroke-strong focus:outline-none focus:ring-1 focus:ring-stroke-strong"
+                onChange={setTo}
+                placeholder="Enddatum"
               />
             </div>
           </div>

@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useToast } from "@/components/ui/toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Trash2, UserCheck } from "lucide-react";
 
 interface OfficerAssignment {
   id: string;
@@ -30,11 +34,13 @@ interface Officer {
 }
 
 export default function TrainerOfficersPage() {
+  const { toast } = useToast();
   const [assignments, setAssignments] = useState<OfficerAssignment[]>([]);
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<OfficerAssignment | null>(null);
   const [form, setForm] = useState({
     traineeId: "",
     trainingOfficerId: "",
@@ -79,6 +85,7 @@ export default function TrainerOfficersPage() {
     const res = await fetch(`/api/officer-assignments/${id}`, { method: "DELETE" });
     if (res.ok) {
       setAssignments((prev) => prev.filter((a) => a.id !== id));
+      toast("Zuordnung gelöscht");
     }
   };
 
@@ -174,9 +181,12 @@ export default function TrainerOfficersPage() {
 
       {assignments.length === 0 ? (
         <Card>
-          <p className="py-8 text-center text-sm text-content-muted">
-            Keine Zuordnungen vorhanden. Erstellen Sie eine neue Zuordnung.
-          </p>
+          <EmptyState
+            icon={UserCheck}
+            title="Keine Beauftragten-Zuordnungen"
+            description="Ordne Auszubildenden Ausbildungsbeauftragte zu."
+            action={<Button size="sm" onClick={() => setShowForm(true)}>Zuordnung erstellen</Button>}
+          />
         </Card>
       ) : (
         <div className="space-y-3">
@@ -201,17 +211,28 @@ export default function TrainerOfficersPage() {
                   {isActive(a) ? "Aktiv" : "Abgelaufen"}
                 </Badge>
                 <Button
-                  variant="danger"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => handleDelete(a.id)}
+                  onClick={() => setConfirmDelete(a)}
                 >
-                  Entfernen
+                  <Trash2 className="h-4 w-4 text-danger" />
                 </Button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Zuordnung löschen"
+        description={`${confirmDelete?.trainee.name} → ${confirmDelete?.trainingOfficer.name} wird entfernt.`}
+        onConfirm={() => {
+          if (confirmDelete) handleDelete(confirmDelete.id);
+          setConfirmDelete(null);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

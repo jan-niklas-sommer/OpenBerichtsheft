@@ -5,23 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Pencil } from "lucide-react";
+import { useToast } from "@/components/ui/toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Trash2, Pencil, Briefcase } from "lucide-react";
 
 interface ProfessionWithCount {
   id: string;
   name: string;
   createdAt: string;
-  _count: { users: number };
+  _count?: { users: number };
 }
 
 export default function ProfessionsPage() {
   const [professions, setProfessions] = useState<ProfessionWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formName, setFormName] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
-  const [formError, setFormError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<ProfessionWithCount | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetch("/api/professions")
@@ -34,20 +40,21 @@ export default function ProfessionsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError("");
+    setError("");
     const res = await fetch("/api/professions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: formName }),
+      body: JSON.stringify({ name }),
     });
     if (res.ok) {
       const profession = await res.json();
-      setProfessions((prev) => [...prev, { ...profession, _count: { users: 0 } }]);
+      setProfessions((prev) => [...prev, profession]);
+      setName("");
       setShowForm(false);
-      setFormName("");
+      toast("Beruf angelegt");
     } else {
       const data = await res.json();
-      setFormError(data.error || "Fehler beim Erstellen");
+      setError(data.error || "Fehler");
     }
   };
 
@@ -64,6 +71,7 @@ export default function ProfessionsPage() {
       );
       setEditingId(null);
       setEditingName("");
+      toast("Beruf aktualisiert");
     }
   };
 
@@ -71,11 +79,12 @@ export default function ProfessionsPage() {
     const res = await fetch(`/api/professions/${id}`, { method: "DELETE" });
     if (res.ok) {
       setProfessions((prev) => prev.filter((p) => p.id !== id));
+      toast("Beruf gelöscht");
     }
   };
 
   if (loading) {
-    return <div className="text-content-muted">Laden...</div>;
+    return <SkeletonList count={3} />;
   }
 
   return (
@@ -93,79 +102,54 @@ export default function ProfessionsPage() {
         <Card className="mb-6">
           <form onSubmit={handleCreate} className="space-y-4">
             <Input
-              label="Bezeichnung"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
+              label="Berufsbezeichnung"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="z.B. Fachinformatiker für Anwendungsentwicklung"
               required
             />
-            {formError && <p className="text-sm text-danger">{formError}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
             <Button type="submit">Anlegen</Button>
           </form>
         </Card>
       )}
 
       <div className="space-y-3">
-        {professions.length === 0 && (
-          <p className="text-content-muted">Noch keine Ausbildungsberufe angelegt.</p>
+        {professions.length === 0 && !showForm && (
+          <Card>
+            <EmptyState
+              icon={Briefcase}
+              title="Noch keine Ausbildungsberufe"
+              description="Lege Berufe an, um Auszubildende und Ausbilder zuzuordnen."
+              action={<Button size="sm" onClick={() => setShowForm(true)}>Beruf anlegen</Button>}
+            />
+          </Card>
         )}
-        {professions.map((profession) => (
-          <Card key={profession.id} className="flex items-center justify-between">
-            {editingId === profession.id ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUpdate(profession.id);
-                }}
-                className="flex flex-1 items-center gap-3"
-              >
+        {professions.map((p) => (
+          <Card key={p.id} className="flex items-center justify-between">
+            {editingId === p.id ? (
+              <div className="flex flex-1 items-center gap-2">
                 <Input
                   value={editingName}
                   onChange={(e) => setEditingName(e.target.value)}
-                  required
+                  className="flex-1"
                 />
-                <Button type="submit" size="sm">
-                  Speichern
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditingId(null)}
-                >
-                  Abbrechen
-                </Button>
-              </form>
+                <Button size="sm" onClick={() => handleUpdate(p.id)}>Speichern</Button>
+                <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Abbrechen</Button>
+              </div>
             ) : (
               <>
                 <div>
-                  <p className="font-medium text-content-base">
-                    {profession.name}
-                  </p>
+                  <p className="font-medium text-content-base">{p.name}</p>
                   <p className="text-sm text-content-muted">
-                    {profession._count.users}{" "}
-                    {profession._count.users === 1 ? "Auszubildende(r)" : "Auszubildende"}
+                    {p._count?.users || 0} zugeordnet
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="default">{profession._count.users} zugeordnet</Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditingId(profession.id);
-                      setEditingName(profession.name);
-                    }}
-                    aria-label={`${profession.name} bearbeiten`}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => { setEditingId(p.id); setEditingName(p.name); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(profession.id)}
-                    aria-label={`${profession.name} löschen`}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(p)}>
                     <Trash2 className="h-4 w-4 text-danger" />
                   </Button>
                 </div>
@@ -174,6 +158,17 @@ export default function ProfessionsPage() {
           </Card>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Beruf löschen"
+        description={`"${confirmDelete?.name}" wird entfernt. Bestehende Zuordnungen bleiben unbeeinflusst.`}
+        onConfirm={() => {
+          if (confirmDelete) handleDelete(confirmDelete.id);
+          setConfirmDelete(null);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

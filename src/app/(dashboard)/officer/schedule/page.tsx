@@ -22,7 +22,7 @@ export default function OfficerSchedulePage() {
     return Array.from(seen.entries()).sort((a, b) => a[1].localeCompare(b[1]));
   }, [filtered]);
 
-  if (loading) return <div className="text-content-muted">Laden...</div>;
+  if (loading) return <div className="flex min-h-[200px] items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-stroke-base border-t-accent" /></div>;
 
   return (
     <div>

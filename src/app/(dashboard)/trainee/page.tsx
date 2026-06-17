@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
 import { ReportCalendar } from "@/components/reports/report-calendar";
 import { YearCalendar } from "@/components/reports/year-calendar";
 import { Plus } from "lucide-react";
@@ -62,7 +63,13 @@ export default function TraineeDashboard() {
   };
 
   if (loading) {
-    return <div className="text-content-muted">Laden...</div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-28 w-full rounded-lg" />
+        <SkeletonList count={4} />
+      </div>
+    );
   }
 
   return (

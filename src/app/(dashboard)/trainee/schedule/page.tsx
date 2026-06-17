@@ -1,12 +1,18 @@
 "use client";
 
 import { GanttTimeline, ScheduleLegend } from "@/components/schedule/gantt-timeline";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useScheduleView } from "@/components/schedule/use-schedule-view";
 
 export default function TraineeSchedulePage() {
   const { viewStart, viewEnd, allViews, loading, scrollNearEdge } = useScheduleView();
 
-  if (loading) return <div className="text-content-muted">Laden...</div>;
+  if (loading) return (
+      <div className="space-y-4">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    );
 
   const traineeId = allViews.length > 0 ? allViews[0].traineeId : "self";
 

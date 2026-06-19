@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 
   const role = session.user.role;
   const userId = session.user.id;
-  if (role !== "admin" && role !== "trainer") {
+  if (role !== "admin" && role !== "trainer" && role !== "trainee") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -146,7 +146,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { traineeId, scheduleType, startDate, endDate, department, supervisorId } = parsed.data;
+  let { traineeId, department, supervisorId } = parsed.data;
+  const { scheduleType, startDate, endDate } = parsed.data;
+
+  // Azubis dürfen nur Urlaub für sich selbst eintragen
+  if (role === "trainee") {
+    traineeId = userId;
+    if (scheduleType !== "vacation") {
+      return NextResponse.json({ error: "Auszubildende können nur Urlaub eintragen" }, { status: 403 });
+    }
+    department = undefined;
+    supervisorId = undefined;
+  }
 
   const targetUser = await prisma.user.findUnique({
     where: { id: traineeId },
@@ -156,7 +167,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "traineeId must reference a user with role 'trainee'" }, { status: 400 });
   }
 
-  if (!(await trainerCanAccessTrainee(userId, role, traineeId))) {
+  if (role !== "trainee" && !(await trainerCanAccessTrainee(userId, role, traineeId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

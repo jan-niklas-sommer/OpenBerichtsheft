@@ -1,35 +1,35 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().email("Ungültige E-Mail-Adresse"),
-  password: z.string().min(1, "Passwort erforderlich"),
+  email: z.string().email("Ungültige E-Mail-Adresse").trim(),
+  password: z.string().min(1, "Passwort erforderlich").trim(),
 });
 
 export const createUserSchema = z.object({
-  email: z.string().email("Ungültige E-Mail-Adresse"),
+  email: z.string().email("Ungültige E-Mail-Adresse").trim(),
   name: z.string().min(1, "Name erforderlich"),
   role: z.enum(["admin", "trainer", "training_officer", "trainee"]),
-  password: z.string().min(8, "Mindestens 8 Zeichen"),
+  password: z.string().min(8, "Mindestens 8 Zeichen").trim(),
   professionId: z.string().uuid().optional(),
   trainingStartDate: z.string().optional(),
 });
 
 export const updateUserSchema = z.object({
-  email: z.string().email("Ungültige E-Mail-Adresse").optional(),
+  email: z.string().email("Ungültige E-Mail-Adresse").trim().optional(),
   name: z.string().min(1, "Name erforderlich").optional(),
   role: z.enum(["admin", "trainer", "training_officer", "trainee"]).optional(),
-  password: z.string().min(8, "Mindestens 8 Zeichen").optional(),
+  password: z.string().min(8, "Mindestens 8 Zeichen").trim().optional(),
   deactivatedAt: z.coerce.date().nullable().optional(),
   professionId: z.string().uuid().nullable().optional(),
   trainingStartDate: z.string().nullable().optional(),
 });
 
 export const createProfessionSchema = z.object({
-  name: z.string().min(1, "Name erforderlich").max(200),
+  name: z.string().trim().min(1, "Name erforderlich").max(200),
 });
 
 export const updateProfessionSchema = z.object({
-  name: z.string().min(1, "Name erforderlich").max(200),
+  name: z.string().trim().min(1, "Name erforderlich").max(200),
 });
 
 export const dailyEntrySchema = z.object({
@@ -119,26 +119,26 @@ export const changePasswordSchema = z.object({
 
 export const registerSchema = z.object({
   name: z.string().min(1, "Name erforderlich"),
-  email: z.string().email("Ungültige E-Mail-Adresse"),
-  password: z.string().min(8, "Mindestens 8 Zeichen"),
+  email: z.string().email("Ungültige E-Mail-Adresse").trim(),
+  password: z.string().min(8, "Mindestens 8 Zeichen").trim(),
 });
 
 export const resendVerificationSchema = z.object({
-  email: z.string().email("Ungültige E-Mail-Adresse"),
+  email: z.string().email("Ungültige E-Mail-Adresse").trim(),
 });
 
 export const requestPasswordResetSchema = z.object({
-  email: z.string().email("Ungültige E-Mail-Adresse"),
+  email: z.string().email("Ungültige E-Mail-Adresse").trim(),
 });
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token erforderlich"),
-  password: z.string().min(8, "Mindestens 8 Zeichen"),
+  password: z.string().min(8, "Mindestens 8 Zeichen").trim(),
 });
 
 export const adminResetPasswordSchema = z
   .object({
-    password: z.string().min(8, "Mindestens 8 Zeichen").optional(),
+    password: z.string().min(8, "Mindestens 8 Zeichen").trim().optional(),
     sendEmail: z.boolean().optional(),
   })
   .refine((data) => !!data.password || data.sendEmail === true, {

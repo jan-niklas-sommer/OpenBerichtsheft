@@ -279,7 +279,10 @@ export default function ReportEditorPage() {
       newWeek = 1;
       newYear++;
     }
+    // Nicht vor Training-Start (oder 2 Jahre vor heute als Fallback)
     if (isBeforeTrainingStart(newYear, newWeek)) return;
+    const now = getCurrentWeek();
+    if (newYear > now.year || (newYear === now.year && newWeek > now.week)) return;
     setCurrentWeek(newWeek);
     setCurrentYear(newYear);
     setReport(null);

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toaster";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SkeletonList } from "@/components/ui/skeleton";
@@ -100,7 +101,7 @@ export default function AssignmentsPage() {
         </form>
       </Card>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {assignments.length === 0 && (
           <Card>
             <EmptyState
@@ -110,20 +111,31 @@ export default function AssignmentsPage() {
             />
           </Card>
         )}
-        {assignments.map((a) => (
-          <Card key={a.id} className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-content-base">
-                {a.trainer?.name} → {a.profession?.name}
-              </p>
-              <p className="text-sm text-content-muted">
-                Ausbilder: {a.trainer?.email}
-              </p>
+        {Object.entries(
+          assignments.reduce<Record<string, typeof assignments>>((acc, a) => {
+            const key = a.trainer?.id || "unknown";
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(a);
+            return acc;
+          }, {}),
+        ).map(([trainerId, trainerAssignments]) => (
+          <div key={trainerId}>
+            <h3 className="mb-2 text-sm font-semibold text-content-base">
+              {trainerAssignments[0].trainer?.name}
+            </h3>
+            <div className="space-y-2">
+              {trainerAssignments.map((a) => (
+                <Card key={a.id} className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">{a.profession?.name}</Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(a)}>
+                    <Trash2 className="h-4 w-4 text-danger" />
+                  </Button>
+                </Card>
+              ))}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(a)}>
-              <Trash2 className="h-4 w-4 text-danger" />
-            </Button>
-          </Card>
+          </div>
         ))}
       </div>
 

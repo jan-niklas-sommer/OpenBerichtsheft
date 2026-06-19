@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { BarChart3, Search } from "lucide-react";
 
 interface TraineeProgress {
   traineeId: string;
@@ -20,6 +22,8 @@ interface TraineeProgress {
 
 export default function ProgressPage() {
   const [data, setData] = useState<TraineeProgress[]>([]);
+  const [search, setSearch] = useState("");
+  const [onlyMissing, setOnlyMissing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +48,11 @@ export default function ProgressPage() {
     );
   }
 
+  const filtered = data
+    .filter((t) => !search || t.traineeName.toLowerCase().includes(search.toLowerCase()))
+    .filter((t) => !onlyMissing || t.missingWeeks.length > 0)
+    .sort((a, b) => a.completionPercent - b.completionPercent);
+
   const totals = data.reduce(
     (acc, t) => ({
       approved: acc.approved + t.approved,
@@ -59,6 +68,26 @@ export default function ProgressPage() {
       <h1 className="mb-6 text-2xl font-semibold text-content-base">
         Ausbildungsfortschritt
       </h1>
+
+      <div className="mb-4 flex gap-3">
+        <input
+          type="text"
+          placeholder="Azubi suchen..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-9 flex-1 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
+        />
+        <button
+          onClick={() => setOnlyMissing(!onlyMissing)}
+          className={`h-9 whitespace-nowrap rounded-lg border px-3 text-sm font-medium transition-colors ${
+            onlyMissing
+              ? "border-accent bg-accent text-accent-fg"
+              : "border-stroke-base text-content-muted hover:bg-surface-overlay"
+          }`}
+        >
+          Nur fehlende
+        </button>
+      </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <Card>
@@ -80,7 +109,16 @@ export default function ProgressPage() {
       </div>
 
       <div className="space-y-4">
-        {data.map((trainee) => (
+        {filtered.length === 0 && (
+          <Card>
+            <EmptyState
+              icon={BarChart3}
+              title="Keine Treffer"
+              description={search ? "Keine Azubis entsprechen der Suche." : "Keine Daten vorhanden."}
+            />
+          </Card>
+        )}
+        {filtered.map((trainee) => (
           <Card key={trainee.traineeId}>
             <div className="space-y-3">
               <div className="flex items-start justify-between">

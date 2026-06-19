@@ -156,6 +156,10 @@ export function isBeforeTrainingStart(
   w: number,
   trainingStart: { year: number; week: number } | null,
 ): boolean {
-  if (!trainingStart) return false;
+  if (!trainingStart) {
+    // Fallback: maximal 2 Jahre vor heute
+    const now = getCurrentWeek();
+    return y < now.year - 2 || (y === now.year - 2 && w < now.week);
+  }
   return y < trainingStart.year || (y === trainingStart.year && w < trainingStart.week);
 }

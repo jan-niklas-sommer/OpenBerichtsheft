@@ -3137,3 +3137,24 @@ Aus visuellem Review (Playwright-Screenshots + Code-Scan):
 - **Problem:** Beim Hovern über die Jahres-Heatmap erschien ein schwebendes Legenden-Overlay, das (a) redundant zur permanenten Legende darunter war, (b) die UI verschob und (c) einen vertikalen Scrollbalken verursachte.
 - **Fix:** Komplett entfernt — `legendPos` State, `containerRef`, `handleMouseMove`, `onMouseMove`/`onMouseLeave` Handler, und das浮动-Overlay (~~30 Zeilen). Permanente Legende + `title`-Attribute pro Woche bleiben erhalten.
 - **Verifier:** typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.
+
+## 2026-06-19 – Tester-Feedback: Bugs + UX + Features
+
+### AP1: Bugs
+- **B1 (Passwort-Leerzeichen):** `.trim()` auf alle 6 Password-Schemas + Email in `authorize.ts` (toLowerCase + trim). Leerzeichen am Anfang/Ende werden nicht mehr akzeptiert.
+- **B2 (Beruf nur Leerzeichen):** `.trim()` auf `createProfessionSchema` + `updateProfessionSchema`. `"   "` wird abgelehnt.
+- **B3 (Berichte zu weit zurück/vorne):** `navigateWeek` blockt jetzt Zukunft (kann nicht über aktuelle KW hinaus) + `isBeforeTrainingStart` hat Fallback (2 Jahre vor heute) wenn `trainingStartDate` null ist.
+
+### AP2: UX
+- **U1 (Rollen-Filter):** Dropdown „Alle Rollen / Admin / Ausbilder / Beauftragte / Azubis" neben der Suche in Benutzerverwaltung.
+- **U2 (Zuordnung gruppieren):** Assignments nach Ausbilder gruppiert — ein Header pro Ausbilder, darunter seine Berufe als Badges.
+- **U3 (Fortschritt Suche/Filter):** Search-Input + „Nur fehlende"-Toggle + Sortierung nach Completion% (schlechteste zuerst) + EmptyState.
+- **U4 (Anonymisieren Klarheit):** Button-Beschriftung „Anonymisiert — unwiderruflich" + ausführlichere ConfirmDialog-Beschreibung.
+
+### AP3: Features
+- **A2 (Officer Schedule):** `recurrence-rules` GET filtert für Officers jetzt mit Zeit-Overlap (analog Schedule-API) — Officer sieht nur Regeln aus Zeiträumen seiner Zuständigkeit.
+- **A3 (Azubi Urlaub):** Trainee darf `scheduleType: "vacation"` für sich selbst anlegen (API erlaubt trainee+vacation, erzwingt eigene ID). UI: „Urlaub eintragen"-Button + DatePicker-Form auf Trainee-Schedule-Page.
+- **A1 (Doppelrollen):** Bewusst NICHT umgesetzt (User: „das ist Müll").
+
+### Verifier
+typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.

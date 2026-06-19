@@ -5,7 +5,7 @@ import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/rate-li
 export async function authorize(credentials: Partial<Record<"email" | "password", unknown>> | undefined) {
   if (!credentials?.email || !credentials?.password) return null;
 
-  const email = credentials.email as string;
+  const email = (credentials.email as string).trim().toLowerCase();
 
   if (isRateLimited(email)) return null;
 
@@ -19,7 +19,7 @@ export async function authorize(credentials: Partial<Record<"email" | "password"
     throw err;
   }
 
-  const valid = await verifyPassword(credentials.password as string, user.passwordHash);
+  const valid = await verifyPassword((credentials.password as string).trim(), user.passwordHash);
   if (!valid) {
     recordFailedAttempt(email);
     return null;

@@ -24,6 +24,7 @@ export default function UsersPage() {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserWithProfession[]>([]);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [confirmAnonymize, setConfirmAnonymize] = useState<UserWithProfession | null>(null);
   const [professions, setProfessions] = useState<ProfessionData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,12 +144,12 @@ export default function UsersPage() {
     }
   };
 
-  const filteredUsers = search
-    ? users.filter((u) => {
-        const s = search.toLowerCase();
-        return u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s);
-      })
-    : users;
+  const filteredUsers = users.filter((u) => {
+    const s = search.toLowerCase();
+    const matchesSearch = !search || u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s);
+    const matchesRole = !roleFilter || u.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   if (loading) {
     return <SkeletonList />;
@@ -165,13 +166,25 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <input
-        type="text"
-        placeholder="Benutzer suchen..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 h-9 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
-      />
+      <div className="mb-4 flex gap-3">
+        <input
+          type="text"
+          placeholder="Benutzer suchen..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-9 flex-1 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
+        />
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="h-9 rounded-lg border border-stroke-base bg-surface-base px-3 text-sm text-content-base"
+        >
+          <option value="">Alle Rollen</option>
+          {Object.entries(ROLE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </div>
 
       {showForm && (
         <Card className="mb-6">
@@ -263,7 +276,7 @@ export default function UsersPage() {
                 {ROLE_LABELS[user.role]}
               </Badge>
               {user.anonymizedAt ? (
-                <Badge variant="danger">Anonymisiert</Badge>
+                <Badge variant="danger">Anonymisiert — unwiderruflich</Badge>
               ) : (
                 <>
                   <Badge variant={user.deactivatedAt ? "danger" : "success"}>
@@ -405,7 +418,7 @@ export default function UsersPage() {
       <ConfirmDialog
         open={!!confirmAnonymize}
         title="Benutzer anonymisieren"
-        description={`"${confirmAnonymize?.name}" wird unwiderruflich anonymisiert. Name und E-Mail werden durch Platzhalter ersetzt.`}
+        description={`"${confirmAnonymize?.name}" wird dauerhaft anonymisiert. Name und E-Mail werden durch Platzhalter ersetzt. Berichte bleiben erhalten. Dies ist unwiderruflich — der Benutzer kann nicht wiederhergestellt werden.`}
         confirmLabel="Anonymisieren"
         onConfirm={() => {
           if (confirmAnonymize) handleAnonymize(confirmAnonymize);

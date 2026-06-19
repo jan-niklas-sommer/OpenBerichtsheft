@@ -51,14 +51,14 @@ export async function GET(req: NextRequest) {
     }
 
     if (role === "training_officer") {
-      const assignments = await prisma.traineeOfficerAssignment.findMany({
+      const officerAssignments = await prisma.traineeOfficerAssignment.findMany({
         where: { trainingOfficerId: userId },
-        select: { traineeId: true },
+        select: { traineeId: true, validFrom: true, validUntil: true },
       });
-      where.traineeId = { in: assignments.map((a) => a.traineeId) };
+      where.traineeId = { in: officerAssignments.map((a) => a.traineeId) };
     }
 
-    const rules = await prisma.recurrenceRule.findMany({
+    const allRules = await prisma.recurrenceRule.findMany({
       where,
       include: {
         trainee: { select: { id: true, name: true, profession: { select: { name: true } } } },
@@ -67,7 +67,25 @@ export async function GET(req: NextRequest) {
       },
       orderBy: [{ traineeId: "asc" }, { startDate: "asc" }],
     });
-    return NextResponse.json(rules);
+
+    // Officer: nur Regeln deren Zeitraum mit mind. einer Officer-Zuweisung überlappt
+    if (role === "training_officer") {
+      const officerAssignments = await prisma.traineeOfficerAssignment.findMany({
+        where: { trainingOfficerId: userId },
+        select: { traineeId: true, validFrom: true, validUntil: true },
+      });
+      const filtered = allRules.filter((rule) =>
+        officerAssignments.some(
+          (oa) =>
+            oa.traineeId === rule.traineeId &&
+            new Date(rule.startDate) <= oa.validUntil &&
+            new Date(rule.endDate) >= oa.validFrom,
+        ),
+      );
+      return NextResponse.json(filtered);
+    }
+
+    return NextResponse.json(allRules);
   }
 
   if (role === "trainee") {

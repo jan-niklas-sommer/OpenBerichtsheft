@@ -118,10 +118,10 @@ describe("POST /api/schedule", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 for trainee", async () => {
+  it("returns 400 for trainee without valid data (trainee can only create vacation)", async () => {
     mockAuth.mockResolvedValue(traineeSession);
     const res = await POST(makePostRequest({}));
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(400);
   });
 
   it("returns 400 for invalid data", async () => {

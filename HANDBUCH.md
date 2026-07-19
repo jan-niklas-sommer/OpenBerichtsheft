@@ -1,6 +1,6 @@
 # Benutzerhandbuch – OpenBerichtsheft
 
-Letzte Aktualisierung: 2026-05-10
+Letzte Aktualisierung: 2026-07-19
 
 ---
 
@@ -561,7 +561,9 @@ Alle Benutzer sehen in der Navigationsleiste eine **Glocke** (Benachrichtigungen
 ### Benachrichtigungen verwalten
 
 - **Als gelesen markieren**: Klicken Sie auf das Häkchen-Symbol neben der Benachrichtigung.
-- **Badge**: Die Anzahl ungelesener Benachrichtigungen wird als rote Zahl an der Glocke angezeigt.
+- **Alle als gelesen markieren**: Klicken Sie im Kopf des Dropdowns auf **Alle gelesen**, um sämtliche eigenen ungelesenen Benachrichtigungen auf einmal zu aktualisieren.
+- **Badge**: Die Anzahl ungelesener Benachrichtigungen wird als Zähler an der Glocke angezeigt.
+- Benachrichtigungen werden beim Laden der Navigationsleiste abgerufen; es gibt keinen Echtzeit-Push.
 
 ### Check manuell auslösen (Admin)
 

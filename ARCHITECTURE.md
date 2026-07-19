@@ -359,6 +359,7 @@ draft → submitted → approved
 | PUT | `/api/reports/[id]/submit` | Bericht zurückziehen (withdraw → draft) | trainee (nur submitted) |
 | POST | `/api/reports/[id]/review` | Bericht prüfen (approve/revise/reject) | trainer, training_officer, admin |
 | GET | `/api/notifications` | Eigene Benachrichtigungen | Alle |
+| PUT | `/api/notifications` | Alle eigenen ungelesenen Benachrichtigungen als gelesen markieren | Alle |
 | PUT | `/api/notifications/[id]` | Benachrichtigung als gelesen | Alle |
 | DELETE | `/api/notifications/[id]` | Benachrichtigung löschen | Alle |
 | POST | `/api/notifications/check` | Fehlende Berichte prüfen | admin |

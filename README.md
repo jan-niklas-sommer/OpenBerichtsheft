@@ -154,6 +154,22 @@ src/
 | `HANDOVER.md` | Übergabeprotokoll zwischen Arbeitspaketen |
 | `CODE_REVIEW.md` | Code-Review-Ergebnisse mit Issue-Tracking |
 
+## Repository und KI-Unterstützung
+## Einsatz von Codex und GPT-5.6
+
+**Codex** und **GPT-5.6** wurden während der Entwicklung als unterstützende Engineering-Werkzeuge eingesetzt. Der Einsatz umfasste insbesondere:
+
+- Planung und Strukturierung der Next.js- und Prisma-Architektur
+- Implementierung und Überarbeitung von Komponenten, API-Routen und Datenbankzugriffen
+- Erstellung und Verbesserung von TypeScript-Typen, Validierungen und Autorisierungslogik
+- Analyse von Fehlern sowie Unterstützung beim Debugging
+- Erstellung und Erweiterung von Unit-, API-, Komponenten- und E2E-Tests
+- Durchführung von Code-Reviews mit Fokus auf Sicherheit, Wartbarkeit und Zugriffsschutz
+- Ausarbeitung der technischen Dokumentation und des Benutzerhandbuchs
+
+Alle generierten oder vorgeschlagenen Änderungen wurden vor der Übernahme geprüft, angepasst und im Kontext der Gesamtarchitektur validiert. Die Verantwortung für Architekturentscheidungen, Funktionsumfang und den finalen Quellcode lag beim Entwickler.
+
 ## Lizenz
 
 MIT
+

@@ -18,3 +18,15 @@ export async function GET() {
 
   return NextResponse.json({ notifications, unreadCount });
 }
+
+export async function PUT() {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const result = await prisma.notification.updateMany({
+    where: { userId: session.user.id, read: false },
+    data: { read: true },
+  });
+
+  return NextResponse.json({ updatedCount: result.count });
+}

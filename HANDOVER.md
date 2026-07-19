@@ -3158,3 +3158,44 @@ Aus visuellem Review (Playwright-Screenshots + Code-Scan):
 
 ### Verifier
 typecheck 0, lint 0 Errors, 938/938 Tests, build ✓.
+
+## 2026-07-19 14:23 CEST – Benachrichtigungen gesammelt als gelesen markieren
+
+### Arbeitspaket
+
+- **Ziel:** Alle eigenen ungelesenen Benachrichtigungen mit einer Aktion als gelesen markieren und die README zum tatsächlichen In-App-Verhalten präzisieren.
+- **Umfang:** Collection-Endpunkt `PUT /api/notifications`, Notification-Dropdown, API-/Component-Tests sowie README, Benutzerhandbuch, Architektur- und Handover-Dokumentation.
+- **Nicht-Ziele:** Löschen, Pagination, Polling/Echtzeit-Push, Datenmodell- oder Rollenänderungen.
+
+### Planner-Zusammenfassung
+
+- Der Bulk-Aufruf muss idempotent sein, ausschließlich Benachrichtigungen des angemeldeten Nutzers ändern und den Client-Zustand erst nach erfolgreicher Serverantwort aktualisieren.
+- Die Sammelaktion wird nur bei ungelesenen Einträgen angeboten und bleibt im bestehenden mobilen Dropdown bedienbar.
+
+### Reviewer-Ergebnis
+
+- **Freigegeben.** Rollenmodell und Bericht-Statusmodell bleiben unverändert.
+- Datenintegrität ist durch `updateMany` mit `{ userId: session.user.id, read: false }` sichergestellt; fremde oder bereits gelesene Einträge werden nicht verändert.
+- Next.js-16-Konventionen für Route Handler und Client Components wurden anhand der lokalen Framework-Dokumentation geprüft. Es werden keine veralteten synchronen Request-APIs eingeführt.
+
+### Implementierte Änderungen
+
+- `PUT /api/notifications` markiert alle eigenen ungelesenen Benachrichtigungen atomar als gelesen und liefert `updatedCount` zurück.
+- Das Glocken-Dropdown zeigt bei ungelesenen Einträgen **Alle gelesen** mit Ladezustand. Bei Erfolg verschwinden Badge und Einzelaktionen; bei Fehler bleibt der vorherige Zustand erhalten und ein Fehler-Toast wird ausgelöst.
+- Drei API-Tests decken 401, nutzerbezogenen Erfolgsfall und Idempotenz ab. Zwei Component-Tests decken Erfolg und fehlgeschlagene Serverantwort ab.
+- `README.md` und `HANDBUCH.md` benennen den Abruf beim Seitenladen und das Fehlen von Echtzeit-Push ausdrücklich. `ARCHITECTURE.md` dokumentiert den neuen Endpunkt.
+
+### Verifikationsergebnis
+
+- `npm run typecheck`: erfolgreich.
+- `npm run lint`: erfolgreich, 0 Fehler; 42 bereits vorhandene Warnungen außerhalb des produktiven Änderungsumfangs.
+- Fokussierte Tests: 33/33 erfolgreich.
+- `npm test`: 72 Testdateien, 943/943 Tests erfolgreich.
+- `npm run test:coverage`: 943/943 Tests erfolgreich; 83,77 % Statements, 76,67 % Branches, 79,05 % Functions, 84,61 % Lines. Die neuen API- und UI-Pfade sind vollständig durch Tests ausgeführt; kein Coverage-Rückgang durch ungetesteten neuen Code.
+- `npm run build`: erfolgreich mit Next.js 16.2.5/Turbopack.
+- `npm run test:e2e`: versucht, aber nicht erfolgreich ausführbar, weil PostgreSQL auf `localhost:5432` nicht erreichbar und die lokale Docker-/OrbStack-Engine nicht gestartet war.
+
+### Offene Risiken / Folgeaufgaben
+
+- Den bestehenden Playwright-Lauf bei verfügbarer lokaler PostgreSQL-/Docker-Umgebung erneut ausführen.
+- Während des E2E-Versuchs wurde eine bereits bestehende Hydration-Warnung im `ToastProvider` protokolliert; sie ist nicht durch dieses Arbeitspaket verursacht und sollte separat untersucht werden.

@@ -68,7 +68,7 @@ Alle Konten verwenden das Passwort `password123`.
 - **Wiederholungsregeln** für wiederkehrende Einsätze (Betrieb, Berufsschule, etc.) – mit Intervall, im Gantt sichtbar (↻) und bearbeitbar
 - **Bericht-Prefill** – Vorwocheninhalt automatisch übernehmen
 - **Self-Service Passwort-Wiederherstellung** – Token-basierter Reset-Flow per E-Mail
-- **Benachrichtigungen** – Prüfer bei Einreichung benachrichtigen, Azubis bei Review
+- **In-App-Benachrichtigungen** – beim Seitenaufruf geladene Hinweise für Prüfer bei Einreichung und Azubis nach Reviews; einzeln oder gesammelt als gelesen markierbar (kein Echtzeit-Push)
 - **Ausbildungsberufe** – Verwaltung von Berufen (FiAE, FiSi, KVF) mit Zuordnung
 - **Fortschritts-Dashboard** – Übersicht über Berichtserstellungs- und Genehmigungsstatus
 - **Anonymisierung (DSGVO)** – Benutzerdaten anonymisieren statt löschen
@@ -172,4 +172,3 @@ Alle generierten oder vorgeschlagenen Änderungen wurden vor der Übernahme gepr
 ## Lizenz
 
 MIT
-

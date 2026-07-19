@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Check } from "lucide-react";
+import { useToast } from "@/components/ui/toaster";
+import { Bell, Check, CheckCheck } from "lucide-react";
 import type { NotificationData } from "@/types";
 
 const MAX_BADGE_COUNT = 9;
@@ -11,7 +12,9 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetch("/api/notifications")
@@ -39,6 +42,21 @@ export function NotificationBell() {
     setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
+  const markAllRead = async () => {
+    setMarkingAll(true);
+    try {
+      const response = await fetch("/api/notifications", { method: "PUT" });
+      if (!response.ok) throw new Error("Benachrichtigungen konnten nicht aktualisiert werden");
+
+      setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+      setUnreadCount(0);
+    } catch {
+      toast("Benachrichtigungen konnten nicht als gelesen markiert werden", "error");
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <Button variant="ghost" size="sm" onClick={() => setOpen(!open)} className="relative" aria-label="Benachrichtigungen">
@@ -52,8 +70,20 @@ export function NotificationBell() {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-stroke-subtle bg-surface-elevated shadow-lg">
-          <div className="border-b border-stroke-subtle p-3">
+          <div className="flex items-center justify-between gap-2 border-b border-stroke-subtle p-3">
             <p className="text-sm font-medium text-content-base">Benachrichtigungen</p>
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={markingAll}
+                onClick={markAllRead}
+                aria-label="Alle Benachrichtigungen als gelesen markieren"
+              >
+                <CheckCheck className="mr-1.5 h-4 w-4" />
+                Alle gelesen
+              </Button>
+            )}
           </div>
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 && (

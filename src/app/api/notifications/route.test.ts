@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
-import { GET } from "./route";
+import { GET, PUT } from "./route";
 import { PUT as PutById, DELETE as DeleteById } from "./[id]/route";
 
 
@@ -17,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
     notification: {
       findMany: vi.fn(),
       count: vi.fn(),
+      updateMany: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
       create: vi.fn(),
@@ -39,6 +40,7 @@ const mockAuth = auth as unknown as ReturnType<typeof vi.fn>;
 const mockGetIsoWeek = getIsoWeek as unknown as ReturnType<typeof vi.fn>;
 const mockNotifFindMany = prisma.notification.findMany as ReturnType<typeof vi.fn>;
 const mockNotifCount = prisma.notification.count as ReturnType<typeof vi.fn>;
+const mockNotifUpdateMany = prisma.notification.updateMany as ReturnType<typeof vi.fn>;
 const mockNotifUpdate = prisma.notification.update as ReturnType<typeof vi.fn>;
 const mockNotifDelete = prisma.notification.delete as ReturnType<typeof vi.fn>;
 const mockNotifCreate = prisma.notification.create as ReturnType<typeof vi.fn>;
@@ -91,6 +93,46 @@ describe("GET /api/notifications", () => {
     expect(mockNotifCount).toHaveBeenCalledWith({
       where: { userId: "user-1", read: false },
     });
+  });
+});
+
+describe("PUT /api/notifications", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns 401 without session", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const res = await PUT();
+
+    expect(res.status).toBe(401);
+    await expect(res.json()).resolves.toEqual({ error: "Unauthorized" });
+    expect(mockNotifUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("marks only the authenticated user's unread notifications as read", async () => {
+    mockAuth.mockResolvedValue(userSession);
+    mockNotifUpdateMany.mockResolvedValue({ count: 3 });
+
+    const res = await PUT();
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ updatedCount: 3 });
+    expect(mockNotifUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1", read: false },
+      data: { read: true },
+    });
+  });
+
+  it("is idempotent when no unread notifications remain", async () => {
+    mockAuth.mockResolvedValue(userSession);
+    mockNotifUpdateMany.mockResolvedValue({ count: 0 });
+
+    const res = await PUT();
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ updatedCount: 0 });
   });
 });
 
